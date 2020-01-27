@@ -52,8 +52,8 @@ namespace HandyIpc.Client
         {
             var bag = GetBagFromAsyncPool(pipeName);
 
-            (Action dispose, RemoteInvokeAsync invoke) result = default;
-            while (bag.IsEmpty && bag.TryTake(out result) && await CheckItemAsync(result))
+            (Action dispose, RemoteInvokeAsync invoke) result;
+            while (bag.IsEmpty || bag.TryTake(out result) || !await CheckItemAsync(result))
             {
                 bag.Add(await PrimitiveMethods.CreateClientAsync(pipeName));
             }
