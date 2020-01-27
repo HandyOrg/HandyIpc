@@ -4,7 +4,6 @@ using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using HandyIpc.Extensions;
-using HandyIpc.Server;
 
 namespace HandyIpc.Server
 {
@@ -47,23 +46,38 @@ namespace HandyIpc.Server
 
         public static MiddlewareHandler GetAuthenticator(string accessToken)
         {
-            return string.IsNullOrEmpty(accessToken)
-                ? (MiddlewareHandler)null
-                : async (ctx, next) =>
-                {
-                    var request = ctx.Get<Request>();
+            return async (ctx, next) =>
+            {
+                var request = ctx.Get<Request>();
 
-                    if (string.Equals(request.AccessToken, accessToken, StringComparison.InvariantCulture))
-                    {
-                        await next();
-                    }
-                    else
-                    {
-                        IpcSettings.Instance.Logger.Warning("");
-                        var exception = new AuthenticationException($"Invalid accessToken: '{request.AccessToken}'.");
-                        ctx.Output = Response.ReturnException(exception);
-                    }
-                };
+                if (string.Equals(request.AccessToken, accessToken, StringComparison.InvariantCulture))
+                {
+                    await next();
+                }
+                else
+                {
+                    IpcSettings.Instance.Logger.Warning("");
+                    var exception = new AuthenticationException($"Invalid accessToken: '{request.AccessToken}'.");
+                    ctx.Output = Response.ReturnException(exception);
+                }
+            };
+        }
+
+        public static MiddlewareHandler GetGenericDispatcher(Func<Type[], IIpcServerProxy> getProxy)
+        {
+            return async (ctx, next) =>
+            {
+                var request = ctx.Get<Request>();
+                if (request.GenericArguments != null && request.GenericArguments.Any())
+                {
+                    var proxy = getProxy(request.GenericArguments);
+                    await proxy.Dispatch(ctx, next);
+                }
+                else
+                {
+                    await next();
+                }
+            };
         }
 
         #endregion

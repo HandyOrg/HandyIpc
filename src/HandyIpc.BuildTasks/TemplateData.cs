@@ -17,6 +17,7 @@ namespace HandyIpc.BuildTasks
         public string GeneratedClassSuffix { get; set; } // Class.Interface --> ClassInterface
         //public List<BaseClassInfo> BaseClasses { get; set; } // TODO: Support inheritance.
         public string TypeParameters { get; set; } // T1, T2, T3
+        public string TypeArguments { get; set; } // typeof(T1), typeof(T2), typeof(T3)
         public string ConstraintClauses { get; set; } // where T1: class where T2: new()
         public List<MethodData> MethodList { get; set; }
     }

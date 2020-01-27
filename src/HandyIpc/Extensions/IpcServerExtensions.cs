@@ -17,5 +17,16 @@ namespace HandyIpc.Server
         {
             return server.Register(typeof(TInterface), factory);
         }
+
+        public static IpcServer Register(this IpcServer server, Type interfaceType, Type classType)
+        {
+            Guards.ThrowIfNot(classType.ContainsGenericParameters, "", nameof(classType));
+
+            return server.Register(interfaceType, genericTypes =>
+            {
+                var constructedClassType = classType.MakeGenericType(genericTypes);
+                return Activator.CreateInstance(constructedClassType);
+            });
+        }
     }
 }

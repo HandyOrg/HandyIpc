@@ -36,8 +36,11 @@ using {{.}};
                     AccessToken = AccessToken,
                     MethodName = "{{Name}}({{ParameterTypes}})",
                     {{#Parameters}}
-                    Arguments = new object[] { {{.}} }
+                    Arguments = new object[] { {{.}} },
                     {{/Parameters}}
+                    {{#TypeArguments}}
+                    GenericArguments = new [] { {{.}} },
+                    {{/TypeArguments}}
                 });
 
             {{#IsVoid}}

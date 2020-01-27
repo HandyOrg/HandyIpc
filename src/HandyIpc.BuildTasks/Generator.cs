@@ -60,7 +60,9 @@ namespace HandyIpc.BuildTasks
                 var typeParameters = @interface.TypeParameterList.Parameters;
                 if (typeParameters.Any())
                 {
-                    result.TypeParameters = typeParameters.Select(item => item.Identifier.ValueText).ToListString();
+                    var types = typeParameters.Select(item => item.Identifier.ValueText).ToList();
+                    result.TypeParameters = types.ToListString();
+                    result.TypeArguments = types.Select(item => $"typeof({item})").ToListString();
                 }
 
                 result.ConstraintClauses = @interface.ConstraintClauses.ToFullString().Trim();

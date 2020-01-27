@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsInDebugMode>True</IsInDebugMode>
+  </PropertyGroup>
+
+  <Import Project="C:\Users\Dingp\source\repos\HandyIpc\src\HandyIpc\build\HandyIpc.targets"/>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HandyIpc\HandyIpc.csproj" />
+  </ItemGroup>
+
+</Project>
