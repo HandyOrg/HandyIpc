@@ -36,7 +36,7 @@ namespace HandyIpc.BuildTasks
 #endif
 
             var fileNames = SourceFiles.Select(item => item.ItemSpec).ToList();
-            var data = Generator.GetTemplateData(fileNames);
+            var data = CodeGenerator.GetTemplateData(fileNames);
 
             ClientsCodePath = GenerateCode(ClientsFileName, ClientTemplateFileName, data);
             ServersCodePath = GenerateCode(ServersFileName, ServerTemplateFileName, data);
