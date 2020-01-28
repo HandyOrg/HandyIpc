@@ -32,8 +32,7 @@ public class Demo<T> : IDemo<T>
 
 // Register and start server
 IpcServer.Center
-    .Register<IDemo<string>, Demo<string>>()
-    .Register<IDemo<int>, Demo<int>>()
+    .Register(typeof(IDemo<>), typeof(Demo<>))
     .Register<IOtherInterface, OtherImpl>()
     .Start();
 ```
