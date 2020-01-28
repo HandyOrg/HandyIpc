@@ -58,7 +58,7 @@ using {{.}};
                     result = DataConstants.Unit;
                     {{/IsVoid}}
                     {{^IsVoid}}
-                    result = {{#IsAwaitable}}await {{/IsAwaitable}}({{ReturnType}})obj;
+                    result = {{#IsAwaitable}}await ({{ReturnType}}){{/IsAwaitable}}obj;
                     {{/IsVoid}}
                     break;
                 }
