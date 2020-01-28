@@ -17,6 +17,7 @@
   <ItemGroup Label="Package">
     <None Include="build\**" PackagePath="build\net462\" Pack="True" />
     <None Include="build\**" PackagePath="build\netcoreapp2.1\" Pack="True" />
+    <None Include="build\**" PackagePath="build\netstandard2.0\" Pack="True" />
     <None Include="..\HandyIpc.BuildTasks\bin\$(Configuration)\net462\publish\**\*.*" PackagePath="build\MSBuildFull46" LinkBase="build\MSBuildFull46" Pack="True" />
     <None Include="..\HandyIpc.BuildTasks\bin\$(Configuration)\netcoreapp2.1\publish\**\*.*" PackagePath="build\MSBuildCore20" LinkBase="build\MSBuildCore20" Pack="True" />
   </ItemGroup>

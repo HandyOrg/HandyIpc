@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Demo.Contracts;
 
 namespace Demo.Server
@@ -8,5 +9,10 @@ namespace Demo.Server
         public double Add(double x, double y) => x + y;
 
         public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);
+
+        public string GenericMethod<T1, T2>(T1 a, IEnumerable<T2> items)
+        {
+            return $"T1={typeof(T1)}, T2={typeof(T2)}";
+        }
     }
 }

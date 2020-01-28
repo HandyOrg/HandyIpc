@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using HandyIpc;
 
 namespace Demo.Contracts
@@ -9,5 +10,7 @@ namespace Demo.Contracts
         double Add(double x, double y);
 
         Task<T> GetDefaultAsync();
+
+        string GenericMethod<T1, T2>(T1 a, IEnumerable<T2> items);
     }
 }
