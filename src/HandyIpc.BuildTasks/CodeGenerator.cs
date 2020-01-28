@@ -28,6 +28,11 @@ namespace HandyIpc.BuildTasks
                 .ToList();
 
             var classList = validInterfaces.Select(GetClassData).ToList();
+            if (classList.Any(classData => classData.HasGenericMethod))
+            {
+                usingList.AddIfMissing("System.Collections.Generic");
+                usingList.AddIfMissing("System.Reflection");
+            }
 
             return new TemplateData
             {

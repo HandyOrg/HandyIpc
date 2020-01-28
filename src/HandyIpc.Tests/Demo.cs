@@ -34,6 +34,11 @@ namespace HandyIpc.Tests
             return true;
         }
 
+        public Task GenericMethod<T1, TT>(int a, T1 b)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);
     }
 }
