@@ -12,6 +12,7 @@ public interface IDemo<T>
 {
     double Add(double x, double y);
     Task<T> GetDefaultAsync();
+    string GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1);
 }
 ```
 
@@ -23,6 +24,10 @@ public class Demo<T> : IDemo<T>
 {
     public double Add(double x, double y) => x + y;
     public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);
+    string IDemo<T>.GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1)
+    {
+        return $"T1={typeof(T1)}, T2={typeof(T2)}";
+    }
 }
 
 // Register and start server
@@ -42,12 +47,13 @@ var demo2 = IpcClient.Of<IDemo<int>>();
 var result0 = demo1.Add(16, 26); // 42
 var result1 = await demo1.GetDefaultAsync(); // null
 var result2 = await demo2.GetDefaultAsync(); // 0
+var result3 = demo1.GenericMethod<string, int>(null, 0, null) // T1=System.String, T2=System.Int32
 ```
 
 ## Feature
 
 1. [x] Support for generic interface.
 2. [x] Support for Task/Task<T> return value in interface method.
-3. [ ] Support for generic methods (parameter type allow contains nested generic types).
+3. [x] Support for generic methods (parameter type allow contains nested generic types).
 4. [ ] Support for interface inheritance.
 
