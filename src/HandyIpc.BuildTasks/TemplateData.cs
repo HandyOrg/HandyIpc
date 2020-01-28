@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace HandyIpc.BuildTasks
 {
@@ -18,6 +19,7 @@ namespace HandyIpc.BuildTasks
         public string TypeParameters { get; set; } // T1, T2, T3
         public string TypeArguments { get; set; } // typeof(T1), typeof(T2), typeof(T3)
         public string ConstraintClauses { get; set; } // where T1: class where T2: new()
+        public bool HasGenericMethod => MethodList.Any(item => !string.IsNullOrEmpty(item.MethodTypeParameters));
         public List<MethodData> MethodList { get; set; }
     }
 

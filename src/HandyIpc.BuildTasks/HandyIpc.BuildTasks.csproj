@@ -18,10 +18,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="ServerProxyTemplate.mustache">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="ClientTemplate.mustache">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="ServerTemplate.mustache">
+    <EmbeddedResource Include="DispatcherTemplate.mustache">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

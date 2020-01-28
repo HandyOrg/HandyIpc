@@ -63,7 +63,7 @@ namespace HandyIpc.Server
             };
         }
 
-        public static MiddlewareHandler GetGenericDispatcher(Func<Type[], IIpcServerProxy> getProxy)
+        public static MiddlewareHandler GetGenericDispatcher(Func<Type[], IIpcDispatcher> getProxy)
         {
             return async (ctx, next) =>
             {
