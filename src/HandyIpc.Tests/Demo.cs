@@ -15,7 +15,7 @@ namespace HandyIpc.Tests
 
         public Task<string> GenericMethod<T1, T2>(IDictionary<T, T1> items1, List<T2> items2)
         {
-            throw new NotImplementedException();
+            return Task.FromResult($"1-{string.Join(", ", items1)}, 2-{string.Join(",,", items2)}");
         }
 
         public void GenericMethod<T1, T2>(IDictionary<T1, T2> items1, List<T2> items2)
@@ -30,7 +30,8 @@ namespace HandyIpc.Tests
 
         public bool GenericMethod<T1, TT>(string a, T1 b)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"a = {a}, b = {b}");
+            return true;
         }
 
         public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);
