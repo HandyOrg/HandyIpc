@@ -21,7 +21,7 @@
     <None Include="..\HandyIpc.BuildTasks\bin\$(Configuration)\netcoreapp2.1\publish\**\*.*" PackagePath="build\MSBuildCore20" LinkBase="build\MSBuildCore20" Pack="True" />
   </ItemGroup>
 
-  <Target Name="BuildAndPublicCodeGenerator" BeforeTargets="CoreBuild">
+  <Target Name="BuildAndPublicCodeGenerator" BeforeTargets="CoreBuild" Condition="'$(Configuration)'=='Release'">
     <PropertyGroup>
       <HandyIpcExecCmdCore>dotnet publish "$(MSBuildThisFileDirectory)..\HandyIpc.BuildTasks\HandyIpc.BuildTasks.csproj" -c $(Configuration) -f netcoreapp2.1</HandyIpcExecCmdCore>
       <HandyIpcExecCmdFull>dotnet publish "$(MSBuildThisFileDirectory)..\HandyIpc.BuildTasks\HandyIpc.BuildTasks.csproj" -c $(Configuration) -f net462</HandyIpcExecCmdFull>

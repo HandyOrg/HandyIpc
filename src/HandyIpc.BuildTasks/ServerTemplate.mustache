@@ -31,7 +31,7 @@ using {{.}};
             switch (request.MethodName)
             {
 {{#MethodList}}
-                case "{{Name}}({{ParameterTypes}})":
+                case "{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{ParameterTypes}})":
                     {{#IsVoid}}
                     {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});
                     result = DataConstants.Unit;

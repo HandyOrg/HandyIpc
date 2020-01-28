@@ -90,6 +90,20 @@ namespace HandyIpc.BuildTasks
                 .Select((item, i) => $"args[{i}].CastTo<{item.type.ToTypeString()}>()")
                 .ToListString();
 
+            // Resolve generic args list
+            if (method.TypeParameterList != null)
+            {
+                var typeParameters = method.TypeParameterList.Parameters;
+                if (typeParameters.Any())
+                {
+                    var types = typeParameters.Select(item => item.Identifier.ValueText).ToList();
+                    result.MethodTypeParameters = types.ToListString();
+                    result.MethodTypeArguments = types.Select(item => $"typeof({item})").ToListString();
+                }
+
+                result.MethodConstraintClauses = method.ConstraintClauses.ToFullString().Trim();
+            }
+
             // Resolve return type
             result.IsVoid = result.ReturnType == "void";
             if (result.ReturnType == "Task")

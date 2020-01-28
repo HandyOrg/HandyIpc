@@ -34,6 +34,10 @@ namespace HandyIpc.BuildTasks
         public string ParameterTypes { get; set; } // string, int, double
         public string TypeAndParameters { get; set; } // string x, int y, double z
         public string Arguments { get; set; } // args[0].CastTo<string>(), args[1].CastTo<int>(), arg[2].CastTo<double>()
+
+        public string MethodTypeParameters { get; set; } // T1, T2, T3
+        public string MethodTypeArguments { get; set; } // typeof(T1), typeof(T2), typeof(T3)
+        public string MethodConstraintClauses { get; set; } // where T1: class where T2: new()
     }
 
     public class TypeData

@@ -1,4 +1,5 @@
-﻿using HandyIpc;
+﻿using System;
+using HandyIpc;
 using HandyIpc.Client;
 
 {{#ClassList}}
@@ -22,7 +23,7 @@ using {{.}};
         }
 {{#MethodList}}
 
-        {{#IsAwaitable}}async {{/IsAwaitable}}{{ReturnType}} {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}.{{Name}}({{TypeAndParameters}})
+        {{#IsAwaitable}}async {{/IsAwaitable}}{{ReturnType}} {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}.{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{TypeAndParameters}}) {{MethodConstraintClauses}}
         {
             {{#IsAwaitable}}
             var response = await RemoteMethod.InvokeAsync<{{^IsVoid}}{{TaskReturnType}}{{/IsVoid}}{{#IsVoid}}byte[]{{/IsVoid}}>(
@@ -34,13 +35,16 @@ using {{.}};
                 new Request
                 {
                     AccessToken = AccessToken,
-                    MethodName = "{{Name}}({{ParameterTypes}})",
+                    MethodName = "{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{ParameterTypes}})",
                     {{#Parameters}}
                     Arguments = new object[] { {{.}} },
                     {{/Parameters}}
                     {{#TypeArguments}}
                     GenericArguments = new [] { {{.}} },
                     {{/TypeArguments}}
+                    {{#MethodTypeArguments}}
+                    MethodGenericArguments = new [] { {{.}} },
+                    {{/MethodTypeArguments}}
                 });
 
             {{#IsVoid}}

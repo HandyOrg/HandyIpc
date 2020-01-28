@@ -18,5 +18,8 @@ namespace HandyIpc
 
         [JsonProperty("args")]
         public object[] Arguments { get; set; }
+
+        [JsonProperty("mGenericArgs")]
+        public Type[] MethodGenericArguments { get; set; }
     }
 }
