@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,55 +7,17 @@ namespace HandyIpc.Server
 {
     public class IpcServer
     {
-        public static IpcServer Center { get; } = new IpcServer();
-
-        private IpcServer() { }
-
-        private readonly Dictionary<Type, Func<object>> _serverFactories = new Dictionary<Type, Func<object>>();
-        private readonly Dictionary<Type, Func<Type[], object>> _genericServerFactories = new Dictionary<Type, Func<Type[], object>>();
+        private readonly IpcServerBuilder _builder;
         private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers = new ConcurrentDictionary<Type, IIpcDispatcher>();
 
-        private Action<IpcSettings> _configure;
+        private CancellationTokenSource _cancellationTokenSource;
 
-        public IpcServer Configure(Action<IpcSettings> settings)
-        {
-            Guards.ThrowIfNull(settings, nameof(settings));
-
-            var previous = _configure;
-            _configure = s =>
-            {
-                previous?.Invoke(s);
-                settings(s);
-            };
-
-            return this;
-        }
-
-        public IpcServer Register(Type interfaceType, Func<object> factory)
-        {
-            Guards.ThrowIfNot(interfaceType.IsInterface, "", nameof(interfaceType));
-            Guards.ThrowIfNot(!_serverFactories.ContainsKey(interfaceType), "", nameof(factory));
-
-            _serverFactories[interfaceType] = factory;
-
-            return this;
-        }
-
-        public IpcServer Register(Type interfaceType, Func<Type[], object> factory)
-        {
-            Guards.ThrowIfNot(interfaceType.IsInterface, "", nameof(interfaceType));
-            Guards.ThrowIfNot(interfaceType.ContainsGenericParameters, "", nameof(interfaceType));
-            Guards.ThrowIfNot(!_serverFactories.ContainsKey(interfaceType), "", nameof(factory));
-
-            _genericServerFactories[interfaceType] = factory;
-
-            return this;
-        }
+        internal IpcServer(IpcServerBuilder builder) => _builder = builder;
 
         public void Start()
         {
             // Fix configure
-            _configure?.Invoke(IpcSettings.Instance);
+            _builder.IpcConfigure?.Invoke(IpcSettings.Instance);
 
             // Fix middleware
             var defaultMiddleware = Middleware.Compose(
@@ -64,14 +25,21 @@ namespace HandyIpc.Server
                 Middleware.ExceptionHandler,
                 Middleware.RequestParser);
 
-            RunNonGenericInterfaces(defaultMiddleware);
+            if (_cancellationTokenSource == null || _cancellationTokenSource.IsCancellationRequested)
+            {
+                _cancellationTokenSource = new CancellationTokenSource();
+            }
 
-            RunGenericInterfaces(defaultMiddleware);
+            RunNonGenericInterfaces(defaultMiddleware, _cancellationTokenSource.Token);
+
+            RunGenericInterfaces(defaultMiddleware, _cancellationTokenSource.Token);
         }
 
-        private void RunNonGenericInterfaces(MiddlewareHandler middleware)
+        public void Stop() => _cancellationTokenSource.Cancel();
+
+        private void RunNonGenericInterfaces(MiddlewareHandler middleware, CancellationToken token)
         {
-            foreach (var item in _serverFactories)
+            foreach (var item in _builder.ServerFactories)
             {
                 var interfaceType = item.Key;
                 var factory = item.Value;
@@ -86,14 +54,14 @@ namespace HandyIpc.Server
                 middleware = middleware.Compose(dispatcher.Dispatch);
 
 #pragma warning disable 4014
-                RunServerAsync(identifier, middleware);
+                RunServerAsync(identifier, middleware, token);
 #pragma warning restore 4014
             }
         }
 
-        private void RunGenericInterfaces(MiddlewareHandler middleware)
+        private void RunGenericInterfaces(MiddlewareHandler middleware, CancellationToken token)
         {
-            foreach (var item in _genericServerFactories)
+            foreach (var item in _builder.GenericServerFactories)
             {
                 var interfaceType = item.Key;
                 var factory = item.Value;
@@ -114,7 +82,7 @@ namespace HandyIpc.Server
                 middleware = middleware.Compose(genericDispatcher);
 
 #pragma warning disable 4014
-                RunServerAsync(identifier, middleware);
+                RunServerAsync(identifier, middleware, token);
 #pragma warning restore 4014
             }
         }
@@ -132,7 +100,7 @@ namespace HandyIpc.Server
             });
         }
 
-        private static async Task RunServerAsync(string identifier, MiddlewareHandler middleware, CancellationToken token = default)
+        private static async Task RunServerAsync(string identifier, MiddlewareHandler middleware, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
@@ -143,9 +111,13 @@ namespace HandyIpc.Server
                     PrimitiveMethods.HandleRequestAsync(stream, middleware.ToHandler(), token);
 #pragma warning restore 4014
                 }
-                catch
+                catch (OperationCanceledException)
                 {
-                    IpcSettings.Instance.Logger.Error("");
+                    // Ignore
+                }
+                catch (Exception e)
+                {
+                    IpcSettings.Instance.Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
                 }
             }
         }

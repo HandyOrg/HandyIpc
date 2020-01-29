@@ -29,11 +29,14 @@ public class Demo<T> : IDemo<T>
         return $"T1={typeof(T1)}, T2={typeof(T2)}";
     }
 }
+```
 
-// Register and start server
-IpcServer.Center
+```csharp
+// Build and start server
+IpcServerBuilder.Create()
     .Register(typeof(IDemo<>), typeof(Demo<>))
     .Register<IOtherInterface, OtherImpl>()
+    .Build()
     .Start();
 ```
 

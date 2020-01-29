@@ -3,22 +3,22 @@
 // ReSharper disable once CheckNamespace
 namespace HandyIpc.Server
 {
-    public static class IpcServerExtensions
+    public static class IpcServerBuilderExtensions
     {
-        public static IpcServer Register<TInterface, TImpl>(this IpcServer server)
+        public static IpcServerBuilder Register<TInterface, TImpl>(this IpcServerBuilder server)
             where TInterface : class
             where TImpl : TInterface, new()
         {
             return server.Register<TInterface>(() => new TImpl());
         }
 
-        public static IpcServer Register<TInterface>(this IpcServer server, Func<TInterface> factory)
+        public static IpcServerBuilder Register<TInterface>(this IpcServerBuilder server, Func<TInterface> factory)
             where TInterface : class
         {
             return server.Register(typeof(TInterface), factory);
         }
 
-        public static IpcServer Register(this IpcServer server, Type interfaceType, Type classType)
+        public static IpcServerBuilder Register(this IpcServerBuilder server, Type interfaceType, Type classType)
         {
             Guards.ThrowIfNot(classType.ContainsGenericParameters, "", nameof(classType));
 

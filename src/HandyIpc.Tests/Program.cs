@@ -10,8 +10,9 @@ namespace HandyIpc.Tests
     {
         public static async Task Main(string[] args)
         {
-            IpcServer.Center
+            IpcServerBuilder.Create()
                 .Register(typeof(IDemo<>), typeof(Demo<>))
+                .Build()
                 .Start();
 
             var demo1 = IpcClient.Of<IDemo<string>>();
