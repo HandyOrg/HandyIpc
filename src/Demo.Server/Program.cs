@@ -8,8 +8,9 @@ namespace Demo.Server
     {
         public static void Main(string[] args)
         {
-            IpcServer.Center
+            IpcServerBuilder.Create()
                 .Register(typeof(IDemo<>), typeof(Demo<>))
+                .Build()
                 .Start();
 
             Console.ReadKey();

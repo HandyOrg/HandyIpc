@@ -1,6 +1,6 @@
 # HandyIpc
 
-An easy to use inter-process communication library. The design of this library API was inspired by [orleans](https://github.com/dotnet/orleans), and and its implementation refers to [refit](https://github.com/reactiveui/refit).
+An easy to use inter-process communication library with an API similar to remote method invoke. The design of this library API was inspired by [orleans](https://github.com/dotnet/orleans), and and its implementation refers to [refit](https://github.com/reactiveui/refit).
 
 ## How to use
 

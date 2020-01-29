@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HandyIpc" Version="0.0.3" />
+    <PackageReference Include="HandyIpc" Version="0.0.4" />
   </ItemGroup>
 
 </Project>
