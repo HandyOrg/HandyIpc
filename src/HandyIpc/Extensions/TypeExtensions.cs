@@ -53,21 +53,21 @@ namespace System
                    throw new InvalidOperationException($"{interfaceType.Name} doesn't look like a Ipc interface. ");
         }
 
-        public static string GetIdentifier(this Type interfaceType)
+        public static void GetContractInfo(this Type interfaceType, out string identifier, out string accessToken)
         {
             Guards.ThrowIfNot(interfaceType.IsInterface, "The type must be interface type.", nameof(interfaceType));
 
-            using var sha256 = new SHA256CryptoServiceProvider();
-            var buffer = Encoding.UTF8.GetBytes(interfaceType.AssemblyQualifiedName);
-            var sha256Bytes = sha256.ComputeHash(buffer);
-            return string.Concat(sha256Bytes.Select(item => item.ToString("X2")));
-        }
+            var attribute = interfaceType.GetCustomAttribute<IpcContractAttribute>(false);
+            identifier = attribute.Identifier;
+            accessToken = attribute.AccessToken;
 
-        public static string GetAccessToken(this Type interfaceType)
-        {
-            Guards.ThrowIfNot(interfaceType.IsInterface, "The type must be interface type.", nameof(interfaceType));
-
-            return interfaceType.GetCustomAttribute<IpcContractAttribute>(false).AccessToken;
+            if (string.IsNullOrEmpty(identifier))
+            {
+                using var sha256 = new SHA256CryptoServiceProvider();
+                var buffer = Encoding.UTF8.GetBytes(interfaceType.AssemblyQualifiedName);
+                var sha256Bytes = sha256.ComputeHash(buffer);
+                identifier = string.Concat(sha256Bytes.Select(item => item.ToString("X2")));
+            }
         }
     }
 }

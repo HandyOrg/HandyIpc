@@ -18,7 +18,8 @@ namespace HandyIpc.Client
                     key = key.GetGenericTypeDefinition();
                 }
 
-                return Activator.CreateInstance(type, key.GetIdentifier(), key.GetAccessToken());
+                key.GetContractInfo(out var identifier, out var accessToken);
+                return Activator.CreateInstance(type, identifier, accessToken);
             });
         }
 

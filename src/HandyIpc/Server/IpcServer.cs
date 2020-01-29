@@ -76,7 +76,7 @@ namespace HandyIpc.Server
                 var interfaceType = item.Key;
                 var factory = item.Value;
 
-                var accessToken = interfaceType.GetAccessToken();
+                interfaceType.GetContractInfo(out var identifier, out var accessToken);
                 if (!string.IsNullOrEmpty(accessToken))
                 {
                     middleware = middleware.Compose(Middleware.GetAuthenticator(accessToken));
@@ -86,7 +86,7 @@ namespace HandyIpc.Server
                 middleware = middleware.Compose(dispatcher.Dispatch);
 
 #pragma warning disable 4014
-                RunServerAsync(interfaceType.GetIdentifier(), middleware);
+                RunServerAsync(identifier, middleware);
 #pragma warning restore 4014
             }
         }
@@ -98,7 +98,7 @@ namespace HandyIpc.Server
                 var interfaceType = item.Key;
                 var factory = item.Value;
 
-                var accessToken = interfaceType.GetAccessToken();
+                interfaceType.GetContractInfo(out var identifier, out var accessToken);
                 if (!string.IsNullOrEmpty(accessToken))
                 {
                     middleware = middleware.Compose(Middleware.GetAuthenticator(accessToken));
@@ -114,7 +114,7 @@ namespace HandyIpc.Server
                 middleware = middleware.Compose(genericDispatcher);
 
 #pragma warning disable 4014
-                RunServerAsync(interfaceType.GetIdentifier(), middleware);
+                RunServerAsync(identifier, middleware);
 #pragma warning restore 4014
             }
         }
