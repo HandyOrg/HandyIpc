@@ -7,7 +7,7 @@ An easy to use inter-process communication library. The design of this library A
 #### 1. Define IPC contract
 
 ```csharp
-[IpcContract(AccessToken = "&hu8^Tt6")]
+[IpcContract]
 public interface IDemo<T>
 {
     double Add(double x, double y);
