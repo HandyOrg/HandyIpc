@@ -1,10 +1,10 @@
 ﻿<Project>
-  <PropertyGroup Condition=" $(IsInDebugMode) != 'True' ">
+  <PropertyGroup Condition=" $(IsTestProject) != 'True' ">
     <HandyIpcTaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\MSBuildCore20</HandyIpcTaskFolder>
     <HandyIpcTaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildThisFileDirectory)..\MSBuildFull46</HandyIpcTaskFolder>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" $(IsInDebugMode) == 'True' ">
+  <PropertyGroup Condition=" $(IsTestProject) == 'True' ">
     <HandyIpcTaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildProjectDirectory)\..\HandyIpc.BuildTasks\bin\$(Configuration)\netcoreapp2.1</HandyIpcTaskFolder>
     <HandyIpcTaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildProjectDirectory)\..\HandyIpc.BuildTasks\bin\$(Configuration)\net462</HandyIpcTaskFolder>
   </PropertyGroup>
