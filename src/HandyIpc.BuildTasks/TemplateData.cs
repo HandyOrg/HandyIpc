@@ -28,7 +28,8 @@ namespace HandyIpc.BuildTasks
         public bool IsVoid { get; set; }
         public bool IsAwaitable { get; set; }
         public string ReturnType { get; set; } // void
-        public string TaskReturnType { get; set; } // Task<T> --> T
+        public string TaskReturnType { get; set; } // Task<string> --> string
+        public bool TaskReturnTypeContainsGenericParameter { get; set; } // Task<List<T>> Method<T>()
 
         public string Name { get; set; } // MethodName
 
@@ -40,6 +41,9 @@ namespace HandyIpc.BuildTasks
         public string MethodTypeParameters { get; set; } // T1, T2, T3
         public string MethodTypeArguments { get; set; } // typeof(T1), typeof(T2), typeof(T3)
         public string MethodConstraintClauses { get; set; } // where T1: class where T2: new()
+        // The Type[] of method parameter must be sent to server from client when it is generic method,
+        // if not, the data types connot be converted correctly. e.g. Object of type 'System.Int64' cannot be converted to type 'System.Int32'.
+        public string MethodParameterTypes { get; set; } // typeof(string), typeof(List<T1>)
     }
 
     public class TypeData

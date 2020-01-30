@@ -1,0 +1,2 @@
+cd /d "C:\Users\Dingp\source\repos\HandyIpc\src\HandyIpc" &msbuild "HandyIpc.csproj" /t:sdvViewer /p:configuration="Debug" /p:platform="Any CPU" /p:SolutionDir="C:\Users\Dingp\source\repos\HandyIpc\src" 
+exit %errorlevel% 

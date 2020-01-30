@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using HandyIpc;
 
 // ReSharper disable once CheckNamespace
@@ -68,6 +69,25 @@ namespace System
                 var sha256Bytes = sha256.ComputeHash(buffer);
                 identifier = string.Concat(sha256Bytes.Select(item => item.ToString("X2")));
             }
+        }
+    }
+}
+
+namespace HandyIpc.Server
+{
+    using System;
+
+    public static class TypeExtensions
+    {
+        public static async Task<object> UnpackTask(this Type taskType, object @object)
+        {
+            if (@object is Task task)
+            {
+                await task;
+                return taskType.GetProperty("Result")?.GetMethod.Invoke(@object, null);
+            }
+
+            return null;
         }
     }
 }

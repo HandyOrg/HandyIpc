@@ -6,7 +6,11 @@
     <IsInDebugMode>True</IsInDebugMode>
   </PropertyGroup>
 
-  <Import Project="C:\Users\Dingp\source\repos\HandyIpc\src\HandyIpc\build\HandyIpc.targets"/>
+  <Import Project="C:\Users\Dingp\source\repos\HandyIpc\src\HandyIpc\build\HandyIpc.targets" />
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HandyIpc\HandyIpc.csproj" />

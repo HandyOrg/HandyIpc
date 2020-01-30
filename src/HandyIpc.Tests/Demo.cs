@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HandyIpc.Tests
@@ -37,6 +38,11 @@ namespace HandyIpc.Tests
         public Task GenericMethod<T1, TT>(int a, T1 b)
         {
             throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<T1>> GenericMethod<T1>(T1 value, int count)
+        {
+            return Task.FromResult<IEnumerable<T1>>(Enumerable.Repeat(value, count).ToList());
         }
 
         public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);

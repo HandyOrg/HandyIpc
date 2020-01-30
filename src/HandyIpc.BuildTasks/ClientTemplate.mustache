@@ -15,9 +15,9 @@ using HandyIpc.Client;
 
 namespace {{Namespace}}
 {
-{{#UsingList}}
-using {{.}};
-{{/UsingList}}
+    {{#UsingList}}
+    using {{.}};
+    {{/UsingList}}
 
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [global::System.Diagnostics.DebuggerNonUserCode]
@@ -54,6 +54,9 @@ using {{.}};
                     {{#MethodTypeArguments}}
                     MethodGenericArguments = new [] { {{.}} },
                     {{/MethodTypeArguments}}
+                    {{#MethodParameterTypes}}
+                    ArgumentTypes = new [] { {{.}} }
+                    {{/MethodParameterTypes}}
                 });
 
             {{#IsVoid}}

@@ -50,6 +50,23 @@ namespace HandyIpc.BuildTasks
                        : string.Empty);
         }
 
+        public static bool ContainsTypes(this TypeData typeData, params string[] types)
+        {
+            if (types.Contains(typeData.Name)) return true;
+            if (typeData.Children != null)
+            {
+                foreach (var typeDataChild in typeData.Children)
+                {
+                    if (typeDataChild.ContainsTypes(types))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public static string ToListString(this IEnumerable<string> items)
         {
             return string.Join(", ", items);

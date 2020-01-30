@@ -96,16 +96,18 @@ namespace HandyIpc.BuildTasks
                 .ToListString();
 
             // Resolve generic args list
+            string[] genericTypes = null;
             if (method.TypeParameterList != null)
             {
                 var typeParameters = method.TypeParameterList.Parameters;
                 if (typeParameters.Any())
                 {
-                    var types = typeParameters.Select(item => item.Identifier.ValueText).ToList();
-                    result.MethodTypeParameters = types.ToListString();
-                    result.MethodTypeArguments = types.Select(item => $"typeof({item})").ToListString();
+                    genericTypes = typeParameters.Select(item => item.Identifier.ValueText).ToArray();
+                    result.MethodTypeParameters = genericTypes.ToListString();
+                    result.MethodTypeArguments = genericTypes.Select(item => $"typeof({item})").ToListString();
                 }
 
+                result.MethodParameterTypes = arguments.Select(item => $"typeof({item.type.ToTypeString()})").ToListString();
                 result.MethodConstraintClauses = method.ConstraintClauses.ToFullString().Trim();
             }
 
@@ -122,6 +124,8 @@ namespace HandyIpc.BuildTasks
             {
                 result.IsAwaitable = true;
                 result.TaskReturnType = method.ReturnType.ToTypeData().Children.Single().ToTypeString();
+                result.TaskReturnTypeContainsGenericParameter =
+                    genericTypes != null && method.ReturnType.ToTypeData().ContainsTypes(genericTypes);
             }
 
             return result;

@@ -17,5 +17,7 @@ namespace HandyIpc.Tests
         void GenericMethod<T>(IDictionary<T, T> items1, List<T> items2);
         bool GenericMethod<T1, TT>(string a, T1 b);
         Task GenericMethod<T1, TT>(int a, T1 b);
+
+        Task<IEnumerable<T1>> GenericMethod<T1>(T1 value, int count);
     }
 }
