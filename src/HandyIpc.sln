@@ -9,15 +9,22 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandyIpc.BuildTasks", "Hand
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{4C632BA7-7C42-4CF6-B3D0-BEA0C980AFE7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Client", "Demo.Client\Demo.Client.csproj", "{34754467-2E7A-4F22-A0A8-3A7DD70C43BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Client", "Demo.Client\Demo.Client.csproj", "{34754467-2E7A-4F22-A0A8-3A7DD70C43BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Contracts", "Demo.Contracts\Demo.Contracts.csproj", "{7ED0B0C8-1283-488D-9528-3185343607E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Contracts", "Demo.Contracts\Demo.Contracts.csproj", "{7ED0B0C8-1283-488D-9528-3185343607E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Server", "Demo.Server\Demo.Server.csproj", "{B714F143-6572-468C-9091-6F827BFB357E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Server", "Demo.Server\Demo.Server.csproj", "{B714F143-6572-468C-9091-6F827BFB357E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AD0E932B-2919-40C3-B90E-111124C86759}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandyIpc.Tests", "HandyIpc.Tests\HandyIpc.Tests.csproj", "{BB59984E-CB78-4668-B47F-B7E112A9D94D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandyIpc.Tests", "HandyIpc.Tests\HandyIpc.Tests.csproj", "{BB59984E-CB78-4668-B47F-B7E112A9D94D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{27AF62B0-E9A0-4A3E-A766-A787E5A1DF80}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

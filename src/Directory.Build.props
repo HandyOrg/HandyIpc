@@ -1,0 +1,19 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <MinClientVersion>2.12</MinClientVersion>
+    <GenerateDocumentationFile Condition=" '$(Configuration)' == 'Release' ">true</GenerateDocumentationFile>
+    <Authors>Dingping Zhang</Authors>
+    <Version>0.0.5</Version>
+    <PackageProjectUrl>https://github.com/HandyOrg/HandyIpc</PackageProjectUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <IsTestProject>$(MSBuildProjectName.Contains('Test'))</IsTestProject>
+    <Description>A handy inter-process communication library.</Description>
+    <NoWarn>$(NoWarn);1701;1702;CS1591;NU1701</NoWarn>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+</Project>

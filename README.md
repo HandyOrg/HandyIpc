@@ -55,7 +55,7 @@ var result3 = demo1.GenericMethod<string, int>(null, 0, null) // T1=System.Strin
 ## Feature
 
 1. [x] Support for generic interface.
-2. [x] Support for Task/Task<T> return value in interface method.
+2. [x] Support for `Task/Task<T>` return value in interface method.
 3. [x] Support for generic methods (parameter type allow contains nested generic types).
 4. [ ] Support for interface inheritance.
 
