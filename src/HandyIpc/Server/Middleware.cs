@@ -94,7 +94,7 @@ namespace HandyIpc.Server
             };
         }
 
-        public static MiddlewareHandler Compose(this MiddlewareHandler middleware, MiddlewareHandler nextMiddleware)
+        public static MiddlewareHandler Then(this MiddlewareHandler middleware, MiddlewareHandler nextMiddleware)
         {
             Guards.ThrowIfNull(middleware, nameof(middleware));
 
@@ -105,7 +105,7 @@ namespace HandyIpc.Server
 
         public static MiddlewareHandler Compose(this IEnumerable<MiddlewareHandler> middlewareEnumerable)
         {
-            return middlewareEnumerable.Aggregate((accumulation, item) => accumulation.Compose(item));
+            return middlewareEnumerable.Aggregate((accumulation, item) => accumulation.Then(item));
         }
 
         public static MiddlewareHandler Compose(params MiddlewareHandler[] middlewareArray)
