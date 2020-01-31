@@ -10,7 +10,7 @@ namespace HandyIpc
         [JsonProperty("token")]
         public string AccessToken { get; set; }
 
-        [JsonProperty("genericArgs")]
+        [JsonProperty("iGArgs")]
         public Type[] GenericArguments { get; set; }
 
         [JsonProperty("method")]
@@ -22,7 +22,10 @@ namespace HandyIpc
         [JsonProperty("argTypes")]
         public Type[] ArgumentTypes { get; set; } // The property has been filled only if the method is a generic method.
 
-        [JsonProperty("mGenericArgs")]
+        /// <summary>
+        /// Generic arguments that are defined on the method.
+        /// </summary>
+        [JsonProperty("mGArgs")]
         public Type[] MethodGenericArguments { get; set; }
     }
 }
