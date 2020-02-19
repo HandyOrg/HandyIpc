@@ -35,11 +35,10 @@ public class Demo<T> : IDemo<T>
 
 ```csharp
 // Build and start server
-IpcServerBuilder.Create()
-    .Register(typeof(IDemo<>), typeof(Demo<>))
-    .Register<IOtherInterface, OtherImpl>()
-    .Build()
-    .Start();
+IpcServer.Update(collection => collection
+    .Add(typeof(IDemo<>), typeof(Demo<>))
+    .Add<IOther, OtherImpl>()
+    .Remove<IOther2>());
 ```
 
 #### 3. Invoke remote methods in client side
@@ -51,7 +50,7 @@ var demo2 = IpcClient.Of<IDemo<int>>();
 var result0 = demo1.Add(16, 26); // 42
 var result1 = await demo1.GetDefaultAsync(); // null
 var result2 = await demo2.GetDefaultAsync(); // 0
-var result3 = demo1.GenericMethod<string, int>(null, 0, null) // T1=System.String, T2=System.Int32
+var result3 = demo1.GenericMethod<string, int>(null, 0, null); // T1=System.String, T2=System.Int32
 ```
 
 ## Feature
@@ -60,4 +59,3 @@ var result3 = demo1.GenericMethod<string, int>(null, 0, null) // T1=System.Strin
 2. [x] Support for `Task/Task<T>` return value in interface method.
 3. [x] Support for generic methods (parameter type allow contains nested generic types).
 4. [ ] Support for interface inheritance.
-

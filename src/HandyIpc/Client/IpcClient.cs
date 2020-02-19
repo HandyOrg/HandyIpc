@@ -7,6 +7,8 @@ namespace HandyIpc.Client
     {
         private static readonly ConcurrentDictionary<Type, object> TypeInstanceMapping = new ConcurrentDictionary<Type, object>();
 
+        public static IpcPreferences Preferences { get; } = new IpcPreferences();
+
         public static T Of<T>()
         {
             return (T)TypeInstanceMapping.GetOrAdd(typeof(T), key =>

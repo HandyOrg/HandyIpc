@@ -18,15 +18,20 @@ namespace HandyIpc
             return stream;
         }
 
-        public static async Task HandleRequestAsync(NamedPipeServerStream stream, Func<byte[], Task<byte[]>> handler, CancellationToken token)
+        public static async Task HandleRequestAsync(
+            NamedPipeServerStream stream,
+            Func<byte[], Task<byte[]>> handler,
+            long bufferSize,
+            CancellationToken token)
         {
             using (stream)
             {
-                var buffer = new byte[IpcSettings.Instance.BufferSize];
+                var buffer = new byte[bufferSize];
                 while (true)
                 {
                     if (!stream.IsConnected || token.IsCancellationRequested) break;
                     var count = await stream.ReadAsync(buffer, 0, buffer.Length, token);
+                    Guards.ThrowIfInvalid(count < bufferSize, $"The buffer length ({bufferSize}) may be too small and needs to be increased.");
 
                     if (!stream.IsConnected || token.IsCancellationRequested) break;
                     if (count <= 0) continue;
@@ -39,7 +44,7 @@ namespace HandyIpc
             }
         }
 
-        public static async Task<(Action dispose, RemoteInvokeAsync invoke)> CreateClientAsync(string pipeName)
+        public static async Task<(Action dispose, RemoteInvokeAsync invoke)> CreateClientAsync(string pipeName, long bufferSize)
         {
             var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut);
             await stream.ConnectAsync();
@@ -48,7 +53,7 @@ namespace HandyIpc
                 dispose: () => stream.Dispose(),
                 invoke: async (input, token) =>
                 {
-                    var buffer = new byte[IpcSettings.Instance.BufferSize];
+                    var buffer = new byte[bufferSize];
 
                     try
                     {
@@ -60,6 +65,8 @@ namespace HandyIpc
 
                         token.ThrowIfCancellationRequested();
                         var count = await stream.ReadAsync(buffer, 0, buffer.Length, token);
+                        Guards.ThrowIfInvalid(count < bufferSize, $"The buffer length ({bufferSize}) may be too small and needs to be increased.");
+
                         return buffer.Take(count).ToArray();
                     }
                     catch
@@ -71,7 +78,7 @@ namespace HandyIpc
             );
         }
 
-        public static (Action dispose, RemoteInvoke invoke) CreateClient(string pipeName)
+        public static (Action dispose, RemoteInvoke invoke) CreateClient(string pipeName, long bufferSize)
         {
             var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut);
             stream.Connect();
@@ -80,7 +87,7 @@ namespace HandyIpc
                 dispose: stream.Dispose,
                 invoke: input =>
                 {
-                    var buffer = new byte[IpcSettings.Instance.BufferSize];
+                    var buffer = new byte[bufferSize];
 
                     try
                     {
@@ -88,6 +95,8 @@ namespace HandyIpc
                         stream.Flush();
 
                         var count = stream.Read(buffer, 0, buffer.Length);
+                        Guards.ThrowIfInvalid(count < bufferSize, $"The buffer length ({bufferSize}) may be too small and needs to be increased.");
+
                         return buffer.Take(count).ToArray();
                     }
                     catch

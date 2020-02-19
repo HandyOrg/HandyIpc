@@ -32,7 +32,7 @@ namespace HandyIpc.Server
             }
             catch (Exception e)
             {
-                IpcSettings.Instance.Logger.Error("", e);
+                IpcServer.Preferences.Logger.Error("An unexpected exception occurred on the server", e);
                 context.Output = Response.ReturnException(e);
             }
         }
@@ -56,8 +56,9 @@ namespace HandyIpc.Server
                 }
                 else
                 {
-                    IpcSettings.Instance.Logger.Warning("");
                     var exception = new AuthenticationException($"Invalid accessToken: '{request.AccessToken}'.");
+                    IpcServer.Preferences.Logger.Warning(
+                        $"Failed to authenticate this request (token: {request.AccessToken}).", exception);
                     ctx.Output = Response.ReturnException(exception);
                 }
             };

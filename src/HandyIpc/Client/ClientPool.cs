@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Client
 {
-    public class ClientPool
+    internal class ClientPool
     {
-        public static ClientPool Shared { get; } = new ClientPool();
+        public static ClientPool Shared { get; } = new ClientPool(IpcClient.Preferences);
 
-        private ClientPool() { }
+        private readonly IpcPreferences _preferences;
+
+        private ClientPool(IpcPreferences preferences) => _preferences = preferences;
 
         private readonly ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvokeAsync invoke)>> _poolAsync =
             new ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvokeAsync invoke)>>();
@@ -39,7 +41,7 @@ namespace HandyIpc.Client
             (Action dispose, RemoteInvoke invoke) result;
             while (bag.IsEmpty || !bag.TryTake(out result) || !CheckItem(result))
             {
-                bag.Add(PrimitiveMethods.CreateClient(pipeName));
+                bag.Add(PrimitiveMethods.CreateClient(pipeName, _preferences.BufferSize));
             }
 
             Guards.ThrowIfNull(result.dispose, nameof(result.dispose));
@@ -55,7 +57,7 @@ namespace HandyIpc.Client
             (Action dispose, RemoteInvokeAsync invoke) result;
             while (bag.IsEmpty || !bag.TryTake(out result) || !await CheckItemAsync(result))
             {
-                bag.Add(await PrimitiveMethods.CreateClientAsync(pipeName));
+                bag.Add(await PrimitiveMethods.CreateClientAsync(pipeName, _preferences.BufferSize));
             }
 
             Guards.ThrowIfNull(result.dispose, nameof(result.dispose));
