@@ -2,11 +2,9 @@
 
 namespace HandyIpc
 {
-    public class IpcSettings
+    public class IpcPreferences
     {
-        internal static IpcSettings Instance { get; } = new IpcSettings();
-
-        private IpcSettings() { }
+        internal IpcPreferences() { }
 
         public long BufferSize { get; set; } = 4 * 1024;
 

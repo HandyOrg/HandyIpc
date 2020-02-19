@@ -2,7 +2,7 @@
 
 namespace HandyIpc
 {
-    public static class Guards
+    internal static class Guards
     {
         public static void ThrowIfNull<T>(T value, string paramName) where T : class
         {

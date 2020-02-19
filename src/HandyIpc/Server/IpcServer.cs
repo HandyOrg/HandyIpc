@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,43 +9,85 @@ namespace HandyIpc.Server
 {
     public class IpcServer
     {
-        private readonly IpcServerBuilder _builder;
-        private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers = new ConcurrentDictionary<Type, IIpcDispatcher>();
+        private static readonly object Locker = new object();
+        private static readonly IpcServer Instance = new IpcServer();
 
-        private CancellationTokenSource _cancellationTokenSource;
+        public static IpcPreferences Preferences { get; } = new IpcPreferences();
 
-        internal IpcServer(IpcServerBuilder builder) => _builder = builder;
-
-        public void Start()
+        public static void Update(Action<IpcServerCollection> settings)
         {
-            // Fix configure
-            _builder.IpcConfigure?.Invoke(IpcSettings.Instance);
+            lock (Locker)
+            {
+                UpdateInternal(settings);
+            }
+        }
 
-            // Fix middleware
+        private static void UpdateInternal(Action<IpcServerCollection> settings)
+        {
+            var container = Instance.GetIpcServerCollection();
+            settings?.Invoke(container);
+
+            Instance.CleanupInterfaces(container.ToBeRemovedInterfaces);
+
             var defaultMiddleware = Middleware.Compose(
                 Middleware.Heartbeat,
                 Middleware.ExceptionHandler,
                 Middleware.RequestParser);
 
-            if (_cancellationTokenSource == null || _cancellationTokenSource.IsCancellationRequested)
-            {
-                _cancellationTokenSource = new CancellationTokenSource();
-            }
+            Instance.RunGenericInterfaces(container.GenericInterfaces
+                .Select(item => (item.Key, item.Value)),
+                defaultMiddleware);
 
-            RunNonGenericInterfaces(defaultMiddleware, _cancellationTokenSource.Token);
-
-            RunGenericInterfaces(defaultMiddleware, _cancellationTokenSource.Token);
+            Instance.RunNonGenericInterfaces(container.NonGenericInterfaces
+                .Select(item => (item.Key, item.Value)),
+                defaultMiddleware);
         }
 
-        public void Stop() => _cancellationTokenSource.Cancel();
+        private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces =
+            new Dictionary<Type, CancellationTokenSource>();
+        private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers =
+            new ConcurrentDictionary<Type, IIpcDispatcher>();
 
-        private void RunNonGenericInterfaces(MiddlewareHandler middleware, CancellationToken token)
+        private IpcServer() { }
+
+        private IpcServerCollection GetIpcServerCollection()
         {
-            foreach (var item in _builder.ServerFactories)
-            {
-                var interfaceType = item.Key;
-                var factory = item.Value;
+            return new IpcServerCollection(_runningInterfaces.Keys);
+        }
 
+        private void CleanupInterfaces(IEnumerable<Type> interfaces)
+        {
+            foreach (var toBeRemovedInterface in interfaces)
+            {
+                if (_runningInterfaces.TryGetValue(toBeRemovedInterface, out var source))
+                {
+                    _runningInterfaces.Remove(toBeRemovedInterface);
+                    source.Cancel();
+
+                    if (toBeRemovedInterface.IsGenericType)
+                    {
+                        _ipcDispatchers
+                            .Where(item => EqualityComparer<Type>.Default.Equals(
+                                item.Key.GetGenericTypeDefinition(),
+                                toBeRemovedInterface))
+                            .Select(item => item.Key)
+                            .ToList()
+                            .ForEach(item => _ipcDispatchers.TryRemove(item, out _));
+                    }
+                    else
+                    {
+                        _ipcDispatchers.TryRemove(toBeRemovedInterface, out _);
+                    }
+                }
+            }
+        }
+
+        private void RunNonGenericInterfaces(
+            IEnumerable<(Type interfaceType, Func<object> factory)> items,
+            MiddlewareHandler middleware)
+        {
+            foreach (var (interfaceType, factory) in items)
+            {
                 interfaceType.GetContractInfo(out var identifier, out var accessToken);
                 if (!string.IsNullOrEmpty(accessToken))
                 {
@@ -52,20 +96,22 @@ namespace HandyIpc.Server
 
                 var dispatcher = GetOrAddIpcDispatcher(interfaceType, factory);
                 middleware = middleware.Then(dispatcher.Dispatch);
+                var source = new CancellationTokenSource();
 
 #pragma warning disable 4014
-                RunServerAsync(identifier, middleware, token);
+                RunServerAsync(identifier, middleware, source.Token);
 #pragma warning restore 4014
+
+                _runningInterfaces.Add(interfaceType, source);
             }
         }
 
-        private void RunGenericInterfaces(MiddlewareHandler middleware, CancellationToken token)
+        private void RunGenericInterfaces(
+            IEnumerable<(Type interfaceType, Func<Type[], object> factory)> items,
+            MiddlewareHandler middleware)
         {
-            foreach (var item in _builder.GenericServerFactories)
+            foreach (var (interfaceType, factory) in items)
             {
-                var interfaceType = item.Key;
-                var factory = item.Value;
-
                 interfaceType.GetContractInfo(out var identifier, out var accessToken);
                 if (!string.IsNullOrEmpty(accessToken))
                 {
@@ -75,15 +121,17 @@ namespace HandyIpc.Server
                 var genericDispatcher = Middleware.GetGenericDispatcher(genericTypes =>
                 {
                     var constructedInterfaceType = interfaceType.MakeGenericType(genericTypes);
-                    Guards.ThrowIfInvalid(constructedInterfaceType.IsConstructedGenericType, "");
                     return GetOrAddIpcDispatcher(constructedInterfaceType, () => factory(genericTypes));
                 });
 
                 middleware = middleware.Then(genericDispatcher);
+                var source = new CancellationTokenSource();
 
 #pragma warning disable 4014
-                RunServerAsync(identifier, middleware, token);
+                RunServerAsync(identifier, middleware, source.Token);
 #pragma warning restore 4014
+
+                _runningInterfaces.Add(interfaceType, source);
             }
         }
 
@@ -93,7 +141,9 @@ namespace HandyIpc.Server
             {
                 var instance = factory();
 
-                Guards.ThrowIfInvalid(interfaceType.IsInstanceOfType(instance), "");
+                Guards.ThrowIfNot(interfaceType.IsInstanceOfType(instance),
+                    $"The instance created by the factory corresponding to the {interfaceType} interface " +
+                    $"does not implement the {interfaceType} interface.", nameof(factory));
 
                 var proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
                 return (IIpcDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
@@ -107,8 +157,11 @@ namespace HandyIpc.Server
                 try
                 {
                     var stream = await PrimitiveMethods.CreateServerStreamAsync(identifier, token);
+
+                    if (token.IsCancellationRequested) break;
+
 #pragma warning disable 4014
-                    PrimitiveMethods.HandleRequestAsync(stream, middleware.ToHandler(), token);
+                    PrimitiveMethods.HandleRequestAsync(stream, middleware.ToHandler(), Preferences.BufferSize, token);
 #pragma warning restore 4014
                 }
                 catch (OperationCanceledException)
@@ -117,7 +170,7 @@ namespace HandyIpc.Server
                 }
                 catch (Exception e)
                 {
-                    IpcSettings.Instance.Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
+                    Preferences.Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
                 }
             }
         }
