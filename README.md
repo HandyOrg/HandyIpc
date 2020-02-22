@@ -25,16 +25,15 @@ public interface IDemo<T>
 public class Demo<T> : IDemo<T>
 {
     public double Add(double x, double y) => x + y;
+
     public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);
-    string IDemo<T>.GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1)
-    {
-        return $"T1={typeof(T1)}, T2={typeof(T2)}";
-    }
+
+    string IDemo<T>.GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1) => $"T1={typeof(T1)}, T2={typeof(T2)}";
 }
 ```
 
 ```csharp
-// Build and start server
+// Update server
 IpcServer.Update(collection => collection
     .Add(typeof(IDemo<>), typeof(Demo<>))
     .Add<IOther, OtherImpl>()
@@ -53,7 +52,7 @@ var result2 = await demo2.GetDefaultAsync(); // 0
 var result3 = demo1.GenericMethod<string, int>(null, 0, null); // T1=System.String, T2=System.Int32
 ```
 
-## Feature
+## TODO List
 
 1. [x] Support for generic interface.
 2. [x] Support for `Task/Task<T>` return value in interface method.
