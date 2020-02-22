@@ -28,5 +28,13 @@ namespace HandyIpc.Server
                 return Activator.CreateInstance(constructedClassType);
             });
         }
+
+        public static IpcServerCollection Remove<T>(this IpcServerCollection server) where T : class
+        {
+            var interfaceType = typeof(T);
+            Guards.ThrowIfNot(!interfaceType.IsGenericType, "", nameof(T));
+
+            return server.Remove(interfaceType);
+        }
     }
 }
