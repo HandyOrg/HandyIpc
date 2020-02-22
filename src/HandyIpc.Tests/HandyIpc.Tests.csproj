@@ -5,7 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
-  <Import Project="..\HandyIpc\build\HandyIpc.targets" />
+  <Import Project="HandyIpc.test.targets" />
 
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.4.1" />

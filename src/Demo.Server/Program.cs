@@ -8,10 +8,7 @@ namespace Demo.Server
     {
         public static void Main(string[] args)
         {
-            IpcServerBuilder.Create()
-                .Register(typeof(IDemo<>), typeof(Demo<>))
-                .Build()
-                .Start();
+            IpcServer.Update(collection => collection.Add(typeof(IDemo<>), typeof(Demo<>)));
 
             Console.ReadKey();
         }
