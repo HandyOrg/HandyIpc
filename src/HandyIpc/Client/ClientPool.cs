@@ -7,7 +7,7 @@ namespace HandyIpc.Client
 {
     internal class ClientPool
     {
-        public static ClientPool Shared { get; } = new ClientPool(IpcClient.Preferences);
+        public static ClientPool Shared { get; } = new ClientPool(HandyIpcHub.Preferences);
 
         private readonly IpcPreferences _preferences;
 

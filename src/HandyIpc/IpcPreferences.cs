@@ -13,11 +13,11 @@ namespace HandyIpc
 
         private class EmptyLogger : ILogger
         {
-            public void Error(string message, Exception exception = null) { }
+            void ILogger.Error(string message, Exception exception = null) { }
 
-            public void Warning(string message, Exception exception = null) { }
+            void ILogger.Warning(string message, Exception exception = null) { }
 
-            public void Info(string message, Exception exception = null) { }
+            void ILogger.Info(string message, Exception exception = null) { }
         }
     }
 }

@@ -54,7 +54,7 @@ namespace System
                    throw new InvalidOperationException($"{interfaceType.Name} doesn't look like a Ipc interface. ");
         }
 
-        public static void GetContractInfo(this Type interfaceType, out string identifier, out string accessToken)
+        public static void ResolveContractInfo(this Type interfaceType, out string identifier, out string accessToken)
         {
             Guards.ThrowIfNot(interfaceType.IsInterface, "The type must be interface type.", nameof(interfaceType));
 
@@ -65,7 +65,7 @@ namespace System
             if (string.IsNullOrEmpty(identifier))
             {
                 using var sha256 = new SHA256CryptoServiceProvider();
-                var buffer = Encoding.UTF8.GetBytes(interfaceType.AssemblyQualifiedName);
+                var buffer = Encoding.UTF8.GetBytes(interfaceType.AssemblyQualifiedName!);
                 var sha256Bytes = sha256.ComputeHash(buffer);
                 identifier = string.Concat(sha256Bytes.Select(item => item.ToString("X2")));
             }
