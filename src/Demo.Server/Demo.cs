@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Demo.Contracts;
 
@@ -13,6 +14,11 @@ namespace Demo.Server
         public string GenericMethod<T1, T2>(T1 a, IEnumerable<T2> items)
         {
             return $"T1={typeof(T1)}, T2={typeof(T2)}";
+        }
+
+        public void PrintMessage(string text)
+        {
+            Console.WriteLine(text);
         }
     }
 }

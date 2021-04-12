@@ -1,6 +1,6 @@
 ﻿using System;
 using Demo.Contracts;
-using HandyIpc.Server;
+using HandyIpc;
 
 namespace Demo.Server
 {
@@ -8,7 +8,7 @@ namespace Demo.Server
     {
         public static void Main(string[] args)
         {
-            IpcServer.Update(collection => collection.Add(typeof(IDemo<>), typeof(Demo<>)));
+            HandyIpcHub.Server.Start(typeof(IDemo<>), typeof(Demo<>));
 
             Console.ReadKey();
         }
