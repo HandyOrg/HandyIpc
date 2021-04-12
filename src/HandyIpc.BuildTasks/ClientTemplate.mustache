@@ -60,9 +60,9 @@ namespace {{Namespace}}
                 });
 
             {{#IsVoid}}
-            if (response.IsUnit())
+            if (!response.IsUnit())
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("A method that returns void type must responses the Unit object.");
             }
             {{/IsVoid}}
             {{^IsVoid}}
