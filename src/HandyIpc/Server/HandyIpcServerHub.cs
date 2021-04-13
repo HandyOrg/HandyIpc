@@ -9,11 +9,9 @@ namespace HandyIpc.Server
 {
     internal class HandyIpcServerHub : IHandyIpcServerHub
     {
-        private readonly object _locker = new object();
-        private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces =
-            new Dictionary<Type, CancellationTokenSource>();
-        private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers =
-            new ConcurrentDictionary<Type, IIpcDispatcher>();
+        private readonly object _locker = new();
+        private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
+        private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers = new();
 
         public IDisposable Start(Type interfaceType, Func<object> factory)
         {
@@ -29,13 +27,14 @@ namespace HandyIpc.Server
         {
             StartInterface(interfaceType, defaultMiddleware =>
             {
-                var genericDispatcher = Middleware.GetGenericDispatcher(genericTypes =>
+                var genericDispatcher = Middlewares.GetGenericDispatcher(genericTypes =>
                 {
                     var constructedInterfaceType = interfaceType.MakeGenericType(genericTypes);
                     return GetOrAddIpcDispatcher(constructedInterfaceType, () => factory(genericTypes));
                 });
                 return defaultMiddleware.Then(genericDispatcher);
             });
+
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
         }
 
@@ -66,22 +65,24 @@ namespace HandyIpc.Server
             }
         }
 
-        private void StartInterface(Type interfaceType, Func<MiddlewareHandler, MiddlewareHandler> appendMiddleware)
+        private void StartInterface(
+            Type interfaceType,
+            Func<MiddlewareHandler<Context>, MiddlewareHandler<Context>> append)
         {
             lock (_locker)
             {
-                MiddlewareHandler middleware = Middleware.Compose(
-                    Middleware.Heartbeat,
-                    Middleware.ExceptionHandler,
-                    Middleware.RequestParser);
+                var middleware = Middleware.Compose<Context>(
+                    Middlewares.Heartbeat,
+                    Middlewares.ExceptionHandler,
+                    Middlewares.RequestParser);
 
                 interfaceType.ResolveContractInfo(out var identifier, out var accessToken);
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    middleware = middleware.Then(Middleware.GetAuthenticator(accessToken));
+                    middleware = middleware.Then(Middlewares.GetAuthenticator(accessToken));
                 }
 
-                middleware = appendMiddleware(middleware);
+                middleware = append(middleware);
                 var source = new CancellationTokenSource();
 
 #pragma warning disable 4014
@@ -94,7 +95,7 @@ namespace HandyIpc.Server
 
         private IIpcDispatcher GetOrAddIpcDispatcher(Type interfaceType, Func<object> factory)
         {
-            return _ipcDispatchers.GetOrAdd(interfaceType, key =>
+            return _ipcDispatchers.GetOrAdd(interfaceType, _ =>
             {
                 var instance = factory();
 
@@ -107,7 +108,7 @@ namespace HandyIpc.Server
             });
         }
 
-        private static async Task RunServerAsync(string identifier, MiddlewareHandler middleware, CancellationToken token)
+        private static async Task RunServerAsync(string identifier, MiddlewareHandler<Context> middleware, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
@@ -127,7 +128,7 @@ namespace HandyIpc.Server
                 }
                 catch (Exception e)
                 {
-                    HandyIpcHub.Preferences.Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
+                    HandyIpcHub.Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
                 }
             }
         }

@@ -1,4 +1,5 @@
-﻿using HandyIpc.Client;
+﻿using System;
+using HandyIpc.Client;
 using HandyIpc.Server;
 
 namespace HandyIpc
@@ -8,10 +9,21 @@ namespace HandyIpc
     /// </summary>
     public static class HandyIpcHub
     {
+        private class EmptyLogger : ILogger
+        {
+            void ILogger.Error(string message, Exception exception = null) { }
+
+            void ILogger.Warning(string message, Exception exception = null) { }
+
+            void ILogger.Info(string message, Exception exception = null) { }
+        }
+
         /// <summary>
         /// Some common preferences for the server and client.
         /// </summary>
-        public static IpcPreferences Preferences { get; } = new IpcPreferences();
+        public static IpcPreferences Preferences { get; } = new();
+
+        public static ILogger Logger { get; } = new EmptyLogger();
 
         /// <summary>
         /// A singleton of the <see cref="IHandyIpcServerHub"/>.
