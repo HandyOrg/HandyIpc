@@ -41,7 +41,6 @@ namespace {{Namespace}}
         public async Task Dispatch(Context context, Func<Task> next)
         {
             var request = context.Get<Request>();
-            var args = request.Arguments;
 
             object result;
             switch (request.MethodName)
@@ -52,7 +51,7 @@ namespace {{Namespace}}
                 when (_genericMethodMapping.Value.TryGetValue("{{Name}}<{{.}}>({{ParameterTypes}})", out var methodInfo)):
                 {
                     var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodGenericArguments);
-                    var obj = constructedMethodInfo.Invoke(_instance, args.CastTo(request.ArgumentTypes));
+                    var obj = constructedMethodInfo.Invoke(_instance, request.Arguments);
                     {{#IsVoid}}
                     {{#IsAwaitable}}await (Task)obj;{{/IsAwaitable}}
                     result = DataConstants.Unit;
@@ -84,7 +83,7 @@ namespace {{Namespace}}
                     throw new ArgumentOutOfRangeException("No matching remote method was found.");
             }
 
-            context.Output = Response.ReturnValue(result);
+            context.Output = context.Serializer.SerializeResponse(new Response { Value = result });
 
             await next();
         }

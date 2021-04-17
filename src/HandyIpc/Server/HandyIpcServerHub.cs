@@ -3,15 +3,20 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace HandyIpc.Server
 {
-    internal class HandyIpcServerHub : IHandyIpcServerHub
+    internal class HandyIpcServerHub : IIpcServerHub
     {
+        private readonly IRmiServer _rmiServer;
         private readonly object _locker = new();
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
         private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers = new();
+
+        public HandyIpcServerHub(IRmiServer rmiServer)
+        {
+            _rmiServer = rmiServer;
+        }
 
         public IDisposable Start(Type interfaceType, Func<object> factory)
         {
@@ -20,6 +25,7 @@ namespace HandyIpc.Server
                 IIpcDispatcher dispatcher = GetOrAddIpcDispatcher(interfaceType, factory);
                 return defaultMiddleware.Then(dispatcher.Dispatch);
             });
+
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
         }
 
@@ -65,13 +71,11 @@ namespace HandyIpc.Server
             }
         }
 
-        private void StartInterface(
-            Type interfaceType,
-            Func<MiddlewareHandler<Context>, MiddlewareHandler<Context>> append)
+        private void StartInterface(Type interfaceType, Func<MiddlewareHandler, MiddlewareHandler> append)
         {
             lock (_locker)
             {
-                var middleware = Middleware.Compose<Context>(
+                var middleware = Middleware.Compose(
                     Middlewares.Heartbeat,
                     Middlewares.ExceptionHandler,
                     Middlewares.RequestParser);
@@ -85,9 +89,8 @@ namespace HandyIpc.Server
                 middleware = append(middleware);
                 var source = new CancellationTokenSource();
 
-#pragma warning disable 4014
-                RunServerAsync(identifier, middleware, source.Token);
-#pragma warning restore 4014
+                // Async run the server without waiting.
+                _rmiServer.RunAsync(identifier, middleware, source.Token);
 
                 _runningInterfaces.Add(interfaceType, source);
             }
@@ -106,31 +109,6 @@ namespace HandyIpc.Server
                 var proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
                 return (IIpcDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
             });
-        }
-
-        private static async Task RunServerAsync(string identifier, MiddlewareHandler<Context> middleware, CancellationToken token)
-        {
-            while (!token.IsCancellationRequested)
-            {
-                try
-                {
-                    var stream = await PrimitiveMethods.CreateServerStreamAsync(identifier, token);
-
-                    if (token.IsCancellationRequested) break;
-
-#pragma warning disable 4014
-                    PrimitiveMethods.HandleRequestAsync(stream, middleware.ToHandler(), HandyIpcHub.Preferences.BufferSize, token);
-#pragma warning restore 4014
-                }
-                catch (OperationCanceledException)
-                {
-                    // Ignore
-                }
-                catch (Exception e)
-                {
-                    HandyIpcHub.Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
-                }
-            }
         }
     }
 }

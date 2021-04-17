@@ -2,24 +2,23 @@
 using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
-using HandyIpc.Extensions;
 
 namespace HandyIpc.Server
 {
     public static class Middlewares
     {
-        public static async Task Heartbeat(Context context, Func<Task> next)
+        public static async Task Heartbeat(Context ctx, Func<Task> next)
         {
-            if (context.Input.IsEmpty())
+            if (ctx.Input.IsEmpty())
             {
-                context.Output = DataConstants.Empty;
+                ctx.Output = DataConstants.Empty;
                 return;
             }
 
             await next();
         }
 
-        public static async Task ExceptionHandler(Context context, Func<Task> next)
+        public static async Task ExceptionHandler(Context ctx, Func<Task> next)
         {
             try
             {
@@ -27,14 +26,14 @@ namespace HandyIpc.Server
             }
             catch (Exception e)
             {
-                HandyIpcHub.Logger.Error("An unexpected exception occurred on the server", e);
-                context.Output = Response.ReturnException(e);
+                ctx.Logger.Error("An unexpected exception occurred on the server", e);
+                ctx.Output = ctx.Serializer.SerializeResponse(new Response { Exception = e });
             }
         }
 
-        public static async Task RequestParser(Context context, Func<Task> next)
+        public static async Task RequestParser(Context ctx, Func<Task> next)
         {
-            context.Set(context.Input.ToObject<Request>());
+            ctx.Set(ctx.Serializer.DeserializeRequest(ctx.Input));
 
             await next();
         }
@@ -52,9 +51,8 @@ namespace HandyIpc.Server
                 else
                 {
                     var exception = new AuthenticationException($"Invalid accessToken: '{request.AccessToken}'.");
-                    HandyIpcHub.Logger.Warning(
-                        $"Failed to authenticate this request (token: {request.AccessToken}).", exception);
-                    ctx.Output = Response.ReturnException(exception);
+                    ctx.Logger.Warning($"Failed to authenticate this request (token: {request.AccessToken}).", exception);
+                    ctx.Output = ctx.Serializer.SerializeResponse(new Response { Exception = exception });
                 }
             };
         }
@@ -76,11 +74,14 @@ namespace HandyIpc.Server
             };
         }
 
-        public static Func<byte[], Task<byte[]>> ToHandler(this MiddlewareHandler middleware)
+        public static Func<byte[], Task<byte[]>> ToHandler(
+            this MiddlewareHandler middleware,
+            ISerializer serializationService,
+            ILogger logger)
         {
             return async input =>
             {
-                var ctx = new Context(input);
+                var ctx = new Context(input, serializationService, logger);
                 await middleware(ctx, () => Task.CompletedTask);
                 return ctx.Output;
             };

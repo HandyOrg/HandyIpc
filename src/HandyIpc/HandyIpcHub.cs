@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using HandyIpc.Client;
+﻿using HandyIpc.Client;
 using HandyIpc.Server;
 
 namespace HandyIpc
@@ -8,50 +6,24 @@ namespace HandyIpc
     /// <summary>
     /// It represents the entry point that HandyIpc provides for user usage.
     /// </summary>
-    public static class HandyIpcHub
+    public class HandyIpcHub
     {
-        private class DebugLogger : ILogger
+        /// <summary>
+        /// Creates a new factory of the IPC server hub.
+        /// </summary>
+        /// <returns>The factory of the IPC server hub.</returns>
+        public static IIpcFactory<IRmiClient, IIpcClientHub> CreateClientFactory()
         {
-            public void Error(string message, Exception? exception = null)
-            {
-                Debug.WriteLine($"[HandyIpc] [ERROR] [{DateTime.Now:HH:mm:ss.fff}] " +
-                                $"{message}{Environment.NewLine}" +
-                                $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
-            }
-
-            public void Warning(string message, Exception? exception = null)
-            {
-                Debug.WriteLine($"[HandyIpc] [WARNING] [{DateTime.Now:HH:mm:ss.fff}] " +
-                                $"{message}{Environment.NewLine}" +
-                                $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
-            }
-
-            public void Info(string message, Exception? exception = null)
-            {
-                Debug.WriteLine($"[HandyIpc] [INFO] [{DateTime.Now:HH:mm:ss.fff}] " +
-                                $"{message}{Environment.NewLine}" +
-                                $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
-            }
+            return new IpcFactory<IRmiClient, IIpcClientHub>(rmiClient => new HandyIpcClientHub(rmiClient));
         }
 
         /// <summary>
-        /// Some common preferences for the server and client.
+        /// Creates a new factory of the IPC client hub.
         /// </summary>
-        public static IpcPreferences Preferences { get; } = new();
-
-        /// <summary>
-        /// Gets or Sets an instance of the <see cref="ILogger"/>.
-        /// </summary>
-        public static ILogger Logger { get; set; } = new DebugLogger();
-
-        /// <summary>
-        /// A singleton of the <see cref="IHandyIpcServerHub"/>.
-        /// </summary>
-        public static IHandyIpcServerHub Server { get; } = new HandyIpcServerHub();
-
-        /// <summary>
-        /// A singleton of the <see cref="IHandyIpcClientHub"/>.
-        /// </summary>
-        public static IHandyIpcClientHub Client { get; } = new HandyIpcClientHub();
+        /// <returns>The factory of the IPC client hub.</returns>
+        public static IIpcFactory<IRmiServer, IIpcServerHub> CreateServerFactory()
+        {
+            return new IpcFactory<IRmiServer, IIpcServerHub>(rmiServer => new HandyIpcServerHub(rmiServer));
+        }
     }
 }

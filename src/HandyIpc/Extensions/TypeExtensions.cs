@@ -34,8 +34,8 @@ namespace System
 
             if (interfaceType.IsNested)
             {
-                var className = prefix + interfaceType.DeclaringType.Name + interfaceType.Name;
-                typeName = interfaceType.AssemblyQualifiedName.Replace(
+                var className = prefix + interfaceType.DeclaringType!.Name + interfaceType.Name;
+                typeName = interfaceType.AssemblyQualifiedName!.Replace(
                     interfaceType.DeclaringType.FullName + "+" + interfaceType.Name,
                     interfaceType.Namespace + "." + className);
             }
@@ -48,7 +48,7 @@ namespace System
                     className = $"{className}.{className}";
                 }
 
-                typeName = interfaceType.AssemblyQualifiedName.Replace(interfaceType.Name, className);
+                typeName = interfaceType.AssemblyQualifiedName!.Replace(interfaceType.Name, className);
             }
             return Type.GetType(typeName) ??
                    throw new InvalidOperationException($"{interfaceType.Name} doesn't look like a Ipc interface. ");
@@ -79,7 +79,7 @@ namespace HandyIpc.Server
 
     public static class TypeExtensions
     {
-        public static async Task<object> UnpackTask(this Type taskType, object @object)
+        public static async Task<object?> UnpackTask(this Type taskType, object @object)
         {
             if (@object is Task task)
             {

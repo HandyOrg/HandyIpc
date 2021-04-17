@@ -92,7 +92,7 @@ namespace HandyIpc.BuildTasks
                 .Select(item => $"{item.type.ToTypeString()} {item.name}")
                 .ToListString();
             result.Arguments = arguments
-                .Select((item, i) => $"args[{i}].CastTo<{item.type.ToTypeString()}>()")
+                .Select((item, i) => $"({item.type.ToTypeString()})args[{i}]")
                 .ToListString();
 
             // Resolve generic args list

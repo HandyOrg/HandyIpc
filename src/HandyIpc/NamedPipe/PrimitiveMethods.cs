@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HandyIpc
+namespace HandyIpc.NamedPipe
 {
     public delegate Task<byte[]> RemoteInvokeAsync(byte[] input, CancellationToken token);
     public delegate byte[] RemoteInvoke(byte[] input);
