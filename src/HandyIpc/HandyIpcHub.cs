@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using HandyIpc.Client;
 using HandyIpc.Server;
 
@@ -9,15 +10,28 @@ namespace HandyIpc
     /// </summary>
     public static class HandyIpcHub
     {
-        private class EmptyLogger : ILogger
+        private class DebugLogger : ILogger
         {
-#pragma warning disable 1066
-            void ILogger.Error(string message, Exception? exception = null) { }
+            public void Error(string message, Exception? exception = null)
+            {
+                Debug.WriteLine($"[HandyIpc] [ERROR] [{DateTime.Now:HH:mm:ss.fff}] " +
+                                $"{message}{Environment.NewLine}" +
+                                $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
+            }
 
-            void ILogger.Warning(string message, Exception? exception = null) { }
+            public void Warning(string message, Exception? exception = null)
+            {
+                Debug.WriteLine($"[HandyIpc] [WARNING] [{DateTime.Now:HH:mm:ss.fff}] " +
+                                $"{message}{Environment.NewLine}" +
+                                $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
+            }
 
-            void ILogger.Info(string message, Exception? exception = null) { }
-#pragma warning restore 1066
+            public void Info(string message, Exception? exception = null)
+            {
+                Debug.WriteLine($"[HandyIpc] [INFO] [{DateTime.Now:HH:mm:ss.fff}] " +
+                                $"{message}{Environment.NewLine}" +
+                                $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
+            }
         }
 
         /// <summary>
@@ -25,7 +39,10 @@ namespace HandyIpc
         /// </summary>
         public static IpcPreferences Preferences { get; } = new();
 
-        public static ILogger Logger { get; } = new EmptyLogger();
+        /// <summary>
+        /// Gets or Sets an instance of the <see cref="ILogger"/>.
+        /// </summary>
+        public static ILogger Logger { get; set; } = new DebugLogger();
 
         /// <summary>
         /// A singleton of the <see cref="IHandyIpcServerHub"/>.
