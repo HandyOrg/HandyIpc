@@ -3,5 +3,5 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Server
 {
-    public delegate Task MiddlewareHandler<in TContext>(TContext context, Func<Task> next);
+    public delegate Task MiddlewareHandler(Context context, Func<Task> next);
 }

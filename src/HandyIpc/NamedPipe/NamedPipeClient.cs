@@ -6,7 +6,7 @@ using HandyIpc.Extensions;
 
 namespace HandyIpc.NamedPipe
 {
-    public class NamedPipeClient : IUnderlyingClient
+    public class NamedPipeClient : IRmiClient
     {
         public T Invoke<T>(string pipeName, Request request)
         {

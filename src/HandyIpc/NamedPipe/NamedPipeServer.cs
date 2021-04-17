@@ -5,9 +5,9 @@ using HandyIpc.Server;
 
 namespace HandyIpc.NamedPipe
 {
-    public class NamedPipeServer : IUnderlyingServer<Context>
+    public class NamedPipeServer : IRmiServer
     {
-        public async Task RunAsync(string identifier, MiddlewareHandler<Context> middleware, CancellationToken token)
+        public async Task RunAsync(string identifier, MiddlewareHandler middleware, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {

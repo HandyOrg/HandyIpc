@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Client
 {
-    public interface IUnderlyingClient
+    public interface IRmiClient
     {
         T Invoke<T>(string pipeName, Request request);
 

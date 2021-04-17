@@ -52,12 +52,18 @@ namespace HandyIpc.Client
         private static T Unpack<T>(byte[] response)
         {
             var ipcResponse = response.ToObject<Response>();
+
+            if (ipcResponse == null)
+            {
+                throw new NullReferenceException();
+            }
+
             if (ipcResponse.Exception != null)
             {
                 throw ipcResponse.Exception;
             }
 
-            return ipcResponse.Value.CastTo<T>();
+            return ipcResponse.Value.CastTo<T>()!;
         }
     }
 }

@@ -11,11 +11,13 @@ namespace HandyIpc
     {
         private class EmptyLogger : ILogger
         {
-            void ILogger.Error(string message, Exception exception = null) { }
+#pragma warning disable 1066
+            void ILogger.Error(string message, Exception? exception = null) { }
 
-            void ILogger.Warning(string message, Exception exception = null) { }
+            void ILogger.Warning(string message, Exception? exception = null) { }
 
-            void ILogger.Info(string message, Exception exception = null) { }
+            void ILogger.Info(string message, Exception? exception = null) { }
+#pragma warning restore 1066
         }
 
         /// <summary>

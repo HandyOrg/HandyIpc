@@ -18,7 +18,7 @@ namespace HandyIpc.Extensions
             return Encoding.UTF8.GetBytes(jsonText);
         }
 
-        public static T ToObject<T>(this byte[] bytes)
+        public static T? ToObject<T>(this byte[] bytes)
         {
             var jsonText = Encoding.UTF8.GetString(bytes);
             return JsonConvert.DeserializeObject<T>(jsonText, Settings);

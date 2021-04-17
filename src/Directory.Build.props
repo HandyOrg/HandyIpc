@@ -14,6 +14,7 @@
     <NoWarn>$(NoWarn);1701;1702;CS1591;NU1701</NoWarn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
 </Project>

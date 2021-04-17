@@ -39,7 +39,7 @@ namespace HandyIpc.Server
             await next();
         }
 
-        public static MiddlewareHandler<Context> GetAuthenticator(string accessToken)
+        public static MiddlewareHandler GetAuthenticator(string accessToken)
         {
             return async (ctx, next) =>
             {
@@ -59,7 +59,7 @@ namespace HandyIpc.Server
             };
         }
 
-        public static MiddlewareHandler<Context> GetGenericDispatcher(Func<Type[], IIpcDispatcher> getProxy)
+        public static MiddlewareHandler GetGenericDispatcher(Func<Type[], IIpcDispatcher> getProxy)
         {
             return async (ctx, next) =>
             {
@@ -76,7 +76,7 @@ namespace HandyIpc.Server
             };
         }
 
-        public static Func<byte[], Task<byte[]>> ToHandler(this MiddlewareHandler<Context> middleware)
+        public static Func<byte[], Task<byte[]>> ToHandler(this MiddlewareHandler middleware)
         {
             return async input =>
             {

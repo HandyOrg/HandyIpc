@@ -13,9 +13,9 @@ namespace HandyIpc
         public static byte[] ReturnException(Exception exception) => new Response { Exception = exception }.ToBytes();
 
         [JsonProperty("val")]
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
         [JsonProperty("e")]
-        public Exception Exception { get; set; }
+        public Exception? Exception { get; set; }
     }
 }
