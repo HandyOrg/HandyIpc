@@ -5,7 +5,7 @@ namespace HandyIpc.NamedPipe
 {
     public static class Extensions
     {
-        private const long BufferSize = 4 * 1024;
+        private const long BufferSize = 8 * 1024;
 
         public static IIpcFactory<IRmiClient, IIpcClientHub> UseNamedPipe(
             this IIpcFactory<IRmiClient, IIpcClientHub> self,

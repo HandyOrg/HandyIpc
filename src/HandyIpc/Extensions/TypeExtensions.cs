@@ -79,15 +79,21 @@ namespace HandyIpc.Server
 
     public static class TypeExtensions
     {
+        /// <summary>
+        /// Unpack the result of the <see cref="Task"/> or <see cref="Task{T}"/> with the specified instance and the related type.
+        /// </summary>
+        /// <remarks>
+        /// It is used to get the result from a invoked async generic method on server side.
+        /// </remarks>
+        /// <param name="taskType">The the <see cref="Task"/> or <see cref="Task{T}"/> type.</param>
+        /// <param name="object">The instance of the task type.</param>
+        /// <returns>The result from the task instance.</returns>
         public static async Task<object?> UnpackTask(this Type taskType, object @object)
         {
-            if (@object is Task task)
-            {
-                await task;
-                return taskType.GetProperty("Result")?.GetMethod.Invoke(@object, null);
-            }
+            if (@object is not Task task) return null;
 
-            return null;
+            await task;
+            return taskType.GetProperty("Result")?.GetMethod.Invoke(@object, null);
         }
     }
 }

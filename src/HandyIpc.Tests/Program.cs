@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HandyIpc.NamedPipe;
 using HandyIpc.Tests.ContractInterfaces;
@@ -10,20 +11,29 @@ namespace HandyIpc.Tests
     {
         public static async Task Main(string[] args)
         {
-            var server = HandyIpcHub
+            IIpcServerHub server = HandyIpcHub
                 .CreateServerFactory()
                 .UseNamedPipe()
                 .Build();
             server.Start<IGenericMethods, GenericMethods>();
             server.Start(typeof(IGenericInterface<>), typeof(GenericImpl<>));
 
-            var client = HandyIpcHub
+            IIpcClientHub client = HandyIpcHub
                 .CreateClientFactory()
-                .UseNamedPipe()
+                .UseNamedPipe(32 * 1024)
                 .Build();
             var genericMethods = client.Of<IGenericMethods>();
 
-            var r1 = await genericMethods.PrintAsync<string, int>(null, null);
+            var r1 = await genericMethods.PrintAsync<string, int>(null, new List<List<List<string>>>
+            {
+                new List<List<string>>
+                {
+                    new List<string>
+                    {
+                        "HAHAHA!",
+                    }
+                }
+            });
             var r2 = await genericMethods.PrintAsync<string, int>(null, null);
 
             Console.ReadKey();

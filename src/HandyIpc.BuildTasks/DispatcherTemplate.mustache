@@ -41,6 +41,7 @@ namespace {{Namespace}}
         public async Task Dispatch(Context context, Func<Task> next)
         {
             var request = context.Get<Request>();
+            var args = request.Arguments;
 
             object result;
             switch (request.MethodName)
@@ -51,7 +52,7 @@ namespace {{Namespace}}
                 when (_genericMethodMapping.Value.TryGetValue("{{Name}}<{{.}}>({{ParameterTypes}})", out var methodInfo)):
                 {
                     var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodGenericArguments);
-                    var obj = constructedMethodInfo.Invoke(_instance, request.Arguments);
+                    var obj = constructedMethodInfo.Invoke(_instance, args);
                     {{#IsVoid}}
                     {{#IsAwaitable}}await (Task)obj;{{/IsAwaitable}}
                     result = DataConstants.Unit;

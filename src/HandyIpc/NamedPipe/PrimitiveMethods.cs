@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.NamedPipe
 {
-    public delegate Task<byte[]> RemoteInvokeAsync(byte[] input, CancellationToken token);
-    public delegate byte[] RemoteInvoke(byte[] input);
+    internal delegate Task<byte[]> RemoteInvokeAsync(byte[] input, CancellationToken token);
+    internal delegate byte[] RemoteInvoke(byte[] input);
 
-    public static class PrimitiveMethods
+    internal static class PrimitiveMethods
     {
         public static async Task<NamedPipeServerStream> CreateServerStreamAsync(string pipeName, CancellationToken token)
         {

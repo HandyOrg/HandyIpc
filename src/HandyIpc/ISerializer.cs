@@ -6,8 +6,8 @@
 
         byte[] SerializeResponse(Response response);
 
-        Request? DeserializeRequest(byte[] bytes);
+        Request DeserializeRequest(byte[] bytes);
 
-        Response? DeserializeResponse(byte[] bytes);
+        Response DeserializeResponse(byte[] bytes);
     }
 }
