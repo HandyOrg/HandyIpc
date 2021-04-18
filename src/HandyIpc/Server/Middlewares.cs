@@ -11,7 +11,7 @@ namespace HandyIpc.Server
         {
             if (ctx.Input.IsEmpty())
             {
-                ctx.Output = DataConstants.Empty;
+                ctx.Output = Messages.Empty;
                 return;
             }
 

@@ -96,7 +96,7 @@ namespace HandyIpc.NamedPipe
         {
             try
             {
-                var response = item.invoke(DataConstants.Empty);
+                var response = item.invoke(Messages.Empty);
                 return response.IsEmpty();
             }
             catch
@@ -110,7 +110,7 @@ namespace HandyIpc.NamedPipe
         {
             try
             {
-                var response = await item.invoke(DataConstants.Empty, CancellationToken.None);
+                var response = await item.invoke(Messages.Empty, CancellationToken.None);
                 return response.IsEmpty();
             }
             catch
