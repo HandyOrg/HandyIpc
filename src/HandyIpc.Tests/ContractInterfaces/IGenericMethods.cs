@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using HandyIpc;
 
 namespace HandyIpc.Tests.ContractInterfaces
 {
-    [HandyIpcHub.IpcContract]
+    [IpcContract]
     public interface IGenericMethods
     {
         Task<T1> PrintAsync<T1, T2>(List<T2> items1, List<List<List<T1>>> items2);

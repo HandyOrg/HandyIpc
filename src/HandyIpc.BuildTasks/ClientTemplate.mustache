@@ -12,7 +12,6 @@ using HandyIpc;
 using HandyIpc.Client;
 
 {{#ClassList}}
-
 namespace {{Namespace}}
 {
     {{#UsingList}}
@@ -23,42 +22,47 @@ namespace {{Namespace}}
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Reflection.Obfuscation(Exclude = true)]
     public class HandyIpcClient{{GeneratedClassSuffix}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}
-        : IpcClient, {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}
+        : {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}
         {{ConstraintClauses}}
     {
-        public HandyIpcClient{{GeneratedClassSuffix}}(string identifier, string accessToken) 
-            : base(identifier, accessToken)
+        private readonly IRmiClient _client;
+        private readonly string _identifier;
+        private readonly string _accessToken;
+
+        public HandyIpcClient{{GeneratedClassSuffix}}(IRmiClient client, string identifier, string accessToken)
         {
+            _client = client;
+            _identifier = identifier;
+            _accessToken = accessToken;
         }
 {{#MethodList}}
 
         {{#IsAwaitable}}async {{/IsAwaitable}}{{ReturnType}} {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}.{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{TypeAndParameters}}) {{MethodConstraintClauses}}
         {
             {{#IsAwaitable}}
-            var response = await RemoteMethod.InvokeAsync<{{^IsVoid}}{{TaskReturnType}}{{/IsVoid}}{{#IsVoid}}byte[]{{/IsVoid}}>(
+            var response = await _client.InvokeAsync<{{^IsVoid}}{{TaskReturnType}}{{/IsVoid}}{{#IsVoid}}byte[]{{/IsVoid}}>(
             {{/IsAwaitable}}
             {{^IsAwaitable}}
-            var response = RemoteMethod.Invoke<{{^IsVoid}}{{ReturnType}}{{/IsVoid}}{{#IsVoid}}byte[]{{/IsVoid}}>(
+            var response = _client.Invoke<{{^IsVoid}}{{ReturnType}}{{/IsVoid}}{{#IsVoid}}byte[]{{/IsVoid}}>(
             {{/IsAwaitable}}
-                Identifier,
+                _identifier,
                 new Request
                 {
-                    AccessToken = AccessToken,
+                    AccessToken = _accessToken,
                     MethodName = "{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{ParameterTypes}})",
                     {{#Parameters}}
                     Arguments = new object[] { {{.}} },
                     {{/Parameters}}
+                    {{#MethodParameterTypes}}
+                    ArgumentTypes = new [] { {{.}} },
+                    {{/MethodParameterTypes}}
                     {{#TypeArguments}}
                     GenericArguments = new [] { {{.}} },
                     {{/TypeArguments}}
                     {{#MethodTypeArguments}}
                     MethodGenericArguments = new [] { {{.}} },
                     {{/MethodTypeArguments}}
-                    {{#MethodParameterTypes}}
-                    ArgumentTypes = new [] { {{.}} }
-                    {{/MethodParameterTypes}}
                 });
-
             {{#IsVoid}}
             if (!response.IsUnit())
             {
@@ -72,4 +76,5 @@ namespace {{Namespace}}
 {{/MethodList}}
     }
 }
+
 {{/ClassList}}

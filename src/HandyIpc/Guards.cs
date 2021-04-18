@@ -4,7 +4,7 @@ namespace HandyIpc
 {
     internal static class Guards
     {
-        public static void ThrowIfNull<T>(T value, string paramName) where T : class
+        public static void ThrowIfNull<T>(T? value, string paramName) where T : class
         {
             if (value == null)
             {

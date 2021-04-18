@@ -1,24 +1,24 @@
 ﻿using System;
 
 // ReSharper disable once CheckNamespace
-namespace HandyIpc
+namespace HandyIpc.Server
 {
     public static class HandyIpcServerHubExtensions
     {
-        public static IDisposable Start<TInterface, TImpl>(this IHandyIpcServerHub server)
+        public static IDisposable Start<TInterface, TImpl>(this IIpcServerHub server)
             where TInterface : class
             where TImpl : TInterface, new()
         {
             return server.Start<TInterface>(() => new TImpl());
         }
 
-        public static IDisposable Start<TInterface>(this IHandyIpcServerHub server, Func<TInterface> factory)
+        public static IDisposable Start<TInterface>(this IIpcServerHub server, Func<TInterface> factory)
             where TInterface : class
         {
             return server.Start(typeof(TInterface), factory);
         }
 
-        public static IDisposable Start(this IHandyIpcServerHub server, Type interfaceType, Type classType)
+        public static IDisposable Start(this IIpcServerHub server, Type interfaceType, Type classType)
         {
             // TODO: Add defensive code.
 

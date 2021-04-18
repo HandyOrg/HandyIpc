@@ -1,0 +1,118 @@
+﻿using System.Collections.Generic;
+using System.IO.Pipes;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using HandyIpc.Client;
+using HandyIpc.Server;
+
+namespace HandyIpc.NamedPipe
+{
+    public static class Extensions
+    {
+        private const int BatchBufferSize = 4 * 1024;
+
+        public static IIpcFactory<IRmiClient, IIpcClientHub> UseNamedPipe(
+            this IIpcFactory<IRmiClient, IIpcClientHub> self)
+        {
+            return self.Use(() => new RmiClient(new JsonSerializer()));
+        }
+
+        public static IIpcFactory<IRmiServer, IIpcServerHub> UseNamedPipe(
+            this IIpcFactory<IRmiServer, IIpcServerHub> self,
+            ILogger? logger = null)
+        {
+            return self.Use(() => new RmiServer(new JsonSerializer(), logger ?? new DebugLogger()));
+        }
+
+        internal static byte[] ReadAllBytes(this PipeStream self)
+        {
+            // TODO: Refactoring by System.IO.Pipelines, ArrayPool or stackalloc and so on.
+            var result = new List<byte[]>();
+            while (true)
+            {
+                byte[] bytes = new byte[BatchBufferSize];
+                int actualCount = self.Read(bytes, 0, BatchBufferSize);
+
+                if (CollectBytes(result, bytes, actualCount))
+                {
+                    break;
+                }
+            }
+
+            return MergeBytesList(result);
+        }
+
+        internal static async Task<byte[]> ReadAllBytesAsync(this PipeStream self, CancellationToken token)
+        {
+            // TODO: Refactoring by System.IO.Pipelines, ArrayPool or stackalloc and so on.
+            var result = new List<byte[]>();
+            while (true)
+            {
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                byte[] bytes = new byte[BatchBufferSize];
+                int actualCount = await self.ReadAsync(bytes, 0, BatchBufferSize, token);
+
+                if (CollectBytes(result, bytes, actualCount))
+                {
+                    break;
+                }
+            }
+
+            return MergeBytesList(result);
+        }
+
+        /// <summary>
+        /// Fill a bytes list, and return a bool value to indicate whether the process has been completed. <br />
+        /// I known this method is so ugly: It does too many things, and modifies external collection,
+        /// but it was extracted to be able to reuse code in async and sync methods.
+        /// </summary>
+        /// <param name="result">The filled bytes list.</param>
+        /// <param name="bytes">The buffered bytes.</param>
+        /// <param name="actualCount">The actual length of the buffered bytes (<see cref="bytes"/>).</param>
+        /// <returns>The bool value indicate whether it has been completed.</returns>
+        private static bool CollectBytes(ICollection<byte[]> result, byte[] bytes, int actualCount)
+        {
+            if (actualCount == 0)
+            {
+                return true;
+            }
+
+            if (actualCount < BatchBufferSize)
+            {
+                byte[] tailBytes = new byte[actualCount];
+                for (int i = 0; i < actualCount; i++)
+                {
+                    tailBytes[i] = bytes[i];
+                }
+
+                result.Add(tailBytes);
+                return true;
+            }
+
+            result.Add(bytes);
+            return false;
+        }
+
+        private static byte[] MergeBytesList(IReadOnlyList<byte[]> bytesList)
+        {
+            int totalSize = bytesList.Sum(item => item.Length);
+            byte[] totalBytes = new byte[totalSize];
+            int offset = 0;
+            // "for" performance is higher than "foreach".
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (int i = 0; i < bytesList.Count; i++)
+            {
+                byte[] itemBytes = bytesList[i];
+                itemBytes.CopyTo(totalBytes, offset);
+                offset += itemBytes.Length;
+            }
+
+            return totalBytes;
+        }
+    }
+}

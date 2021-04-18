@@ -6,21 +6,24 @@ namespace HandyIpc
     /// <summary>
     /// It represents the entry point that HandyIpc provides for user usage.
     /// </summary>
-    public static class HandyIpcHub
+    public class HandyIpcHub
     {
         /// <summary>
-        /// Some common preferences for the server and client.
+        /// Creates a new factory of the IPC server hub.
         /// </summary>
-        public static IpcPreferences Preferences { get; } = new IpcPreferences();
+        /// <returns>The factory of the IPC server hub.</returns>
+        public static IIpcFactory<IRmiClient, IIpcClientHub> CreateClientFactory()
+        {
+            return new IpcFactory<IRmiClient, IIpcClientHub>(rmiClient => new HandyIpcClientHub(rmiClient));
+        }
 
         /// <summary>
-        /// A singleton of the <see cref="IHandyIpcServerHub"/>.
+        /// Creates a new factory of the IPC client hub.
         /// </summary>
-        public static IHandyIpcServerHub Server { get; } = new HandyIpcServerHub();
-
-        /// <summary>
-        /// A singleton of the <see cref="IHandyIpcClientHub"/>.
-        /// </summary>
-        public static IHandyIpcClientHub Client { get; } = new HandyIpcClientHub();
+        /// <returns>The factory of the IPC client hub.</returns>
+        public static IIpcFactory<IRmiServer, IIpcServerHub> CreateServerFactory()
+        {
+            return new IpcFactory<IRmiServer, IIpcServerHub>(rmiServer => new HandyIpcServerHub(rmiServer));
+        }
     }
 }

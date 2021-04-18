@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace HandyIpc
+namespace HandyIpc.Server
 {
     /// <summary>
     /// It represents a hub of IPC server instances.
     /// </summary>
-    public interface IHandyIpcServerHub
+    public interface IIpcServerHub
     {
         /// <summary>
         /// Registers a mapping between the non-generic contract interface and the non-generic concrete service class,

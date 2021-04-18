@@ -1,0 +1,30 @@
+﻿using System;
+using HandyIpc.Client;
+using HandyIpc.Server;
+
+namespace HandyIpc
+{
+    /// <summary>
+    /// It represents the factory of the IPC server or client hub.
+    /// </summary>
+    /// <typeparam name="TRmi">The service of remote method invocation, which can only be <see cref="IRmiServer"/> or <see cref="IRmiClient"/> type.</typeparam>
+    /// <typeparam name="THub">The hub of the IPC server or client, which can only be <see cref="IIpcServerHub"/> or <see cref="IIpcClientHub"/> type.</typeparam>
+    public interface IIpcFactory<in TRmi, out THub>
+    {
+        /// <summary>
+        /// Use a service for the underlying communication.
+        /// </summary>
+        /// <param name="factory">
+        ///     A factory of the <see cref="TRmi"/> (Remote method invocation) type,
+        ///     which can only return an instance derived from <see cref="IRmiServer"/> or <see cref="IRmiClient"/>.
+        /// </param>
+        /// <returns>The interface instance itself.</returns>
+        IIpcFactory<TRmi, THub> Use(Func<TRmi> factory);
+
+        /// <summary>
+        /// Builds an instance of the <see cref="THub"/> type, which can only be <see cref="IIpcServerHub"/> or <see cref="IIpcClientHub"/>.
+        /// </summary>
+        /// <returns>An instance of the <see cref="THub"/> type.</returns>
+        THub Build();
+    }
+}

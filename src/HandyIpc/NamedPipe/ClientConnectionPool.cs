@@ -3,27 +3,19 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HandyIpc.Client
+namespace HandyIpc.NamedPipe
 {
-    internal class ClientPool
+    internal class ClientConnectionPool
     {
-        public static ClientPool Shared { get; } = new ClientPool(HandyIpcHub.Preferences);
-
-        private readonly IpcPreferences _preferences;
-
-        private ClientPool(IpcPreferences preferences) => _preferences = preferences;
-
-        private readonly ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvokeAsync invoke)>> _poolAsync =
-            new ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvokeAsync invoke)>>();
-        private readonly ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvoke invoke)>> _pool =
-            new ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvoke invoke)>>();
+        private readonly ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvokeAsync invoke)>> _poolAsync = new();
+        private readonly ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvoke invoke)>> _pool = new();
 
         public DisposableValue<RemoteInvoke> Rent(string pipeName)
         {
             var item = TakeOrCreateItem(pipeName);
             return new DisposableValue<RemoteInvoke>(
                 item.invoke,
-                value => AddItem(pipeName, item));
+                _ => AddItem(pipeName, item));
         }
 
         public async Task<AsyncDisposableValue<RemoteInvokeAsync>> RentAsync(string pipeName)
@@ -31,7 +23,7 @@ namespace HandyIpc.Client
             var item = await TakeOrCreateItemAsync(pipeName);
             return new AsyncDisposableValue<RemoteInvokeAsync>(
                 item.invoke,
-                value => AddItemAsync(pipeName, item));
+                _ => AddItemAsync(pipeName, item));
         }
 
         private (Action dispose, RemoteInvoke invoke) TakeOrCreateItem(string pipeName)
@@ -41,7 +33,7 @@ namespace HandyIpc.Client
             (Action dispose, RemoteInvoke invoke) result;
             while (bag.IsEmpty || !bag.TryTake(out result) || !CheckItem(result))
             {
-                bag.Add(PrimitiveMethods.CreateClient(pipeName, _preferences.BufferSize));
+                bag.Add(PrimitiveMethods.CreateClient(pipeName));
             }
 
             Guards.ThrowIfNull(result.dispose, nameof(result.dispose));
@@ -57,7 +49,7 @@ namespace HandyIpc.Client
             (Action dispose, RemoteInvokeAsync invoke) result;
             while (bag.IsEmpty || !bag.TryTake(out result) || !await CheckItemAsync(result))
             {
-                bag.Add(await PrimitiveMethods.CreateClientAsync(pipeName, _preferences.BufferSize));
+                bag.Add(await PrimitiveMethods.CreateClientAsync(pipeName));
             }
 
             Guards.ThrowIfNull(result.dispose, nameof(result.dispose));
@@ -85,20 +77,20 @@ namespace HandyIpc.Client
         private ConcurrentBag<(Action dispose, RemoteInvoke invoke)> GetBagFromSyncPool(string pipeName)
         {
             return _pool.GetOrAdd(pipeName,
-                key => new ConcurrentBag<(Action dispose, RemoteInvoke invoke)>());
+                _ => new ConcurrentBag<(Action dispose, RemoteInvoke invoke)>());
         }
 
         private ConcurrentBag<(Action dispose, RemoteInvokeAsync invoke)> GetBagFromAsyncPool(string pipeName)
         {
             return _poolAsync.GetOrAdd(pipeName,
-                key => new ConcurrentBag<(Action dispose, RemoteInvokeAsync invoke)>());
+                _ => new ConcurrentBag<(Action dispose, RemoteInvokeAsync invoke)>());
         }
 
         private static bool CheckItem((Action dispose, RemoteInvoke invoke) item)
         {
             try
             {
-                var response = item.invoke(DataConstants.Empty);
+                var response = item.invoke(Messages.Empty);
                 return response.IsEmpty();
             }
             catch
@@ -112,7 +104,7 @@ namespace HandyIpc.Client
         {
             try
             {
-                var response = await item.invoke(DataConstants.Empty, CancellationToken.None);
+                var response = await item.invoke(Messages.Empty, CancellationToken.None);
                 return response.IsEmpty();
             }
             catch

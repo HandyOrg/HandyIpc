@@ -11,7 +11,7 @@ namespace Demo.Contracts
 
         Task<T> GetDefaultAsync();
 
-        string GenericMethod<T1, T2>(T1 a, IEnumerable<T2> items);
+        string GenericMethod<TFirst, T2>(TFirst a, IEnumerable<T2> items);
 
         void PrintMessage(string text);
     }
