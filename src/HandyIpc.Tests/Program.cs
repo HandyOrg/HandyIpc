@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using HandyIpc.Client;
 using HandyIpc.NamedPipe;
+using HandyIpc.Server;
 using HandyIpc.Tests.ContractInterfaces;
 using HandyIpc.Tests.Impls;
 

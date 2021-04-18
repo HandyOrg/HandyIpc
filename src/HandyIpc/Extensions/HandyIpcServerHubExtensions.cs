@@ -1,7 +1,7 @@
 ﻿using System;
 
 // ReSharper disable once CheckNamespace
-namespace HandyIpc
+namespace HandyIpc.Server
 {
     public static class HandyIpcServerHubExtensions
     {
