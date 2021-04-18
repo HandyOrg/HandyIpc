@@ -1,55 +1,66 @@
 # HandyIpc
 
-> The project is still under development. DO NOT use it to production. Suggestions and PR are welcome.
+This library provides a high-level RMI (remote method invocation) API. Its underlying communication can be implemented by whatever you like, such as Named Pipe, MMF (memory mapping file) or Socket, and this framework does not care about the specific implementation.
 
-An easy to use inter-process communication library with an API similar to remote method invoke. The design of this library API was inspired by [orleans](https://github.com/dotnet/orleans), and and its implementation refers to [refit](https://github.com/reactiveui/refit).
+The design of this library API was inspired by [orleans](https://github.com/dotnet/orleans), and and its implementation refers to [refit](https://github.com/reactiveui/refit).
 
 ## How to use
 
 #### 1. Define IPC contract
 
 ```csharp
-[IpcContract]
-public interface IDemo<T>
-{
-    double Add(double x, double y);
-    Task<T> GetDefaultAsync();
-    string GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1);
-}
+    // Declare an interface contains a set of methods that needs to be called remotely,
+	// and mark it with IpcContractAttribute.
+	[IpcContract]
+    public interface IDemo<T>
+    {
+        double Add(double x, double y);
+        Task<T> GetDefaultAsync();
+        string GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1);
+    }
 ```
 
 #### 2. Implement, register IPC contract in server side
 
 ```csharp
-// Implement the IPC contract (interface)
-public class Demo<T> : IDemo<T>
-{
-    public double Add(double x, double y) => x + y;
+    // Implement the IPC contract (interface).
+    public class Demo<T> : IDemo<T>
+    {
+        public double Add(double x, double y) => x + y;
 
-    public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);
+        public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);
 
-    string IDemo<T>.GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1) => $"T1={typeof(T1)}, T2={typeof(T2)}";
-}
+        string IDemo<T>.GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1) => $"T1={typeof(T1)}, T2={typeof(T2)}";
+    }
 ```
 
 ```csharp
-// Update server
-IpcServer.Update(collection => collection
-    .Add(typeof(IDemo<>), typeof(Demo<>))
-    .Add<IOther, OtherImpl>()
-    .Remove<IOther2>());
+    // Create a server hub and enable requested interface services.
+    IIpcServerHub server = HandyIpcHub
+        .CreateServerFactory()
+        .UseNamedPipe()
+        .Build();
+
+    server.Start(typeof(IDemo<>), typeof(Demo<>));
+    server.Start<IOther, OtherImpl>();
 ```
 
 #### 3. Invoke remote methods in client side
 
 ```csharp
-var demo1 = IpcClient.Of<IDemo<string>>();
-var demo2 = IpcClient.Of<IDemo<int>>();
+    // Create a client hub and resolve requested interface proxy.
+    IIpcClientHub client = HandyIpcHub
+        .CreateClientFactory()
+        .UseNamedPipe()
+        .Build();
 
-var result0 = demo1.Add(16, 26); // 42
-var result1 = await demo1.GetDefaultAsync(); // null
-var result2 = await demo2.GetDefaultAsync(); // 0
-var result3 = demo1.GenericMethod<string, int>(null, 0, null); // T1=System.String, T2=System.Int32
+    var demo1 = client.Of<IDemo<string>>();
+    var demo2 = client.Of<IDemo<int>>();
+
+    var result0 = demo1.Add(16, 26); // 42
+    var result1 = await demo1.GetDefaultAsync(); // null
+    var result2 = await demo2.GetDefaultAsync(); // 0
+    var result3 = demo1.GenericMethod<string, int>(null, 0, null); // T1=System.String, T2=System.Int32
 ```
 
 ## TODO List
@@ -57,4 +68,4 @@ var result3 = demo1.GenericMethod<string, int>(null, 0, null); // T1=System.Stri
 1. [x] Support for generic interface.
 2. [x] Support for `Task/Task<T>` return value in interface method.
 3. [x] Support for generic methods (parameter type allow contains nested generic types).
-4. [ ] Support for interface inheritance.
+4. [ ] NOT support for interface inheritance.
