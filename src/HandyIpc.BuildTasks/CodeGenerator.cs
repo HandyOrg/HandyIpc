@@ -84,7 +84,7 @@ namespace HandyIpc.BuildTasks
 
             // Resolve args list
             var arguments = method.ParameterList.Parameters
-                .Select(item => (name: item.Identifier.Text, type: item.Type.ToTypeData()))
+                .Select(item => (name: item.Identifier.Text, type: item.Type!.ToTypeData()))
                 .ToList();
             result.Parameters = arguments.Select(item => item.name).ToListString();
             result.ParameterTypes = arguments.Select(item => item.type.ToTypeString()).ToListString();
@@ -94,9 +94,12 @@ namespace HandyIpc.BuildTasks
             result.Arguments = arguments
                 .Select((item, i) => $"({item.type.ToTypeString()})args[{i}]")
                 .ToListString();
+            // FIXME: If parameters do not contain generic parameters of the method,
+            // parameter types will not need to be passed, it can be automatically generated in the server-side template.
+            result.MethodParameterTypes = arguments.Select(item => $"typeof({item.type.ToTypeString()})").ToListString();
 
             // Resolve generic args list
-            string[] genericTypes = null;
+            string[]? genericTypes = null;
             if (method.TypeParameterList != null)
             {
                 var typeParameters = method.TypeParameterList.Parameters;
@@ -107,7 +110,6 @@ namespace HandyIpc.BuildTasks
                     result.MethodTypeArguments = genericTypes.Select(item => $"typeof({item})").ToListString();
                 }
 
-                result.MethodParameterTypes = arguments.Select(item => $"typeof({item.type.ToTypeString()})").ToListString();
                 result.MethodConstraintClauses = method.ConstraintClauses.ToFullString().Trim();
             }
 

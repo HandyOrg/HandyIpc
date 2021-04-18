@@ -1,6 +1,8 @@
 ﻿using System;
 using Demo.Contracts;
 using HandyIpc;
+using HandyIpc.NamedPipe;
+using HandyIpc.Server;
 
 namespace Demo.Server
 {
@@ -8,7 +10,12 @@ namespace Demo.Server
     {
         public static void Main(string[] args)
         {
-            HandyIpcHub.Server.Start(typeof(IDemo<>), typeof(Demo<>));
+            var server = HandyIpcHub
+                .CreateServerFactory()
+                .UseNamedPipe()
+                .Build();
+
+            server.Start(typeof(IDemo<>), typeof(Demo<>));
 
             Console.ReadKey();
         }

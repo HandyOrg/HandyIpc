@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Demo.Contracts;
 using HandyIpc;
+using HandyIpc.NamedPipe;
 
 namespace Demo.Client
 {
@@ -9,7 +10,12 @@ namespace Demo.Client
     {
         public static async Task Main(string[] args)
         {
-            var demo = HandyIpcHub.Client.Of<IDemo<string>>();
+            var client = HandyIpcHub
+                .CreateClientFactory()
+                .UseNamedPipe()
+                .Build();
+
+            var demo = client.Of<IDemo<string>>();
 
             Console.WriteLine("Start.");
             //Parallel.For(0, 1000000, (i) =>

@@ -24,7 +24,7 @@ namespace HandyIpc
         /// Gets the arguments on the method.
         /// </summary>
         [JsonProperty("args")]
-        public object?[] Arguments { get; set; }
+        public object?[]? Arguments { get; set; }
 
         /// <summary>
         /// Gets types of arguments on the method, which may be null.
@@ -33,7 +33,7 @@ namespace HandyIpc
         /// The property has been filled only if the method is a generic method.
         /// </remarks>
         [JsonProperty("argTypes")]
-        public Type[] ArgumentTypes { get; set; }
+        public Type[]? ArgumentTypes { get; set; }
 
         /// <summary>
         /// Gets the generic argument that are defined on the interface, which may be null.

@@ -20,13 +20,17 @@ namespace HandyIpc
         public Request DeserializeRequest(byte[] bytes)
         {
             Request request = Deserialize<Request>(bytes)!;
-            for (int i = 0; i < request.Arguments.Length; i++)
+
+            if (request.Arguments != null && request.ArgumentTypes != null)
             {
-                object? value = request.Arguments[i];
-                Type type = request.ArgumentTypes[i];
-                // Because the Newtonsoft.Json convert int to long, which will cause an exception,
-                // cast the value (long) by the specified type (System.Int32) to avoid the exception here.
-                request.Arguments[i] = CastValueByType(value, type);
+                for (int i = 0; i < request.Arguments.Length; i++)
+                {
+                    object? value = request.Arguments[i];
+                    Type type = request.ArgumentTypes[i];
+                    // Because the Newtonsoft.Json convert int to long, which will cause an exception,
+                    // cast the value (long) by the specified type (System.Int32) to avoid the exception here.
+                    request.Arguments[i] = CastValueByType(value, type);
+                }
             }
 
             return request;
@@ -44,7 +48,7 @@ namespace HandyIpc
         {
             string jsonText = Encoding.UTF8.GetString(bytes);
             return JsonConvert.DeserializeObject<T>(jsonText, Settings);
-        } 
+        }
 
         private static object? CastValueByType(object? value, Type targetType)
         {

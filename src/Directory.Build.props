@@ -4,7 +4,7 @@
     <MinClientVersion>2.12</MinClientVersion>
     <GenerateDocumentationFile Condition=" '$(Configuration)' == 'Release' ">true</GenerateDocumentationFile>
     <Authors>Dingping Zhang</Authors>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <PackageProjectUrl>https://github.com/HandyOrg/HandyIpc</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
