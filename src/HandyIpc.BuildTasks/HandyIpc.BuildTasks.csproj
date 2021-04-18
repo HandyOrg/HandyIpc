@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net462;netcoreapp2.1</TargetFrameworks>
-    <Version>0.0.3</Version>
     <AssemblyName>HandyIpc.BuildTasks</AssemblyName>
   </PropertyGroup>
 

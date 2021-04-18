@@ -10,9 +10,9 @@ namespace HandyIpc.NamedPipe
         private readonly ClientConnectionPool _clientPool;
         private readonly ISerializer _serializer;
 
-        public RmiClient(long bufferSize, ISerializer serializer)
+        public RmiClient(ISerializer serializer)
         {
-            _clientPool = new ClientConnectionPool(bufferSize);
+            _clientPool = new ClientConnectionPool();
             _serializer = serializer;
         }
 

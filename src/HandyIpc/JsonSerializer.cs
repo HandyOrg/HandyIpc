@@ -26,7 +26,7 @@ namespace HandyIpc
                 Type type = request.ArgumentTypes[i];
                 // Because the Newtonsoft.Json convert int to long, which will cause an exception,
                 // cast the value (long) by the specified type (System.Int32) to avoid the exception here.
-                request.Arguments[i] = CastTo(value, type);
+                request.Arguments[i] = CastValueByType(value, type);
             }
 
             return request;
@@ -46,7 +46,7 @@ namespace HandyIpc
             return JsonConvert.DeserializeObject<T>(jsonText, Settings);
         } 
 
-        private static object? CastTo(object? value, Type targetType)
+        private static object? CastValueByType(object? value, Type targetType)
         {
             return value != null && targetType.IsValueType
                 ? Convert.ChangeType(value, targetType)

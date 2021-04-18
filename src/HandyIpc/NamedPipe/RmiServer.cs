@@ -8,13 +8,11 @@ namespace HandyIpc.NamedPipe
 {
     internal class RmiServer : IRmiServer
     {
-        private readonly long _bufferSize;
         private readonly ISerializer _serializer;
         private readonly ILogger _logger;
 
-        public RmiServer(long bufferSize, ISerializer serializer, ILogger logger)
+        public RmiServer(ISerializer serializer, ILogger logger)
         {
-            _bufferSize = bufferSize;
             _serializer = serializer;
             _logger = logger;
         }
@@ -30,7 +28,7 @@ namespace HandyIpc.NamedPipe
                     if (token.IsCancellationRequested) break;
 
 #pragma warning disable 4014
-                    HandleRequestAsync(stream, middleware.ToHandler(_serializer, _logger), _bufferSize, token);
+                    HandleRequestAsync(stream, middleware.ToHandler(_serializer, _logger), token);
 #pragma warning restore 4014
                 }
                 catch (OperationCanceledException)

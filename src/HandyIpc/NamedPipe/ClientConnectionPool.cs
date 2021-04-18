@@ -7,14 +7,8 @@ namespace HandyIpc.NamedPipe
 {
     internal class ClientConnectionPool
     {
-        private readonly long _bufferSize;
         private readonly ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvokeAsync invoke)>> _poolAsync = new();
         private readonly ConcurrentDictionary<string, ConcurrentBag<(Action dispose, RemoteInvoke invoke)>> _pool = new();
-
-        public ClientConnectionPool(long bufferSize)
-        {
-            _bufferSize = bufferSize;
-        }
 
         public DisposableValue<RemoteInvoke> Rent(string pipeName)
         {
@@ -39,7 +33,7 @@ namespace HandyIpc.NamedPipe
             (Action dispose, RemoteInvoke invoke) result;
             while (bag.IsEmpty || !bag.TryTake(out result) || !CheckItem(result))
             {
-                bag.Add(PrimitiveMethods.CreateClient(pipeName, _bufferSize));
+                bag.Add(PrimitiveMethods.CreateClient(pipeName));
             }
 
             Guards.ThrowIfNull(result.dispose, nameof(result.dispose));
@@ -55,7 +49,7 @@ namespace HandyIpc.NamedPipe
             (Action dispose, RemoteInvokeAsync invoke) result;
             while (bag.IsEmpty || !bag.TryTake(out result) || !await CheckItemAsync(result))
             {
-                bag.Add(await PrimitiveMethods.CreateClientAsync(pipeName, _bufferSize));
+                bag.Add(await PrimitiveMethods.CreateClientAsync(pipeName));
             }
 
             Guards.ThrowIfNull(result.dispose, nameof(result.dispose));

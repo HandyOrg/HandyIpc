@@ -20,7 +20,7 @@ namespace HandyIpc.Tests
 
             IIpcClientHub client = HandyIpcHub
                 .CreateClientFactory()
-                .UseNamedPipe(32 * 1024)
+                .UseNamedPipe()
                 .Build();
             var genericMethods = client.Of<IGenericMethods>();
 
