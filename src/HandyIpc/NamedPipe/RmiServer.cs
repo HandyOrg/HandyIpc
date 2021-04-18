@@ -27,6 +27,7 @@ namespace HandyIpc.NamedPipe
 
                     if (token.IsCancellationRequested) break;
 
+                    // Do not await the request handler, and go to await next stream connection directly.
 #pragma warning disable 4014
                     HandleRequestAsync(stream, middleware.ToHandler(_serializer, _logger), token);
 #pragma warning restore 4014

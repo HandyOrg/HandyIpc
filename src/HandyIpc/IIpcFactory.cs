@@ -12,19 +12,19 @@ namespace HandyIpc
     public interface IIpcFactory<in TRmi, out THub>
     {
         /// <summary>
-        /// Use a service for the underlying communication.
+        /// Use a <typeparamref name="TRmi"/> provider for the underlying communication.
         /// </summary>
         /// <param name="factory">
-        ///     A factory of the <see cref="TRmi"/> (Remote method invocation) type,
-        ///     which can only return an instance derived from <see cref="IRmiServer"/> or <see cref="IRmiClient"/>.
+        /// A factory of the <typeparamref name="TRmi"/> (Remote method invocation) type,
+        /// which can only return an instance derived from <see cref="IRmiServer"/> or <see cref="IRmiClient"/>.
         /// </param>
         /// <returns>The interface instance itself.</returns>
         IIpcFactory<TRmi, THub> Use(Func<TRmi> factory);
 
         /// <summary>
-        /// Builds an instance of the <see cref="THub"/> type, which can only be <see cref="IIpcServerHub"/> or <see cref="IIpcClientHub"/>.
+        /// Builds an instance of the <typeparamref name="THub"/> type.
         /// </summary>
-        /// <returns>An instance of the <see cref="THub"/> type.</returns>
+        /// <returns>An instance of the <typeparamref name="THub"/> type.</returns>
         THub Build();
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HandyIpc.BuildTasks
 {
-    public static class Extensions
+    internal static class Extensions
     {
         public static string GetInterfaceName(this InterfaceDeclarationSyntax @interface)
         {

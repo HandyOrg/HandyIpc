@@ -10,7 +10,7 @@
         /// which is a proxy of remote server.
         /// </summary>
         /// <typeparam name="T">The specified interface type.</typeparam>
-        /// <returns>The IPC client instance that implements the specified interface type.</returns>
+        /// <returns>An IPC client proxy singleton of the <typeparamref name="T"/> type.</returns>
         T Of<T>();
     }
 }

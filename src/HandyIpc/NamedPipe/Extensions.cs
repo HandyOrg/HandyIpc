@@ -12,12 +12,26 @@ namespace HandyIpc.NamedPipe
     {
         private const int BatchBufferSize = 4 * 1024;
 
+        /// <summary>
+        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IIpcClientHub"/> instance.
+        /// </summary>
+        /// <param name="self">An factory instance.</param>
+        /// <returns>The factory instance itself.</returns>
         public static IIpcFactory<IRmiClient, IIpcClientHub> UseNamedPipe(
             this IIpcFactory<IRmiClient, IIpcClientHub> self)
         {
             return self.Use(() => new RmiClient(new JsonSerializer()));
         }
 
+        /// <summary>
+        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IIpcServerHub"/> instance.
+        /// </summary>
+        /// <param name="self">An factory instance.</param>
+        /// <param name="logger">
+        /// An logger for logging server log. The default is <see cref="DebugLogger"/> instance,
+        /// and it will print to the Output window on the Visual Studio.
+        /// </param>
+        /// <returns>The factory instance itself.</returns>
         public static IIpcFactory<IRmiServer, IIpcServerHub> UseNamedPipe(
             this IIpcFactory<IRmiServer, IIpcServerHub> self,
             ILogger? logger = null)
@@ -28,25 +42,25 @@ namespace HandyIpc.NamedPipe
         internal static byte[] ReadAllBytes(this PipeStream self)
         {
             // TODO: Refactoring by System.IO.Pipelines, ArrayPool or stackalloc and so on.
-            var result = new List<byte[]>();
+            var collector = new List<byte[]>();
             while (true)
             {
                 byte[] bytes = new byte[BatchBufferSize];
                 int actualCount = self.Read(bytes, 0, BatchBufferSize);
 
-                if (CollectBytes(result, bytes, actualCount))
+                if (CollectBytes(collector, bytes, actualCount))
                 {
                     break;
                 }
             }
 
-            return MergeBytesList(result);
+            return ConcatBytesList(collector);
         }
 
         internal static async Task<byte[]> ReadAllBytesAsync(this PipeStream self, CancellationToken token)
         {
             // TODO: Refactoring by System.IO.Pipelines, ArrayPool or stackalloc and so on.
-            var result = new List<byte[]>();
+            var collector = new List<byte[]>();
             while (true)
             {
                 if (token.IsCancellationRequested)
@@ -57,25 +71,25 @@ namespace HandyIpc.NamedPipe
                 byte[] bytes = new byte[BatchBufferSize];
                 int actualCount = await self.ReadAsync(bytes, 0, BatchBufferSize, token);
 
-                if (CollectBytes(result, bytes, actualCount))
+                if (CollectBytes(collector, bytes, actualCount))
                 {
                     break;
                 }
             }
 
-            return MergeBytesList(result);
+            return ConcatBytesList(collector);
         }
 
         /// <summary>
         /// Fill a bytes list, and return a bool value to indicate whether the process has been completed. <br />
-        /// I known this method is so ugly: It does too many things, and modifies external collection,
-        /// but it was extracted to be able to reuse code in async and sync methods.
+        /// I known this method is so ugly: It modifies external collection, but it was extracted to be able to
+        /// reuse code in async and sync methods.
         /// </summary>
-        /// <param name="result">The filled bytes list.</param>
+        /// <param name="collector">The filled bytes list.</param>
         /// <param name="bytes">The buffered bytes.</param>
         /// <param name="actualCount">The actual length of the buffered bytes (<see cref="bytes"/>).</param>
         /// <returns>The bool value indicate whether it has been completed.</returns>
-        private static bool CollectBytes(ICollection<byte[]> result, byte[] bytes, int actualCount)
+        private static bool CollectBytes(ICollection<byte[]> collector, byte[] bytes, int actualCount)
         {
             if (actualCount == 0)
             {
@@ -90,15 +104,15 @@ namespace HandyIpc.NamedPipe
                     tailBytes[i] = bytes[i];
                 }
 
-                result.Add(tailBytes);
+                collector.Add(tailBytes);
                 return true;
             }
 
-            result.Add(bytes);
+            collector.Add(bytes);
             return false;
         }
 
-        private static byte[] MergeBytesList(IReadOnlyList<byte[]> bytesList)
+        private static byte[] ConcatBytesList(IReadOnlyList<byte[]> bytesList)
         {
             int totalSize = bytesList.Sum(item => item.Length);
             byte[] totalBytes = new byte[totalSize];

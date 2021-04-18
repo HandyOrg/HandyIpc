@@ -7,21 +7,22 @@ namespace HandyIpc
     {
         public void Error(string message, Exception? exception = null)
         {
-            Debug.WriteLine($"[HandyIpc] [ERROR] [{DateTime.Now:HH:mm:ss.fff}] " +
-                            $"{message}{Environment.NewLine}" +
-                            $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
+            Print(nameof(Error), message, exception);
         }
 
         public void Warning(string message, Exception? exception = null)
         {
-            Debug.WriteLine($"[HandyIpc] [WARNING] [{DateTime.Now:HH:mm:ss.fff}] " +
-                            $"{message}{Environment.NewLine}" +
-                            $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
+            Print(nameof(Warning), message, exception);
         }
 
         public void Info(string message, Exception? exception = null)
         {
-            Debug.WriteLine($"[HandyIpc] [INFO] [{DateTime.Now:HH:mm:ss.fff}] " +
+            Print(nameof(Info), message, exception);
+        }
+
+        private static void Print(string level, string message, Exception? exception = null)
+        {
+            Debug.WriteLine($"[HandyIpc] [{level}] [{DateTime.Now:HH:mm:ss.fff}] " +
                             $"{message}{Environment.NewLine}" +
                             $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
         }
