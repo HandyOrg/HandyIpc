@@ -10,8 +10,8 @@ The design of this library API was inspired by [orleans](https://github.com/dotn
 
 ```csharp
     // Declare an interface contains a set of methods that needs to be called remotely,
-	// and mark it with IpcContractAttribute.
-	[IpcContract]
+    // and mark it with IpcContractAttribute.
+    [IpcContract]
     public interface IDemo<T>
     {
         double Add(double x, double y);
@@ -30,7 +30,10 @@ The design of this library API was inspired by [orleans](https://github.com/dotn
 
         public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);
 
-        string IDemo<T>.GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1) => $"T1={typeof(T1)}, T2={typeof(T2)}";
+        string IDemo<T>.GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1) 
+        {
+            return $"T1={typeof(T1)}, T2={typeof(T2)}";
+        }
     }
 ```
 
