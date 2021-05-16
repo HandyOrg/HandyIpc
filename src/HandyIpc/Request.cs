@@ -9,9 +9,9 @@ namespace HandyIpc
     public class Request
     {
         /// <summary>
-        /// Gets the access token, which may be empty.
+        /// Gets the access token, which may be empty/null.
         /// </summary>
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
 
         /// <summary>
         /// Gets the name of the method.
@@ -19,7 +19,7 @@ namespace HandyIpc
         public string MethodName { get; set; }
 
         /// <summary>
-        /// Gets the arguments on the method.
+        /// Gets the arguments on the method, which may be null.
         /// </summary>
         public object?[]? Arguments { get; set; }
 

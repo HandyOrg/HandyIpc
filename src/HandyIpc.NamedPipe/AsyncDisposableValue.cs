@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace HandyIpc
+namespace HandyIpc.NamedPipe
 {
     internal sealed class AsyncDisposableValue<T> /*: IAsyncDisposable*/
     {

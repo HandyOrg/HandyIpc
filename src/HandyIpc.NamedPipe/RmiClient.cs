@@ -60,7 +60,7 @@ namespace HandyIpc.NamedPipe
                 throw response.Exception;
             }
 
-            // If the Exception is not null, the Value can not be null.
+            // If the Exception is null, the Value can not be null.
             return (T)response.Value!;
         }
     }

@@ -74,14 +74,11 @@ namespace HandyIpc.Server
             };
         }
 
-        public static Func<byte[], Task<byte[]>> ToHandler(
-            this MiddlewareHandler middleware,
-            ISerializer serializationService,
-            ILogger logger)
+        public static Func<byte[], Task<byte[]>> ToHandler(this MiddlewareHandler middleware, ISerializer serializer, ILogger logger)
         {
             return async input =>
             {
-                var ctx = new Context(input, serializationService, logger);
+                var ctx = new Context(input, serializer, logger);
                 await middleware(ctx, () => Task.CompletedTask);
                 return ctx.Output;
             };

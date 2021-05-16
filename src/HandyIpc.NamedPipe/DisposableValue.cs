@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HandyIpc
+namespace HandyIpc.NamedPipe
 {
     internal sealed class DisposableValue<T> : IDisposable
     {
