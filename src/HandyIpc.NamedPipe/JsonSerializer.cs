@@ -2,7 +2,7 @@
 using System.Text;
 using Newtonsoft.Json;
 
-namespace HandyIpc
+namespace HandyIpc.NamedPipe
 {
     public class JsonSerializer : ISerializer
     {

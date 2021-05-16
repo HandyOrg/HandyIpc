@@ -11,8 +11,6 @@ namespace HandyIpc
 
         public AsyncDisposableValue(T value, Func<T, /*Value*/Task> dispose)
         {
-            Guards.ThrowIfNull(dispose, nameof(dispose));
-
             Value = value;
             _dispose = dispose;
         }

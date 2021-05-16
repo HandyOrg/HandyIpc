@@ -10,8 +10,6 @@ namespace HandyIpc
 
         public DisposableValue(T value, Action<T> dispose)
         {
-            Guards.ThrowIfNull(dispose, nameof(dispose));
-
             Value = value;
             _dispose = dispose;
         }

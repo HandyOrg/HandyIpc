@@ -8,6 +8,15 @@ namespace HandyIpc.Server
 {
     internal class HandyIpcServerHub : IIpcServerHub
     {
+        private sealed class Disposable : IDisposable
+        {
+            private readonly Action _dispose;
+
+            public Disposable(Action dispose) => _dispose = dispose;
+
+            public void Dispose() => _dispose();
+        }
+
         private readonly IRmiServer _rmiServer;
         private readonly object _locker = new();
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();

@@ -36,9 +36,6 @@ namespace HandyIpc.NamedPipe
                 bag.Add(PrimitiveMethods.CreateClient(pipeName));
             }
 
-            Guards.ThrowIfNull(result.dispose, nameof(result.dispose));
-            Guards.ThrowIfNull(result.invoke, nameof(result.invoke));
-
             return result;
         }
 
@@ -51,9 +48,6 @@ namespace HandyIpc.NamedPipe
             {
                 bag.Add(await PrimitiveMethods.CreateClientAsync(pipeName));
             }
-
-            Guards.ThrowIfNull(result.dispose, nameof(result.dispose));
-            Guards.ThrowIfNull(result.invoke, nameof(result.invoke));
 
             return result;
         }
