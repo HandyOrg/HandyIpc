@@ -27,18 +27,18 @@ namespace HandyIpc.Server
             _rmiServer = rmiServer;
         }
 
-        public IDisposable Start(Type interfaceType, Func<object> factory)
+        public IDisposable Start(Type interfaceType, Func<object> factory, string? accessToken = null)
         {
             StartInterface(interfaceType, defaultMiddleware =>
             {
                 IIpcDispatcher dispatcher = GetOrAddIpcDispatcher(interfaceType, factory);
                 return defaultMiddleware.Then(dispatcher.Dispatch);
-            });
+            }, accessToken);
 
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
         }
 
-        public IDisposable Start(Type interfaceType, Func<Type[], object> factory)
+        public IDisposable Start(Type interfaceType, Func<Type[], object> factory, string? accessToken = null)
         {
             StartInterface(interfaceType, defaultMiddleware =>
             {
@@ -48,7 +48,7 @@ namespace HandyIpc.Server
                     return GetOrAddIpcDispatcher(constructedInterfaceType, () => factory(genericTypes));
                 });
                 return defaultMiddleware.Then(genericDispatcher);
-            });
+            }, accessToken);
 
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
         }
@@ -80,7 +80,7 @@ namespace HandyIpc.Server
             }
         }
 
-        private void StartInterface(Type interfaceType, Func<MiddlewareHandler, MiddlewareHandler> append)
+        private void StartInterface(Type interfaceType, Func<MiddlewareHandler, MiddlewareHandler> append, string? accessToken)
         {
             lock (_locker)
             {
@@ -89,15 +89,15 @@ namespace HandyIpc.Server
                     Middlewares.ExceptionHandler,
                     Middlewares.RequestParser);
 
-                interfaceType.ResolveContractInfo(out var identifier, out var accessToken);
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    middleware = middleware.Then(Middlewares.GetAuthenticator(accessToken));
+                    middleware = middleware.Then(Middlewares.GetAuthenticator(accessToken!));
                 }
 
                 middleware = append(middleware);
                 var source = new CancellationTokenSource();
 
+                string identifier = interfaceType.ResolveIdentifier();
                 // Async run the server without waiting.
                 _rmiServer.RunAsync(identifier, middleware, source.Token);
 

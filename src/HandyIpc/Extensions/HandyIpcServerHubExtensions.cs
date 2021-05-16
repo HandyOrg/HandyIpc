@@ -5,20 +5,20 @@ namespace HandyIpc.Server
 {
     public static class HandyIpcServerHubExtensions
     {
-        public static IDisposable Start<TInterface, TImpl>(this IIpcServerHub server)
+        public static IDisposable Start<TInterface, TImpl>(this IIpcServerHub server, string? accessToken = null)
             where TInterface : class
             where TImpl : TInterface, new()
         {
-            return server.Start<TInterface>(() => new TImpl());
+            return server.Start<TInterface>(() => new TImpl(), accessToken);
         }
 
-        public static IDisposable Start<TInterface>(this IIpcServerHub server, Func<TInterface> factory)
+        public static IDisposable Start<TInterface>(this IIpcServerHub server, Func<TInterface> factory, string? accessToken = null)
             where TInterface : class
         {
-            return server.Start(typeof(TInterface), factory);
+            return server.Start(typeof(TInterface), factory, accessToken);
         }
 
-        public static IDisposable Start(this IIpcServerHub server, Type interfaceType, Type classType)
+        public static IDisposable Start(this IIpcServerHub server, Type interfaceType, Type classType, string? accessToken = null)
         {
             // TODO: Add defensive code.
 
@@ -27,8 +27,8 @@ namespace HandyIpc.Server
                 {
                     var constructedClassType = classType.MakeGenericType(genericTypes);
                     return Activator.CreateInstance(constructedClassType);
-                })
-                : server.Start(interfaceType, () => Activator.CreateInstance(classType));
+                }, accessToken)
+                : server.Start(interfaceType, () => Activator.CreateInstance(classType), accessToken);
         }
     }
 }
