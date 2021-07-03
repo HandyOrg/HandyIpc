@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using HandyIpc.BuildTasks.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -14,7 +15,7 @@ namespace HandyIpc.BuildTasks
 
             if ((interfaceParent as ClassDeclarationSyntax) != null)
             {
-                var classParent = (interfaceParent as ClassDeclarationSyntax).Identifier;
+                var classParent = ((ClassDeclarationSyntax)interfaceParent).Identifier;
                 return classParent + "." + identifier.ValueText;
             }
 
@@ -29,18 +30,17 @@ namespace HandyIpc.BuildTasks
                 root = root.Parent;
             }
 
-            return root as T;
+            return (T)root;
         }
 
         public static TypeData ToTypeData(this TypeSyntax typeSyntax)
         {
             return typeSyntax is GenericNameSyntax generic
-                ? new TypeData
+                ? new TypeData(generic.Identifier.ValueText)
                 {
-                    Name = generic.Identifier.ValueText,
                     Children = generic.TypeArgumentList.Arguments.Select(a => a.ToTypeData()).ToList()
                 }
-                : new TypeData { Name = typeSyntax.ToString() };
+                : new TypeData(typeSyntax.ToString());
         }
 
         public static string ToTypeString(this TypeData typeData)

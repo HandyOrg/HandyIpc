@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using HandyIpc.BuildTasks.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,7 +10,7 @@ namespace HandyIpc.BuildTasks
 {
     public static class CodeGenerator
     {
-        public static TemplateData GetTemplateData(IEnumerable<string> filePaths)
+        public static TemplateFileData GetTemplateData(IEnumerable<string> filePaths)
         {
             var validInterfaces = filePaths
                 .Select(x => CSharpSyntaxTree.ParseText(File.ReadAllText(x)))
@@ -34,11 +35,7 @@ namespace HandyIpc.BuildTasks
                 usingList.AddIfMissing("System.Reflection");
             }
 
-            return new TemplateData
-            {
-                UsingList = usingList,
-                ClassList = classList
-            };
+            return new TemplateFileData(usingList, classList);
         }
 
         private static ClassData GetClassData(InterfaceDeclarationSyntax @interface)
@@ -125,7 +122,7 @@ namespace HandyIpc.BuildTasks
                 genericName.Identifier.ValueText == "Task")
             {
                 result.IsAwaitable = true;
-                result.TaskReturnType = method.ReturnType.ToTypeData().Children.Single().ToTypeString();
+                result.TaskReturnType = method.ReturnType.ToTypeData().Children!.Single().ToTypeString();
                 result.TaskReturnTypeContainsGenericParameter =
                     genericTypes != null && method.ReturnType.ToTypeData().ContainsTypes(genericTypes);
             }

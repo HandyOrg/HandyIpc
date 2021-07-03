@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Build.Framework;
@@ -18,22 +17,22 @@ namespace HandyIpc.BuildTasks
         private const string DispatchersFileName = "HandyIpcDispatchers.g.cs";
         private const string ServerProxiesFileName = "HandyIpcServerProxies.g.cs";
 
-        private static readonly string DllDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        private static readonly string DllDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 
         [Required]
-        public string IntermediateOutputPath { get; set; }
+        public string IntermediateOutputPath { get; set; } = null!;
 
         [Required]
-        public ITaskItem[] SourceFiles { get; set; }
+        public ITaskItem[] SourceFiles { get; set; } = null!;
 
         [Output]
-        public string ClientsCodePath { get; set; }
+        public string ClientsCodePath { get; set; } = null!;
 
         [Output]
-        public string DispatchersCodePath { get; set; }
+        public string DispatchersCodePath { get; set; } = null!;
 
         [Output]
-        public string ServerProxiesCodePath { get; set; }
+        public string ServerProxiesCodePath { get; set; } = null!;
 
         public override bool Execute()
         {
