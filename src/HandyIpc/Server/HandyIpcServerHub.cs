@@ -115,6 +115,18 @@ namespace HandyIpc.Server
                     $"The instance created by the factory corresponding to the {interfaceType} interface " +
                     $"does not implement the {interfaceType} interface.", nameof(factory));
 
+                // NOTE:
+                // 1. Why would we need a Proxy class?
+                // To call generic methods remotely.
+                // As we know, the server cannot know the possible generic parameters at compile time,
+                // and a "MethodName to generic MethodInfo" mapping table must be maintained,
+                // then determining the specific generic type at runtime by MethodInfo.MakeGenericMethod().
+                //
+                // 2. Why can't the XxxDispatcher and XxxProxy be combined into one class?
+                // Because the Dispatcher class has some members declared by this framework,
+                // such as Dispatch methods, and Proxy only implements the IContract interface declared by users,
+                // this does not lead to naming conflicts even if the user also declares a Dispatch method
+                // with the same signature in the IContract interface.
                 var proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
                 return (IIpcDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
             });

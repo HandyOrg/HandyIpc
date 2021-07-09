@@ -11,9 +11,9 @@ namespace HandyIpc.BuildTasks
         public static string GetInterfaceName(this InterfaceDeclarationSyntax @interface)
         {
             var identifier = @interface.Identifier;
-            var interfaceParent = identifier.Parent != null ? identifier.Parent.Parent : identifier.Parent;
+            var interfaceParent = identifier.Parent is not null ? identifier.Parent.Parent : identifier.Parent;
 
-            if ((interfaceParent as ClassDeclarationSyntax) != null)
+            if ((interfaceParent as ClassDeclarationSyntax) is not null)
             {
                 var classParent = ((ClassDeclarationSyntax)interfaceParent).Identifier;
                 return classParent + "." + identifier.ValueText;
@@ -53,7 +53,7 @@ namespace HandyIpc.BuildTasks
         public static bool ContainsTypes(this TypeData typeData, params string[] types)
         {
             if (types.Contains(typeData.Name)) return true;
-            if (typeData.Children != null)
+            if (typeData.Children is not null)
             {
                 foreach (var typeDataChild in typeData.Children)
                 {

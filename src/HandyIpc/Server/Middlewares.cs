@@ -11,7 +11,7 @@ namespace HandyIpc.Server
         {
             if (ctx.Input.IsEmpty())
             {
-                ctx.Output = Messages.Empty;
+                ctx.Output = Signals.Empty;
                 return;
             }
 
@@ -62,7 +62,7 @@ namespace HandyIpc.Server
             return async (ctx, next) =>
             {
                 var request = ctx.Get<Request>();
-                if (request.GenericArguments != null && request.GenericArguments.Any())
+                if (request.GenericArguments is not null && request.GenericArguments.Any())
                 {
                     var proxy = getProxy(request.GenericArguments);
                     await proxy.Dispatch(ctx, next);

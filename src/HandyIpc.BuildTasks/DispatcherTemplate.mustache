@@ -56,7 +56,7 @@ namespace {{Namespace}}
                     var obj = constructedMethodInfo.Invoke(_instance, args);
                     {{#IsVoid}}
                     {{#IsAwaitable}}await (Task)obj;{{/IsAwaitable}}
-                    result = Messages.Unit;
+                    result = Signals.Unit;
                     {{/IsVoid}}
                     {{^IsVoid}}
                     {{#TaskReturnTypeContainsGenericParameter}}
@@ -73,7 +73,7 @@ namespace {{Namespace}}
                 case "{{Name}}({{ParameterTypes}})":
                     {{#IsVoid}}
                     {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});
-                    result = Messages.Unit;
+                    result = Signals.Unit;
                     {{/IsVoid}}
                     {{^IsVoid}}
                     result = {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});

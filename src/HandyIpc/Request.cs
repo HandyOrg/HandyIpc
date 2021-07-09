@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Reflection;
 
-#pragma warning disable 8618
-
 namespace HandyIpc
 {
+    /// <summary>
+    /// Represents a request for a call to a remote method.
+    /// </summary>
     [Obfuscation(Exclude = true)]
     public class Request
     {
@@ -16,7 +17,7 @@ namespace HandyIpc
         /// <summary>
         /// Gets the name of the method.
         /// </summary>
-        public string MethodName { get; set; }
+        public string MethodName { get; set; } = null!;
 
         /// <summary>
         /// Gets the arguments on the method, which may be null.

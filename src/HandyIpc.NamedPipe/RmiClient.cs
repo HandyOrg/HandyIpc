@@ -39,7 +39,7 @@ namespace HandyIpc.NamedPipe
             }
             finally
             {
-                if (invokeOwner != null)
+                if (invokeOwner is not null)
                 {
                     await invokeOwner.DisposeAsync();
                 }
@@ -55,12 +55,12 @@ namespace HandyIpc.NamedPipe
                 throw new NullReferenceException("The response can not be null.");
             }
 
-            if (response.Exception != null)
+            if (response.Exception is not null)
             {
                 throw response.Exception;
             }
 
-            // If the Exception is null, the Value can not be null.
+            // If the Exception is null, the Value must be valid.
             return (T)response.Value!;
         }
     }

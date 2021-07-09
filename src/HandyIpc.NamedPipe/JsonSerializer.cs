@@ -21,7 +21,7 @@ namespace HandyIpc.NamedPipe
         {
             Request request = Deserialize<Request>(bytes)!;
 
-            if (request.Arguments != null && request.ArgumentTypes != null)
+            if (request.Arguments is not null && request.ArgumentTypes is not null)
             {
                 for (int i = 0; i < request.Arguments.Length; i++)
                 {
@@ -52,7 +52,7 @@ namespace HandyIpc.NamedPipe
 
         private static object? CastValueByType(object? value, Type targetType)
         {
-            return value != null && targetType.IsValueType
+            return value is not null && targetType.IsValueType
                 ? Convert.ChangeType(value, targetType)
                 : targetType.IsInstanceOfType(value)
                     ? value

@@ -50,7 +50,7 @@ namespace HandyIpc.BuildTasks
             var parent = @interface.GetSyntaxNodeRoot<NamespaceDeclarationSyntax>();
             result.Namespace = parent?.Name?.ToString() ?? $"HandyIpc{result.GeneratedClassSuffix}";
 
-            if (@interface.TypeParameterList != null)
+            if (@interface.TypeParameterList is not null)
             {
                 var typeParameters = @interface.TypeParameterList.Parameters;
                 if (typeParameters.Any())
@@ -97,7 +97,7 @@ namespace HandyIpc.BuildTasks
 
             // Resolve generic args list
             string[]? genericTypes = null;
-            if (method.TypeParameterList != null)
+            if (method.TypeParameterList is not null)
             {
                 var typeParameters = method.TypeParameterList.Parameters;
                 if (typeParameters.Any())
@@ -124,7 +124,7 @@ namespace HandyIpc.BuildTasks
                 result.IsAwaitable = true;
                 result.TaskReturnType = method.ReturnType.ToTypeData().Children!.Single().ToTypeString();
                 result.TaskReturnTypeContainsGenericParameter =
-                    genericTypes != null && method.ReturnType.ToTypeData().ContainsTypes(genericTypes);
+                    genericTypes is not null && method.ReturnType.ToTypeData().ContainsTypes(genericTypes);
             }
 
             return result;

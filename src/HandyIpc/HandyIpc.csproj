@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Condition="'$(TargetFramework)' == 'net462' " Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Condition="'$(TargetFramework)' == 'net462'" Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup Label="Package">
