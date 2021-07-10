@@ -17,20 +17,7 @@ namespace HandyIpc
         /// <summary>
         /// Gets the name of the method.
         /// </summary>
-        public string MethodName { get; set; } = null!;
-
-        /// <summary>
-        /// Gets the arguments on the method, which may be null.
-        /// </summary>
-        public object?[]? Arguments { get; set; }
-
-        /// <summary>
-        /// Gets types of arguments on the method, which may be null.
-        /// </summary>
-        /// <remarks>
-        /// The property has been filled only if the method is a generic method.
-        /// </remarks>
-        public Type[]? ArgumentTypes { get; set; }
+        public string MethodName { get; }
 
         /// <summary>
         /// Gets the generic argument that are defined on the interface, which may be null.
@@ -41,5 +28,19 @@ namespace HandyIpc
         /// Gets the generic arguments that are defined on the method, which may be null.
         /// </summary>
         public Type[]? MethodGenericArguments { get; set; }
+
+        /// <summary>
+        /// Gets types of arguments on the method, which may be null.
+        /// </summary>
+        /// <remarks>
+        /// The property has been filled only if the method is a generic method.
+        /// </remarks>
+        public Type[]? ArgumentTypes { get; set; }
+
+        /// <summary>
+        /// Initializes an instance of <see cref="Request"/> type with the specified method name.
+        /// </summary>
+        /// <param name="methodName">The specified method name.</param>
+        public Request(string methodName) => MethodName = methodName;
     }
 }

@@ -27,6 +27,7 @@ namespace HandyIpc.BuildTasks
                 .Distinct()
                 .Where(item => item != "HandyIpc")
                 .ToList();
+            usingList.AddIfMissing("using System.Threading.Tasks");
 
             var classList = validInterfaces.Select(GetClassData).ToList();
             if (classList.Any(classData => classData.HasGenericMethod))
