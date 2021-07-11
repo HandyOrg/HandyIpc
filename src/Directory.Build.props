@@ -4,15 +4,20 @@
     <MinClientVersion>2.12</MinClientVersion>
     <GenerateDocumentationFile Condition=" '$(Configuration)' == 'Release' ">true</GenerateDocumentationFile>
     <Authors>Dingping Zhang</Authors>
+    <Copyright>Copyright (c) 2020-2021 Dingping Zhang</Copyright>
     <PackageProjectUrl>https://github.com/HandyOrg/HandyIpc</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/HandyOrg/HandyIpc</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <DefaultLanguage>en-US</DefaultLanguage>
     <IsTestProject>$(MSBuildProjectName.Contains('Test'))</IsTestProject>
     <Description>A handy inter-process communication library.</Description>
+    <PackageTags>ipc;rpc;remote-method-invocation;msbuild-task</PackageTags>
     <NoWarn>$(NoWarn);1701;1702;CS1591;NU1701</NoWarn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <LangVersion>latest</LangVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
