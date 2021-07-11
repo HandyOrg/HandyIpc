@@ -54,7 +54,7 @@ namespace HandyIpc.BuildTasks
         {
             var outputPath = Path.Combine(IntermediateOutputPath, outputFileName);
             outputPath = Path.GetFullPath(outputPath);
-            var templatePath = Path.Combine(DllDirectory, templateFileName);
+            var templatePath = Path.Combine(DllDirectory, "Templates", templateFileName);
 
             Encoders.HtmlEncode = _ => _;
             var code = Render.FileToString(templatePath, data);
