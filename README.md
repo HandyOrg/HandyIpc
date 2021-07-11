@@ -4,6 +4,14 @@ This library provides a high-level RMI (remote method invocation) API. Its under
 
 The design of this library API was inspired by [orleans](https://github.com/dotnet/orleans), and and its implementation refers to [refit](https://github.com/reactiveui/refit).
 
+## NuGet
+
+| Package                    | NuGet                                                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `HandyIpc.Core`            | [![version](https://img.shields.io/badge/version-0.3.0-orange)](https://www.nuget.org/packages/HandyIpc.Core)            |
+| `HandyIpc.NamedPipe`       | [![version](https://img.shields.io/badge/version-0.1.0-orange)](https://www.nuget.org/packages/HandyIpc.NamedPipe)       |
+| `HandyIpc.Serializer.Json` | [![version](https://img.shields.io/badge/version-0.1.0-orange)](https://www.nuget.org/packages/HandyIpc.Serializer.Json) |
+
 ## How to use
 
 #### 1. Define IPC contract
@@ -30,7 +38,7 @@ The design of this library API was inspired by [orleans](https://github.com/dotn
 
         public Task<T> GetDefaultAsync() => Task.FromResult<T>(default);
 
-        string IDemo<T>.GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1) 
+        string IDemo<T>.GenericMethod<T1, T2>(IEnumerable<T1> items, T2 arg0, T arg1)
         {
             return $"T1={typeof(T1)}, T2={typeof(T2)}";
         }
@@ -41,6 +49,7 @@ The design of this library API was inspired by [orleans](https://github.com/dotn
     // Create a server hub and enable requested interface services.
     IIpcServerHub server = HandyIpcHub
         .CreateServerFactory()
+        .UseJsonSerializer()
         .UseNamedPipe()
         .Build();
 
@@ -54,6 +63,7 @@ The design of this library API was inspired by [orleans](https://github.com/dotn
     // Create a client hub and resolve requested interface proxy.
     IIpcClientHub client = HandyIpcHub
         .CreateClientFactory()
+        .UseJsonSerializer()
         .UseNamedPipe()
         .Build();
 

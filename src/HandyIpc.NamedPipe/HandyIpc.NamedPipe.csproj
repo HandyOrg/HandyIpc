@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Condition="'$(Configuration)'=='Release'" Include="HandyIpc.Core" Version="0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Condition="'$(Configuration)'=='Debug'" Include="..\HandyIpc\HandyIpc.csproj" />
   </ItemGroup>
 
