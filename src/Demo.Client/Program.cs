@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Demo.Contracts;
 using HandyIpc;
 using HandyIpc.NamedPipe;
+using HandyIpc.Serializer.Json;
 
 namespace Demo.Client
 {
@@ -12,6 +13,7 @@ namespace Demo.Client
         {
             var client = HandyIpcHub
                 .CreateClientFactory()
+                .UseJsonSerializer()
                 .UseNamedPipe()
                 .Build();
 

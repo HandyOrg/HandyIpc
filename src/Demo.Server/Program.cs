@@ -2,6 +2,7 @@
 using Demo.Contracts;
 using HandyIpc;
 using HandyIpc.NamedPipe;
+using HandyIpc.Serializer.Json;
 using HandyIpc.Server;
 
 namespace Demo.Server
@@ -12,6 +13,7 @@ namespace Demo.Server
         {
             var server = HandyIpcHub
                 .CreateServerFactory()
+                .UseJsonSerializer()
                 .UseNamedPipe()
                 .Build();
 

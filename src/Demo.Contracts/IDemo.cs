@@ -4,7 +4,7 @@ using HandyIpc;
 
 namespace Demo.Contracts
 {
-    [IpcContract(AccessToken = "&hu8^Tt6")]
+    [IpcContract]
     public interface IDemo<T>
     {
         double Add(double x, double y);

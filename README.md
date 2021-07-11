@@ -8,9 +8,9 @@ The design of this library API was inspired by [orleans](https://github.com/dotn
 
 | Package                    | NuGet                                                                                                                    |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `HandyIpc.Core`            | [![version](https://img.shields.io/badge/version-0.3.0-orange)](https://www.nuget.org/packages/HandyIpc.Core)            |
-| `HandyIpc.NamedPipe`       | [![version](https://img.shields.io/badge/version-0.1.0-orange)](https://www.nuget.org/packages/HandyIpc.NamedPipe)       |
-| `HandyIpc.Serializer.Json` | [![version](https://img.shields.io/badge/version-0.1.0-orange)](https://www.nuget.org/packages/HandyIpc.Serializer.Json) |
+| `HandyIpc.Core`            | [![version](https://img.shields.io/badge/version-0.3.1-orange)](https://www.nuget.org/packages/HandyIpc.Core)            |
+| `HandyIpc.NamedPipe`       | [![version](https://img.shields.io/badge/version-0.1.1-orange)](https://www.nuget.org/packages/HandyIpc.NamedPipe)       |
+| `HandyIpc.Serializer.Json` | [![version](https://img.shields.io/badge/version-0.1.1-orange)](https://www.nuget.org/packages/HandyIpc.Serializer.Json) |
 
 ## How to use
 
