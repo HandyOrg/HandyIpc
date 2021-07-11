@@ -1,30 +1,33 @@
 ﻿using System;
 using System.Reflection;
-using Newtonsoft.Json;
-#pragma warning disable 8618
 
 namespace HandyIpc
 {
+    /// <summary>
+    /// Represents a request for a call to a remote method.
+    /// </summary>
     [Obfuscation(Exclude = true)]
     public class Request
     {
         /// <summary>
-        /// Gets the access token, which may be empty.
+        /// Gets the access token, which may be empty/null.
         /// </summary>
-        [JsonProperty("token")]
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
 
         /// <summary>
         /// Gets the name of the method.
         /// </summary>
-        [JsonProperty("method")]
-        public string MethodName { get; set; }
+        public string MethodName { get; }
 
         /// <summary>
-        /// Gets the arguments on the method.
+        /// Gets the generic argument that are defined on the interface, which may be null.
         /// </summary>
-        [JsonProperty("args")]
-        public object?[]? Arguments { get; set; }
+        public Type[]? GenericArguments { get; set; }
+
+        /// <summary>
+        /// Gets the generic arguments that are defined on the method, which may be null.
+        /// </summary>
+        public Type[]? MethodGenericArguments { get; set; }
 
         /// <summary>
         /// Gets types of arguments on the method, which may be null.
@@ -32,19 +35,12 @@ namespace HandyIpc
         /// <remarks>
         /// The property has been filled only if the method is a generic method.
         /// </remarks>
-        [JsonProperty("argTypes")]
         public Type[]? ArgumentTypes { get; set; }
 
         /// <summary>
-        /// Gets the generic argument that are defined on the interface, which may be null.
+        /// Initializes an instance of <see cref="Request"/> type with the specified method name.
         /// </summary>
-        [JsonProperty("iGArgs")]
-        public Type[]? GenericArguments { get; set; }
-
-        /// <summary>
-        /// Gets the generic arguments that are defined on the method, which may be null.
-        /// </summary>
-        [JsonProperty("mGArgs")]
-        public Type[]? MethodGenericArguments { get; set; }
+        /// <param name="methodName">The specified method name.</param>
+        public Request(string methodName) => MethodName = methodName;
     }
 }

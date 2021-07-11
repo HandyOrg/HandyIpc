@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 
 using System;
-using System.Threading.Tasks;
 using HandyIpc;
 using HandyIpc.Server;
 
@@ -42,7 +41,6 @@ namespace {{Namespace}}
         public async Task Dispatch(Context context, Func<Task> next)
         {
             var request = context.Get<Request>();
-            var args = request.Arguments;
 
             object result;
             switch (request.MethodName)
@@ -52,11 +50,12 @@ namespace {{Namespace}}
                 case "{{Name}}<{{.}}>({{ParameterTypes}})"
                 when (_genericMethodMapping.Value.TryGetValue("{{Name}}<{{.}}>({{ParameterTypes}})", out var methodInfo)):
                 {
+                    var args = context.Serializer.DeserializeArguments(context.Input, request.ArgumentTypes);
                     var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodGenericArguments);
                     var obj = constructedMethodInfo.Invoke(_instance, args);
                     {{#IsVoid}}
                     {{#IsAwaitable}}await (Task)obj;{{/IsAwaitable}}
-                    result = Messages.Unit;
+                    result = Signals.Unit;
                     {{/IsVoid}}
                     {{^IsVoid}}
                     {{#TaskReturnTypeContainsGenericParameter}}
@@ -71,14 +70,17 @@ namespace {{Namespace}}
                 {{/MethodTypeParameters}}
                 {{^MethodTypeParameters}}
                 case "{{Name}}({{ParameterTypes}})":
+                {
+                    var args = context.Serializer.DeserializeArguments(context.Input, new Type[] { {{MethodParameterTypes}} });
                     {{#IsVoid}}
                     {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});
-                    result = Messages.Unit;
+                    result = Signals.Unit;
                     {{/IsVoid}}
                     {{^IsVoid}}
                     result = {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});
                     {{/IsVoid}}
                     break;
+                }
                 {{/MethodTypeParameters}}
 {{/MethodList}}
                 default:

@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace HandyIpc
 {
-    internal sealed class DebugLogger : ILogger
+    public sealed class DebugLogger : ILogger
     {
         public void Error(string message, Exception? exception = null)
         {

@@ -8,6 +8,15 @@ namespace HandyIpc.Server
 {
     internal class HandyIpcServerHub : IIpcServerHub
     {
+        private sealed class Disposable : IDisposable
+        {
+            private readonly Action _dispose;
+
+            public Disposable(Action dispose) => _dispose = dispose;
+
+            public void Dispose() => _dispose();
+        }
+
         private readonly IRmiServer _rmiServer;
         private readonly object _locker = new();
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
@@ -18,18 +27,18 @@ namespace HandyIpc.Server
             _rmiServer = rmiServer;
         }
 
-        public IDisposable Start(Type interfaceType, Func<object> factory)
+        public IDisposable Start(Type interfaceType, Func<object> factory, string? accessToken = null)
         {
             StartInterface(interfaceType, defaultMiddleware =>
             {
                 IIpcDispatcher dispatcher = GetOrAddIpcDispatcher(interfaceType, factory);
                 return defaultMiddleware.Then(dispatcher.Dispatch);
-            });
+            }, accessToken);
 
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
         }
 
-        public IDisposable Start(Type interfaceType, Func<Type[], object> factory)
+        public IDisposable Start(Type interfaceType, Func<Type[], object> factory, string? accessToken = null)
         {
             StartInterface(interfaceType, defaultMiddleware =>
             {
@@ -39,7 +48,7 @@ namespace HandyIpc.Server
                     return GetOrAddIpcDispatcher(constructedInterfaceType, () => factory(genericTypes));
                 });
                 return defaultMiddleware.Then(genericDispatcher);
-            });
+            }, accessToken);
 
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
         }
@@ -71,7 +80,7 @@ namespace HandyIpc.Server
             }
         }
 
-        private void StartInterface(Type interfaceType, Func<MiddlewareHandler, MiddlewareHandler> append)
+        private void StartInterface(Type interfaceType, Func<MiddlewareHandler, MiddlewareHandler> append, string? accessToken)
         {
             lock (_locker)
             {
@@ -80,15 +89,15 @@ namespace HandyIpc.Server
                     Middlewares.ExceptionHandler,
                     Middlewares.RequestParser);
 
-                interfaceType.ResolveContractInfo(out var identifier, out var accessToken);
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    middleware = middleware.Then(Middlewares.GetAuthenticator(accessToken));
+                    middleware = middleware.Then(Middlewares.GetAuthenticator(accessToken!));
                 }
 
                 middleware = append(middleware);
                 var source = new CancellationTokenSource();
 
+                string identifier = interfaceType.ResolveIdentifier();
                 // Async run the server without waiting.
                 _rmiServer.RunAsync(identifier, middleware, source.Token);
 
@@ -106,6 +115,18 @@ namespace HandyIpc.Server
                     $"The instance created by the factory corresponding to the {interfaceType} interface " +
                     $"does not implement the {interfaceType} interface.", nameof(factory));
 
+                // NOTE:
+                // 1. Why would we need a Proxy class?
+                // To call generic methods remotely.
+                // As we know, the server cannot know the possible generic parameters at compile time,
+                // and a "MethodName to generic MethodInfo" mapping table must be maintained,
+                // then determining the specific generic type at runtime by MethodInfo.MakeGenericMethod().
+                //
+                // 2. Why can't the XxxDispatcher and XxxProxy be combined into one class?
+                // Because the Dispatcher class has some members declared by this framework,
+                // such as Dispatch methods, and Proxy only implements the IContract interface declared by users,
+                // this does not lead to naming conflicts even if the user also declares a Dispatch method
+                // with the same signature in the IContract interface.
                 var proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
                 return (IIpcDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
             });

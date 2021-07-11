@@ -2,7 +2,7 @@
 
 namespace HandyIpc
 {
-    public static class Messages
+    public static class Signals
     {
         public static readonly byte[] Empty = { 0 };
         public static readonly byte[] Unit = { 1 };

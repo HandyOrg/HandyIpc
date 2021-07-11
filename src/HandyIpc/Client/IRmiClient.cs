@@ -5,10 +5,11 @@ namespace HandyIpc.Client
 {
     public interface IRmiClient
     {
-        T Invoke<T>(string pipeName, Request request);
+        T Invoke<T>(string pipeName, Request request, object?[]? arguments);
 
-        Task<T> InvokeAsync<T>(string pipeName, Request request);
+        Task<T> InvokeAsync<T>(string pipeName, Request request, object?[]? arguments);
 
-        Task<T> InvokeAsync<T>(string pipeName, Request request, CancellationToken token);
+        // TODO: The CancellationToken is not supported at this time, as this is equivalent to a callback function.
+        Task<T> InvokeAsync<T>(string pipeName, Request request, object?[]? arguments, CancellationToken token);
     }
 }

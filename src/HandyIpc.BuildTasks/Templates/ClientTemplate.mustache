@@ -46,23 +46,28 @@ namespace {{Namespace}}
             var response = _client.Invoke<{{^IsVoid}}{{ReturnType}}{{/IsVoid}}{{#IsVoid}}byte[]{{/IsVoid}}>(
             {{/IsAwaitable}}
                 _identifier,
-                new Request
+                new Request("{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{ParameterTypes}})")
                 {
                     AccessToken = _accessToken,
-                    MethodName = "{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{ParameterTypes}})",
-                    {{#Parameters}}
-                    Arguments = new object[] { {{.}} },
-                    {{/Parameters}}
-                    {{#MethodParameterTypes}}
-                    ArgumentTypes = new [] { {{.}} },
-                    {{/MethodParameterTypes}}
                     {{#TypeArguments}}
-                    GenericArguments = new [] { {{.}} },
+                    GenericArguments = new[] { {{.}} },
                     {{/TypeArguments}}
                     {{#MethodTypeArguments}}
-                    MethodGenericArguments = new [] { {{.}} },
+                    MethodGenericArguments = new[] { {{.}} },
                     {{/MethodTypeArguments}}
-                });
+                    {{#MethodTypeParameters}}
+                    {{#MethodParameterTypes}}
+                    ArgumentTypes = new[] { {{.}} },
+                    {{/MethodParameterTypes}}
+                    {{/MethodTypeParameters}}
+                },
+                {{#Parameters}}
+                new object[] { {{.}} }
+                {{/Parameters}}
+                {{^Parameters}}
+                null
+                {{/Parameters}}
+                );
             {{#IsVoid}}
             if (!response.IsUnit())
             {

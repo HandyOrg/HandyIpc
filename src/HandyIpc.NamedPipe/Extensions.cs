@@ -17,10 +17,9 @@ namespace HandyIpc.NamedPipe
         /// </summary>
         /// <param name="self">An factory instance.</param>
         /// <returns>The factory instance itself.</returns>
-        public static IIpcFactory<IRmiClient, IIpcClientHub> UseNamedPipe(
-            this IIpcFactory<IRmiClient, IIpcClientHub> self)
+        public static IIpcFactory<IRmiClient, IIpcClientHub> UseNamedPipe(this IIpcFactory<IRmiClient, IIpcClientHub> self)
         {
-            return self.Use(() => new RmiClient(new JsonSerializer()));
+            return self.Use(serializer => new RmiClient(serializer));
         }
 
         /// <summary>
@@ -32,11 +31,9 @@ namespace HandyIpc.NamedPipe
         /// and it will print to the Output window on the Visual Studio.
         /// </param>
         /// <returns>The factory instance itself.</returns>
-        public static IIpcFactory<IRmiServer, IIpcServerHub> UseNamedPipe(
-            this IIpcFactory<IRmiServer, IIpcServerHub> self,
-            ILogger? logger = null)
+        public static IIpcFactory<IRmiServer, IIpcServerHub> UseNamedPipe(this IIpcFactory<IRmiServer, IIpcServerHub> self, ILogger? logger = null)
         {
-            return self.Use(() => new RmiServer(new JsonSerializer(), logger ?? new DebugLogger()));
+            return self.Use(serializer => new RmiServer(serializer, logger ?? new DebugLogger()));
         }
 
         internal static byte[] ReadAllBytes(this PipeStream self)

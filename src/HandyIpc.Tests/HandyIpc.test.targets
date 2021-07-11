@@ -9,8 +9,6 @@
 
   <Target Name="HandyIpcTask"
           BeforeTargets="CoreCompile">
-    <Message Text="HandyIpcTaskFolder = $(HandyIpcTaskFolder) " />
-
     <GenerateCodeBuildTask IntermediateOutputPath="$(IntermediateOutputPath)"
                            SourceFiles="@(Compile)">
       <Output TaskParameter="ClientsCodePath"
@@ -20,10 +18,6 @@
       <Output TaskParameter="ServerProxiesCodePath"
               PropertyName="HandyIpcServerProxiesFile" />
     </GenerateCodeBuildTask>
-
-    <Message Text="Auto generated clients file path = $(HandyIpcClientsFile) " />
-    <Message Text="Auto generated dispachers file path = $(HandyIpcDispatchersFile) " />
-    <Message Text="Auto generated server proxies file path = $(HandyIpcServerProxiesFile) " />
 
     <ItemGroup>
       <Compile Include="$(HandyIpcClientsFile)" />

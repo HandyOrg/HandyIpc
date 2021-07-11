@@ -17,15 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="ServerProxyTemplate.mustache">
+    <None Update="Templates\ClientTemplate.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ClientTemplate.mustache">
+    </None>
+    <None Update="Templates\DispatcherTemplate.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="DispatcherTemplate.mustache">
+    </None>
+    <None Update="Templates\ServerProxyTemplate.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
+    </None>
   </ItemGroup>
 
 </Project>

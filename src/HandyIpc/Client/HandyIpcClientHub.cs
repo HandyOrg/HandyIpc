@@ -13,7 +13,7 @@ namespace HandyIpc.Client
             _rmiClient = rmiClient;
         }
 
-        public T Of<T>()
+        public T Of<T>(string? accessToken = null)
         {
             return (T)_typeInstanceMapping.GetOrAdd(typeof(T), key =>
             {
@@ -24,7 +24,7 @@ namespace HandyIpc.Client
                     key = key.GetGenericTypeDefinition();
                 }
 
-                key.ResolveContractInfo(out var identifier, out var accessToken);
+                string identifier = key.ResolveIdentifier();
                 return Activator.CreateInstance(type, _rmiClient, identifier, accessToken);
             });
         }

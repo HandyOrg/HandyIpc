@@ -54,13 +54,12 @@ namespace System
                    throw new InvalidOperationException($"{interfaceType.Name} doesn't look like a Ipc interface. ");
         }
 
-        public static void ResolveContractInfo(this Type interfaceType, out string identifier, out string accessToken)
+        public static string ResolveIdentifier(this Type interfaceType)
         {
             Guards.ThrowIfNot(interfaceType.IsInterface, "The type must be interface type.", nameof(interfaceType));
 
             var attribute = interfaceType.GetCustomAttribute<IpcContractAttribute>(false);
-            identifier = attribute.Identifier;
-            accessToken = attribute.AccessToken;
+            string identifier = attribute.Identifier;
 
             if (string.IsNullOrEmpty(identifier))
             {
@@ -69,6 +68,8 @@ namespace System
                 var sha256Bytes = sha256.ComputeHash(buffer);
                 identifier = string.Concat(sha256Bytes.Select(item => item.ToString("X2")));
             }
+
+            return identifier;
         }
     }
 }

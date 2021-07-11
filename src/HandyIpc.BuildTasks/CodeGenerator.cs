@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using HandyIpc.BuildTasks.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,7 +10,7 @@ namespace HandyIpc.BuildTasks
 {
     public static class CodeGenerator
     {
-        public static TemplateData GetTemplateData(IEnumerable<string> filePaths)
+        public static TemplateFileData GetTemplateData(IEnumerable<string> filePaths)
         {
             var validInterfaces = filePaths
                 .Select(x => CSharpSyntaxTree.ParseText(File.ReadAllText(x)))
@@ -26,6 +27,7 @@ namespace HandyIpc.BuildTasks
                 .Distinct()
                 .Where(item => item != "HandyIpc")
                 .ToList();
+            usingList.AddIfMissing("System.Threading.Tasks");
 
             var classList = validInterfaces.Select(GetClassData).ToList();
             if (classList.Any(classData => classData.HasGenericMethod))
@@ -34,11 +36,7 @@ namespace HandyIpc.BuildTasks
                 usingList.AddIfMissing("System.Reflection");
             }
 
-            return new TemplateData
-            {
-                UsingList = usingList,
-                ClassList = classList
-            };
+            return new TemplateFileData(usingList, classList);
         }
 
         private static ClassData GetClassData(InterfaceDeclarationSyntax @interface)
@@ -53,7 +51,7 @@ namespace HandyIpc.BuildTasks
             var parent = @interface.GetSyntaxNodeRoot<NamespaceDeclarationSyntax>();
             result.Namespace = parent?.Name?.ToString() ?? $"HandyIpc{result.GeneratedClassSuffix}";
 
-            if (@interface.TypeParameterList != null)
+            if (@interface.TypeParameterList is not null)
             {
                 var typeParameters = @interface.TypeParameterList.Parameters;
                 if (typeParameters.Any())
@@ -100,7 +98,7 @@ namespace HandyIpc.BuildTasks
 
             // Resolve generic args list
             string[]? genericTypes = null;
-            if (method.TypeParameterList != null)
+            if (method.TypeParameterList is not null)
             {
                 var typeParameters = method.TypeParameterList.Parameters;
                 if (typeParameters.Any())
@@ -125,9 +123,9 @@ namespace HandyIpc.BuildTasks
                 genericName.Identifier.ValueText == "Task")
             {
                 result.IsAwaitable = true;
-                result.TaskReturnType = method.ReturnType.ToTypeData().Children.Single().ToTypeString();
+                result.TaskReturnType = method.ReturnType.ToTypeData().Children!.Single().ToTypeString();
                 result.TaskReturnTypeContainsGenericParameter =
-                    genericTypes != null && method.ReturnType.ToTypeData().ContainsTypes(genericTypes);
+                    genericTypes is not null && method.ReturnType.ToTypeData().ContainsTypes(genericTypes);
             }
 
             return result;
