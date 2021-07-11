@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using HandyIpc.Client;
 using HandyIpc.NamedPipe;
+using HandyIpc.Serializer.Json;
 using HandyIpc.Server;
 using HandyIpc.Tests.ContractInterfaces;
 using HandyIpc.Tests.Impls;
@@ -15,6 +16,7 @@ namespace HandyIpc.Tests
         {
             IIpcServerHub server = HandyIpcHub
                 .CreateServerFactory()
+                .UseJsonSerializer()
                 .UseNamedPipe()
                 .Build();
             server.Start<IGenericMethods, GenericMethods>();
@@ -22,21 +24,23 @@ namespace HandyIpc.Tests
 
             IIpcClientHub client = HandyIpcHub
                 .CreateClientFactory()
+                .UseJsonSerializer()
                 .UseNamedPipe()
                 .Build();
+
             var genericMethods = client.Of<IGenericMethods>();
 
-            var r1 = await genericMethods.PrintAsync<string, int>(null, new List<List<List<string>>>
+            var r1 = await genericMethods.PrintAsync<string, int>(null!, new List<List<List<string>>>
             {
-                new List<List<string>>
+                new()
                 {
-                    new List<string>
+                    new()
                     {
                         "HAHAHA!",
                     }
                 }
             });
-            var r2 = await genericMethods.PrintAsync<string, int>(null, null);
+            var r2 = await genericMethods.PrintAsync<string, int>(null!, null!);
 
             Console.ReadKey();
         }

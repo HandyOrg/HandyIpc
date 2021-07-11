@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HandyIpc.NamedPipe\HandyIpc.NamedPipe.csproj" />
+    <ProjectReference Include="..\HandyIpc.Serializer.Json\HandyIpc.Serializer.Json.csproj" />
     <ProjectReference Include="..\HandyIpc\HandyIpc.csproj" />
   </ItemGroup>
 

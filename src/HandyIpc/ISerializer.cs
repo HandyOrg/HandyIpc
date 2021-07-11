@@ -11,7 +11,7 @@ namespace HandyIpc
 
         Request DeserializeRequest(byte[] bytes);
 
-        object[]? DeserializeArguments(byte[] bytes, IReadOnlyList<Type> types);
+        object?[]? DeserializeArguments(byte[] bytes, IReadOnlyList<Type> types);
 
         Response DeserializeResponse(byte[] bytes);
     }

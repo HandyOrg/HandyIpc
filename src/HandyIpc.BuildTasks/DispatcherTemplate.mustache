@@ -50,7 +50,7 @@ namespace {{Namespace}}
                 case "{{Name}}<{{.}}>({{ParameterTypes}})"
                 when (_genericMethodMapping.Value.TryGetValue("{{Name}}<{{.}}>({{ParameterTypes}})", out var methodInfo)):
                 {
-                    var args = context.Serializer.DeserializeArguments(context.Output, request.ArgumentTypes);
+                    var args = context.Serializer.DeserializeArguments(context.Input, request.ArgumentTypes);
                     var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodGenericArguments);
                     var obj = constructedMethodInfo.Invoke(_instance, args);
                     {{#IsVoid}}
@@ -71,7 +71,7 @@ namespace {{Namespace}}
                 {{^MethodTypeParameters}}
                 case "{{Name}}({{ParameterTypes}})":
                 {
-                    var args = context.Serializer.DeserializeArguments(content.Output, new Type[] { {{MethodParameterTypes}} });
+                    var args = context.Serializer.DeserializeArguments(context.Input, new Type[] { {{MethodParameterTypes}} });
                     {{#IsVoid}}
                     {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});
                     result = Signals.Unit;
@@ -80,8 +80,8 @@ namespace {{Namespace}}
                     result = {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});
                     {{/IsVoid}}
                     break;
-                {{/MethodTypeParameters}}
                 }
+                {{/MethodTypeParameters}}
 {{/MethodList}}
                 default:
                     throw new ArgumentOutOfRangeException("No matching remote method was found.");
