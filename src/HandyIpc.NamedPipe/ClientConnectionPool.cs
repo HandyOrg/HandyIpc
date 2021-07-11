@@ -15,15 +15,15 @@ namespace HandyIpc.NamedPipe
             var item = TakeOrCreateItem(pipeName);
             return new DisposableValue<RemoteInvoke>(
                 item.invoke,
-                _ => AddItem(pipeName, item));
+                _ => ReturnItem(pipeName, item));
         }
 
-        public async Task<AsyncDisposableValue<RemoteInvokeAsync>> RentAsync(string pipeName)
+        public async Task<DisposableValue<RemoteInvokeAsync>> RentAsync(string pipeName)
         {
             var item = await TakeOrCreateItemAsync(pipeName);
-            return new AsyncDisposableValue<RemoteInvokeAsync>(
+            return new DisposableValue<RemoteInvokeAsync>(
                 item.invoke,
-                _ => AddItemAsync(pipeName, item));
+                _ => ReturnItem(pipeName, item));
         }
 
         private (Action dispose, RemoteInvoke invoke) TakeOrCreateItem(string pipeName)
@@ -52,20 +52,14 @@ namespace HandyIpc.NamedPipe
             return result;
         }
 
-        private void AddItem(string pipeName, (Action dispose, RemoteInvoke invoke) item)
+        private void ReturnItem(string pipeName, (Action dispose, RemoteInvoke invoke) item)
         {
-            if (CheckItem(item))
-            {
-                GetBagFromSyncPool(pipeName).Add(item);
-            }
+            GetBagFromSyncPool(pipeName).Add(item);
         }
 
-        private async Task AddItemAsync(string pipeName, (Action dispose, RemoteInvokeAsync invoke) item)
+        private void ReturnItem(string pipeName, (Action dispose, RemoteInvokeAsync invoke) item)
         {
-            if (await CheckItemAsync(item))
-            {
-                GetBagFromAsyncPool(pipeName).Add(item);
-            }
+            GetBagFromAsyncPool(pipeName).Add(item);
         }
 
         private ConcurrentBag<(Action dispose, RemoteInvoke invoke)> GetBagFromSyncPool(string pipeName)

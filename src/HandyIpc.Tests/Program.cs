@@ -40,7 +40,15 @@ namespace HandyIpc.Tests
                     }
                 }
             });
-            var r2 = await genericMethods.PrintAsync<string, int>(null!, null!);
+
+            try
+            {
+                var r2 = await genericMethods.PrintAsync<string, int>(null!, null!);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
 
             Console.ReadKey();
         }

@@ -30,20 +30,9 @@ namespace HandyIpc.NamedPipe
 
         public async Task<T> InvokeAsync<T>(string pipeName, Request request, object?[]? arguments, CancellationToken token)
         {
-            AsyncDisposableValue<RemoteInvokeAsync>? invokeOwner = null;
-            try
-            {
-                invokeOwner = await _clientPool.RentAsync(pipeName);
-                var response = await invokeOwner.Value(_serializer.SerializeRequest(request, arguments), token);
-                return Unpack<T>(response);
-            }
-            finally
-            {
-                if (invokeOwner is not null)
-                {
-                    await invokeOwner.DisposeAsync();
-                }
-            }
+            using var invokeOwner = await _clientPool.RentAsync(pipeName);
+            var response = await invokeOwner.Value(_serializer.SerializeRequest(request, arguments), token);
+            return Unpack<T>(response);
         }
 
         private T Unpack<T>(byte[] bytes)
