@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using HandyIpc.Client;
@@ -16,41 +17,27 @@ namespace HandyIpc.NamedPipe
             _serializer = serializer;
         }
 
-        public T Invoke<T>(string pipeName, Request request, object?[]? arguments)
+        public T Invoke<T>(string pipeName, Request request, IReadOnlyList<Argument> arguments)
         {
             using var invokeOwner = _clientPool.Rent(pipeName);
-            var response = invokeOwner.Value(_serializer.SerializeRequest(request, arguments));
+            var response = invokeOwner.Value(Signals.GetRequestBytes(request, arguments, _serializer.Serialize));
             return Unpack<T>(response);
         }
 
-        public Task<T> InvokeAsync<T>(string pipeName, Request request, object?[]? arguments)
-        {
-            return InvokeAsync<T>(pipeName, request, arguments, CancellationToken.None);
-        }
-
-        public async Task<T> InvokeAsync<T>(string pipeName, Request request, object?[]? arguments, CancellationToken token)
+        public async Task<T> InvokeAsync<T>(string pipeName, Request request, IReadOnlyList<Argument> arguments)
         {
             using var invokeOwner = await _clientPool.RentAsync(pipeName);
-            var response = await invokeOwner.Value(_serializer.SerializeRequest(request, arguments), token);
+            var response = await invokeOwner.Value(
+                Signals.GetRequestBytes(request, arguments, _serializer.Serialize),
+                CancellationToken.None);
             return Unpack<T>(response);
         }
 
         private T Unpack<T>(byte[] bytes)
         {
-            var response = _serializer.DeserializeResponse(bytes);
+            bool hasValue = Signals.GetResponse(bytes, typeof(T), _serializer.Deserialize, out object? value, out Exception? exception);
 
-            if (response == null)
-            {
-                throw new NullReferenceException("The response can not be null.");
-            }
-
-            if (response.Exception is not null)
-            {
-                throw response.Exception;
-            }
-
-            // If the Exception is null, the Value must be valid.
-            return (T)response.Value!;
+            return hasValue ? (T) value! : throw exception!;
         }
     }
 }

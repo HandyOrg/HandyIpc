@@ -61,13 +61,20 @@ namespace {{Namespace}}
                     {{/MethodParameterTypes}}
                     {{/MethodTypeParameters}}
                 },
-                {{#Parameters}}
-                new object[] { {{.}} }
-                {{/Parameters}}
-                {{^Parameters}}
-                null
-                {{/Parameters}}
-                );
+                Signals.GetArgumentList(
+                    {{#Parameters}}
+                    new object[] { {{.}} },
+                    {{/Parameters}}
+                    {{^Parameters}}
+                    null,
+                    {{/Parameters}}
+                    {{#MethodParameterTypes}}
+                    new Type[] { {{.}} }
+                    {{/MethodParameterTypes}}
+                    {{^MethodParameterTypes}}
+                    null
+                    {{/MethodParameterTypes}}
+                ));
             {{#IsVoid}}
             if (!response.IsUnit())
             {
