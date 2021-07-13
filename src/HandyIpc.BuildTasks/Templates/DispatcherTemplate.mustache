@@ -38,11 +38,10 @@ namespace {{Namespace}}
 {{/HasGenericMethod}}
         }
 
-        public async Task Dispatch(Context context, Func<Task> next)
+        public async Task Dispatch(Context ctx, Func<Task> next)
         {
-            var request = context.Get<Request>();
+            var request = ctx.Get<Request>();
 
-            object result;
             switch (request.MethodName)
             {
 {{#MethodList}}
@@ -50,19 +49,21 @@ namespace {{Namespace}}
                 case "{{Name}}<{{.}}>({{ParameterTypes}})"
                 when (_genericMethodMapping.Value.TryGetValue("{{Name}}<{{.}}>({{ParameterTypes}})", out var methodInfo)):
                 {
-                    var args = context.Serializer.DeserializeArguments(context.Input, request.ArgumentTypes);
+                    var args = Signals.GetArguments(ctx.Input, request.ArgumentTypes, ctx.Serializer.Deserialize);
                     var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodGenericArguments);
                     var obj = constructedMethodInfo.Invoke(_instance, args);
                     {{#IsVoid}}
                     {{#IsAwaitable}}await (Task)obj;{{/IsAwaitable}}
-                    result = Signals.Unit;
+                    ctx.Output = Signals.Unit;
                     {{/IsVoid}}
                     {{^IsVoid}}
                     {{#TaskReturnTypeContainsGenericParameter}}
-                    result = await constructedMethodInfo.ReturnType.UnpackTask(obj);
+                    var result = await constructedMethodInfo.ReturnType.UnpackTask(obj);
+                    ctx.Output = Signals.GetResponseValue(result, constructedMethodInfo.ReturnType, ctx.Serializer.Serialize);
                     {{/TaskReturnTypeContainsGenericParameter}}
                     {{^TaskReturnTypeContainsGenericParameter}}
-                    result = {{#IsAwaitable}}await ({{ReturnType}}){{/IsAwaitable}}obj;
+                    var result = {{#IsAwaitable}}await ({{ReturnType}}){{/IsAwaitable}}obj;
+                    ctx.Output = Signals.GetResponseValue(result, typeof({{ReturnType}}), ctx.Serializer.Serialize);
                     {{/TaskReturnTypeContainsGenericParameter}}
                     {{/IsVoid}}
                     break;
@@ -71,13 +72,14 @@ namespace {{Namespace}}
                 {{^MethodTypeParameters}}
                 case "{{Name}}({{ParameterTypes}})":
                 {
-                    var args = context.Serializer.DeserializeArguments(context.Input, new Type[] { {{MethodParameterTypes}} });
+                    var args = Signals.GetArguments(ctx.Input, new Type[] { {{MethodParameterTypes}} }, ctx.Serializer.Deserialize);
                     {{#IsVoid}}
                     {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});
-                    result = Signals.Unit;
+                    ctx.Output = Signals.Unit;
                     {{/IsVoid}}
                     {{^IsVoid}}
-                    result = {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});
+                    var result = {{#IsAwaitable}}await {{/IsAwaitable}}_instance.{{Name}}({{Arguments}});
+                    ctx.Output = Signals.GetResponseValue(result, typeof({{ReturnType}}), ctx.Serializer.Serialize);
                     {{/IsVoid}}
                     break;
                 }
@@ -86,8 +88,6 @@ namespace {{Namespace}}
                 default:
                     throw new ArgumentOutOfRangeException("No matching remote method was found.");
             }
-
-            context.Output = context.Serializer.SerializeResponse(new Response { Value = result });
 
             await next();
         }
