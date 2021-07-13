@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Condition="'$(Configuration)'=='Debug'" Include="..\HandyIpc\HandyIpc.csproj" />
+    <ProjectReference Condition="'$(Configuration)'=='Debug'" Include="..\HandyIpc.Core\HandyIpc.Core.csproj" />
   </ItemGroup>
 
 </Project>

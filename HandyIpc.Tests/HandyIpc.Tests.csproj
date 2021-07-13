@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HandyIpc\HandyIpc.csproj" />
+    <ProjectReference Include="..\HandyIpc.Core\HandyIpc.Core.csproj" />
   </ItemGroup>
 
 </Project>

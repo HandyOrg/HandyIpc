@@ -25,12 +25,6 @@ namespace HandyIpc
         private static readonly byte[] ResponseValueFlag = { 1 };
         private static readonly byte[] ResponseErrorFlag = { 0 };
 
-        private static readonly byte[] ReqHeaderBytes = Encoding.ASCII.GetBytes(ReqHeader);
-        private static readonly byte[] ResHeaderBytes = Encoding.ASCII.GetBytes(ResHeader);
-        private static readonly byte[] Version = { 1 };
-        private static readonly byte[] ResponseValueFlag = { 1 };
-        private static readonly byte[] ResponseErrorFlag = { 0 };
-
         public static bool IsEmpty(this byte[] bytes) => bytes.Is(Empty);
 
         public static bool IsUnit(this byte[] bytes) => bytes.Is(Unit);
