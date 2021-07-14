@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HandyIpc.Core\HandyIpc.Core.csproj" />
+    <ProjectReference Include="..\HandyIpc.Serializer.Json\HandyIpc.Serializer.Json.csproj" />
   </ItemGroup>
 
   <ItemGroup>

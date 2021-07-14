@@ -18,41 +18,21 @@ namespace HandyIpc.Serializer.Json
             return self.Use(() => new JsonSerializer());
         }
 
-        internal static byte[] Slice(this byte[] bytes, int start, int length)
+        internal static byte[] ToJson(this object @object, Type type)
         {
-            byte[] result = new byte[length];
-            for (int i = 0; i < length; i++)
-            {
-                result[i] = bytes[start + i];
-            }
-
-            return result;
-        }
-
-        internal static byte[] ToJson(this object @object)
-        {
-            string jsonText = JsonConvert.SerializeObject(@object, Settings);
+            string jsonText = JsonConvert.SerializeObject(@object, type, Settings);
             return Encoding.UTF8.GetBytes(jsonText);
         }
 
-        internal static T ToObject<T>(this byte[] bytes)
+        internal static object? ToObject(this byte[] bytes, Type type)
         {
+            if (bytes.Length == 0)
+            {
+                return null;
+            }
+
             string jsonText = Encoding.UTF8.GetString(bytes);
-            return JsonConvert.DeserializeObject<T>(jsonText, Settings);
-        }
-
-        internal static object? CastTo(this object? value, Type targetType)
-        {
-            return value is not null && targetType.IsValueType
-                ? Convert.ChangeType(value, targetType)
-                : targetType.IsInstanceOfType(value)
-                    ? value
-                    : default;
-        }
-
-        internal static int ToInt32(this byte[] bytes)
-        {
-            return BitConverter.ToInt32(bytes, 0);
+            return JsonConvert.DeserializeObject(jsonText, type, Settings);
         }
     }
 }

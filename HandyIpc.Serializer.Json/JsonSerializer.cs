@@ -1,105 +1,89 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HandyIpc.Serializer.Json
 {
     public class JsonSerializer : ISerializer
     {
-        private const string HeaderFlag = "handyipc/json/v1";
+        private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
-        public byte[] SerializeRequest(Request request, object?[]? arguments)
+        public byte[] Serialize(object? value, Type type)
         {
-            byte[] headerBytes = Encoding.ASCII.GetBytes(HeaderFlag);
-            byte headerLengthByte = (byte)headerBytes.Length;
-            byte[] requestBytes = request.ToJson();
-            byte[] requestLengthBytes = BitConverter.GetBytes(requestBytes.Length);
-            byte[] argsBytes = arguments is null ? new byte[0] : arguments.ToJson();
-            byte[] argsLengthBytes = BitConverter.GetBytes(argsBytes.Length);
-
-            byte[] result = new byte[
-                headerBytes.Length +
-                1 + // headerLengthByte.Length
-                requestBytes.Length +
-                requestLengthBytes.Length +
-                argsBytes.Length +
-                argsLengthBytes.Length];
-
-            /*
-             * | Header Length | Header | Request Length | Arguments Length | Request | Arguments |
-             * | 1 byte        | -      | 4 bytes        | 4 bytes          | -       | -         |
-             */
-            result[0] = headerLengthByte;
-            int offset = 1;
-
-            headerBytes.CopyTo(result, offset);
-            offset += headerBytes.Length;
-
-            requestLengthBytes.CopyTo(result, offset);
-            offset += requestLengthBytes.Length;
-
-            argsLengthBytes.CopyTo(result, offset);
-            offset += argsLengthBytes.Length;
-
-            requestBytes.CopyTo(result, offset);
-            offset += requestBytes.Length;
-
-            argsBytes.CopyTo(result, offset);
-
-            return result;
+            return value switch
+            {
+                byte v => new[] { v },
+                byte[] v => v,
+                short v => BitConverter.GetBytes(v),
+                int v => BitConverter.GetBytes(v),
+                long v => BitConverter.GetBytes(v),
+                ushort v => BitConverter.GetBytes(v),
+                uint v => BitConverter.GetBytes(v),
+                ulong v => BitConverter.GetBytes(v),
+                float v => BitConverter.GetBytes(v),
+                double v => BitConverter.GetBytes(v),
+                char v => BitConverter.GetBytes(v),
+                null => EmptyBytes,
+                _ => value.ToJson(type),
+            };
         }
 
-        public byte[] SerializeResponse(Response response) => response.ToJson();
-
-        public Request DeserializeRequest(byte[] bytes)
+        public object? Deserialize(byte[] bytes, Type type)
         {
-            CheckBytes(bytes, out int requestOffset, out int requestLength, out _);
-
-            return bytes.Slice(requestOffset, requestLength).ToObject<Request>();
-        }
-
-        public object?[]? DeserializeArguments(byte[] bytes, IReadOnlyList<Type> types)
-        {
-            CheckBytes(bytes, out int requestOffset, out int requestLength, out int argumentsLength);
-
-            if (argumentsLength == 0)
+            if (type == typeof(byte))
             {
-                return null;
+                return bytes[0];
             }
 
-            int argumentsOffset = requestOffset + requestLength;
-            object?[] arguments = bytes.Slice(argumentsOffset, argumentsLength).ToObject<object?[]>();
-            for (int i = 0; i < arguments.Length; i++)
+            if (type == typeof(byte[]))
             {
-                arguments[0] = arguments[0].CastTo(types[0]);
+                return bytes;
             }
 
-            return arguments;
-        }
-
-        public Response DeserializeResponse(byte[] bytes) => bytes.ToObject<Response>()!;
-
-        private static void CheckBytes(byte[] bytes, out int requestOffset, out int requestLength, out int argumentsLength)
-        {
-            int headerLength = bytes[0];
-            int offset = 1;
-
-            byte[] headerBytes = bytes.Slice(offset, headerLength);
-            offset += headerBytes.Length;
-            string header = Encoding.ASCII.GetString(headerBytes);
-
-            if (!string.Equals(header, HeaderFlag))
+            if (type == typeof(short))
             {
-                throw new ArgumentException("The bytes is not a valid 'handyipc/json/v*' data.", nameof(bytes));
+                return BitConverter.ToInt16(bytes, 0);
             }
 
-            requestLength = bytes.Slice(offset, sizeof(int)).ToInt32();
-            offset += sizeof(int);
+            if (type == typeof(int))
+            {
+                return BitConverter.ToInt32(bytes, 0);
+            }
 
-            argumentsLength = bytes.Slice(offset, sizeof(int)).ToInt32();
-            offset += sizeof(int);
+            if (type == typeof(long))
+            {
+                return BitConverter.ToInt64(bytes, 0);
+            }
 
-            requestOffset = offset;
+            if (type == typeof(ushort))
+            {
+                return BitConverter.ToUInt16(bytes, 0);
+            }
+
+            if (type == typeof(uint))
+            {
+                return BitConverter.ToUInt32(bytes, 0);
+            }
+
+            if (type == typeof(ulong))
+            {
+                return BitConverter.ToUInt64(bytes, 0);
+            }
+
+            if (type == typeof(float))
+            {
+                return BitConverter.ToSingle(bytes, 0);
+            }
+
+            if (type == typeof(double))
+            {
+                return BitConverter.ToDouble(bytes, 0);
+            }
+
+            if (type == typeof(char))
+            {
+                return BitConverter.ToChar(bytes, 0);
+            }
+
+            return bytes.ToObject(type);
         }
     }
 }
