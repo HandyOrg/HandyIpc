@@ -1,6 +1,7 @@
-﻿using System;
+﻿using HandyIpc;
+using System;
 
-namespace HandyIpc.Tests.Mock
+namespace HandyIpcTests.Mock
 {
     public class MockSerializer : ISerializer
     {

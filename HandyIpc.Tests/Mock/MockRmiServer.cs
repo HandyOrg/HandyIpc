@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using HandyIpc;
 using HandyIpc.Server;
 
-namespace HandyIpc.Tests.Mock
+namespace HandyIpcTests.Mock
 {
     public class MockRmiServer : IRmiServer
     {

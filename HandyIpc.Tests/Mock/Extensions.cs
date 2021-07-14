@@ -1,7 +1,8 @@
-﻿using HandyIpc.Client;
+﻿using HandyIpc;
+using HandyIpc.Client;
 using HandyIpc.Server;
 
-namespace HandyIpc.Tests.Mock
+namespace HandyIpcTests.Mock
 {
     public static class Extensions
     {
