@@ -47,7 +47,7 @@ namespace HandyIpcTests
 
             TestOneType(serializer, new string?[] { null });
 
-            TestOneType(serializer, Enumerable.Range(0, 1000).Select(item =>
+            TestOneType(serializer, Enumerable.Range(0, 1000).Select(_ =>
             {
                 byte[] result = new byte[random.Next(0, 1024 * 1024)];
                 random.NextBytes(result);
