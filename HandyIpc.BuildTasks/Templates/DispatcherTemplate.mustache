@@ -63,7 +63,7 @@ namespace {{Namespace}}
                     {{/TaskReturnTypeContainsGenericParameter}}
                     {{^TaskReturnTypeContainsGenericParameter}}
                     var result = {{#IsAwaitable}}await ({{ReturnType}}){{/IsAwaitable}}obj;
-                    ctx.Output = Signals.GetResponseValue(result, typeof({{ReturnType}}), ctx.Serializer.Serialize);
+                    ctx.Output = Signals.GetResponseValue(result, constructedMethodInfo.ReturnType, ctx.Serializer.Serialize);
                     {{/TaskReturnTypeContainsGenericParameter}}
                     {{/IsVoid}}
                     break;

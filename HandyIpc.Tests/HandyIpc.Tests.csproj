@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>HandyIpcTests</RootNamespace>
   </PropertyGroup>
 
   <Import Project="HandyIpc.test.targets" />
@@ -12,6 +13,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HandyIpc.Core\HandyIpc.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Client\" />
+    <Folder Include="Server\" />
   </ItemGroup>
 
 </Project>

@@ -26,6 +26,10 @@
 
         public string MethodTypeArguments { get; set; } // typeof(T1), typeof(T2), typeof(T3)
 
+        // TODO: Delete this property because it is useless. 
+        // When an interface is implicitly implemented,
+        // it automatically inherits the generic constraints from the interface
+        // and does not have to be declared again itself.
         public string MethodConstraintClauses { get; set; } // where T1: class where T2: new()
 
         // The Type[] of method parameter must be sent to server from client when it is generic method,

@@ -37,7 +37,7 @@ namespace {{Namespace}}
         }
 {{#MethodList}}
 
-        {{#IsAwaitable}}async {{/IsAwaitable}}{{ReturnType}} {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}.{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{TypeAndParameters}}) {{MethodConstraintClauses}}
+        {{#IsAwaitable}}async {{/IsAwaitable}}{{ReturnType}} {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}.{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{TypeAndParameters}})
         {
             {{#IsAwaitable}}
             var response = await _client.InvokeAsync<{{^IsVoid}}{{TaskReturnType}}{{/IsVoid}}{{#IsVoid}}byte[]{{/IsVoid}}>(

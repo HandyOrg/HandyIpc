@@ -14,12 +14,12 @@ namespace HandyIpc.Tests.Mock
             _serializer = serializer;
         }
 
-        public T Invoke<T>(string pipeName, Request request, IReadOnlyList<Argument> arguments)
+        public T Invoke<T>(string identifier, Request request, IReadOnlyList<Argument> arguments)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<T> InvokeAsync<T>(string pipeName, Request request, IReadOnlyList<Argument> arguments)
+        public async Task<T> InvokeAsync<T>(string identifier, Request request, IReadOnlyList<Argument> arguments)
         {
             throw new NotImplementedException();
         }

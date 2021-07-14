@@ -33,7 +33,7 @@ namespace {{Namespace}}
 {{#MethodList}}
 
         [IpcMethod("{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{ParameterTypes}})")]
-        {{ReturnType}} {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}.{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{TypeAndParameters}}) {{MethodConstraintClauses}}
+        {{ReturnType}} {{InterfaceName}}{{#TypeParameters}}<{{.}}>{{/TypeParameters}}.{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{TypeAndParameters}})
         {
             {{#IsVoid}}{{#IsAwaitable}}return {{/IsAwaitable}}{{/IsVoid}}{{^IsVoid}}return {{/IsVoid}}_instance.{{Name}}{{#MethodTypeParameters}}<{{.}}>{{/MethodTypeParameters}}({{Parameters}});
         }
