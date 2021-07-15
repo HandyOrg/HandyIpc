@@ -6,9 +6,11 @@ namespace HandyIpc
     {
         private readonly Func<TRmi, THub> _hubFactory;
 
-        private Func<ISerializer> _serializerFactory = null!;
+        private Func<ISerializer> _serializerFactory = () => throw new InvalidOperationException(
+            "Must invoke the IIpcFactory<TRmi, THub>.Use(Func<ISerializer> factory) method " +
+            "to register a factory before invoking the Build method.");
         private Func<ISerializer, TRmi> _rmiFactory = _ => throw new InvalidOperationException(
-            "Must invoke the IIpcFactory<TRmi, THub>.Use(Func<TRmi> factory) method " +
+            "Must invoke the IIpcFactory<TRmi, THub>.Use(Func<ISerializer, TRmi> factory) method " +
             "to register a factory before invoking the Build method.");
 
         public IpcFactory(Func<TRmi, THub> hubFactory) => _hubFactory = hubFactory;
