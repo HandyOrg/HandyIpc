@@ -33,7 +33,7 @@ namespace HandyIpc.Server
 
         public static async Task RequestParser(Context ctx, Func<Task> next)
         {
-            ctx.Request = Signals.GetRequest(ctx.Input, ctx.Serializer.Serialize);
+            ctx.Request = Signals.GetRequest(ctx.Input, ctx.Serializer.Deserialize);
 
             await next();
         }

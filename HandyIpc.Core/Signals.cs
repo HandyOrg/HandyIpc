@@ -155,10 +155,17 @@ namespace HandyIpc
             offset++;
             if (hasValue)
             {
-                int valueLength = BitConverter.ToInt32(bytes.Slice(offset, sizeof(int)), 0);
-                offset += sizeof(int);
-                value = deserialize(bytes.Slice(offset, valueLength), type);
                 exception = null;
+                if (offset == bytes.Length)
+                {
+                    value = null;
+                }
+                else
+                {
+                    int valueLength = BitConverter.ToInt32(bytes.Slice(offset, sizeof(int)), 0);
+                    offset += sizeof(int);
+                    value = deserialize(bytes.Slice(offset, valueLength), type);
+                }
             }
             else
             {
