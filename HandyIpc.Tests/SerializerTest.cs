@@ -1,17 +1,23 @@
 using System.Collections.Generic;
 using HandyIpc;
-using HandyIpc.Serializer.Json;
 using Xunit;
 using static HandyIpcTests.Mock.MockDataGenerator;
 
 namespace HandyIpcTests
 {
-    public class SerializerTest
+    public class SerializerTest : IClassFixture<SerializerTestFixture>
     {
+        private readonly SerializerTestFixture _fixture;
+
+        public SerializerTest(SerializerTestFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public void TestCSharpBuildInTypes()
         {
-            ISerializer serializer = new JsonSerializer();
+            ISerializer serializer = _fixture.Serializer;
 
             TestOneType(serializer, Bytes());
             TestOneType(serializer, Shorts());
