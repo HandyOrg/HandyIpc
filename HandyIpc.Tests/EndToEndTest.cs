@@ -1,4 +1,5 @@
-﻿using HandyIpcTests.Interfaces;
+﻿using HandyIpcTests.Implementations;
+using HandyIpcTests.Interfaces;
 using Xunit;
 using static HandyIpcTests.Mock.MockDataGenerator;
 
@@ -17,6 +18,48 @@ namespace HandyIpcTests
         public void TestIBuildInTypeTestInterface()
         {
             var @interface = _fixture.ClientHub.Of<IBuildInTypeTest>();
+
+            Assert.Throws<TestException>(() => @interface.TestVoidWithParams());
+
+            {
+                using var floatEnumerator = Floats().GetEnumerator();
+                using var doubleEnumerator = Doubles().GetEnumerator();
+                using var longEnumerator = Longs().GetEnumerator();
+                using var intEnumerator = Ints().GetEnumerator();
+                using var shortEnumerator = Shorts().GetEnumerator();
+                using var ulongEnumerator = Ulongs().GetEnumerator();
+                using var uintEnumerator = Uints().GetEnumerator();
+                using var ushortEnumerator = Ushorts().GetEnumerator();
+                using var charEnumerator = Chars().GetEnumerator();
+                using var byteEnumerator = Bytes().GetEnumerator();
+                for (int i = 0; i < 256; i++)
+                {
+                    floatEnumerator.MoveNext();
+                    doubleEnumerator.MoveNext();
+                    intEnumerator.MoveNext();
+                    shortEnumerator.MoveNext();
+                    ulongEnumerator.MoveNext();
+                    uintEnumerator.MoveNext();
+                    ushortEnumerator.MoveNext();
+                    charEnumerator.MoveNext();
+                    byteEnumerator.MoveNext();
+
+                    float @float = floatEnumerator.Current;
+                    double @double = doubleEnumerator.Current;
+                    long @long = longEnumerator.Current;
+                    int @int = intEnumerator.Current;
+                    short @short = shortEnumerator.Current;
+                    ulong @ulong = ulongEnumerator.Current;
+                    uint @uint = uintEnumerator.Current;
+                    ushort @ushort = ushortEnumerator.Current;
+                    char @char = charEnumerator.Current;
+                    byte @byte = byteEnumerator.Current;
+
+                    string result = @interface.TestVoidWithBasicTypeParams(@float, @double, @long, @int, @short, @ulong, @uint, @ushort, @char, @byte);
+                    string expected = $"{@float}{@double}{@long}{@int}{@short}{@ulong}{@uint}{@ushort}{@char}{@byte}";
+                    Assert.Equal(expected, result);
+                }
+            }
 
             foreach (byte value in Bytes())
             {

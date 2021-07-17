@@ -5,12 +5,9 @@ namespace HandyIpcTests.Implementations
 {
     public class BuildInTypeTest : IBuildInTypeTest
     {
-        public void TestVoidWithParams()
-        {
-            throw new NotImplementedException();
-        }
+        public void TestVoidWithParams() => throw new TestException();
 
-        public void TestVoidWithBasicTypeParams(
+        public string TestVoidWithBasicTypeParams(
             float @float,
             double @double,
             long @long,
@@ -22,7 +19,7 @@ namespace HandyIpcTests.Implementations
             char @char,
             byte @byte)
         {
-            throw new NotImplementedException();
+            return $"{@float}{@double}{@long}{@int}{@short}{@ulong}{@uint}{@ushort}{@char}{@byte}";
         }
 
         public float TestFloat(float value) => value;

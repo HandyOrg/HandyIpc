@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace HandyIpc.Serializer.Json
 {
@@ -19,6 +20,7 @@ namespace HandyIpc.Serializer.Json
             [typeof(float)] = value => BitConverter.GetBytes((float)value),
             [typeof(double)] = value => BitConverter.GetBytes((double)value),
             [typeof(char)] = value => BitConverter.GetBytes((char)value),
+            [typeof(string)] = value => Encoding.UTF8.GetBytes((string)value),
             //[typeof(bool)] = value => BitConverter.GetBytes((bool)value),
         };
         private static readonly IReadOnlyDictionary<Type, Func<byte[], object?>> BuildInTypeDeserializerMap = new Dictionary<Type, Func<byte[], object?>>
@@ -34,6 +36,7 @@ namespace HandyIpc.Serializer.Json
             [typeof(float)] = bytes => BitConverter.ToSingle(bytes, 0),
             [typeof(double)] = bytes => BitConverter.ToDouble(bytes, 0),
             [typeof(char)] = bytes => BitConverter.ToChar(bytes, 0),
+            [typeof(string)] = bytes => Encoding.UTF8.GetString(bytes),
             //[typeof(bool)] = bytes => BitConverter.ToBoolean(bytes, 0),
         };
 

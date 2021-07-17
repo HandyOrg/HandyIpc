@@ -10,66 +10,63 @@ namespace HandyIpcTests.Mock
 
         public static IEnumerable<byte> Bytes()
         {
-            return Enumerable
+            return new[] { byte.MinValue, byte.MaxValue }
+                .Concat(Enumerable
                 .Range(0, 256)
-                .Select(item => (byte)item)
-                .Concat(new[] { byte.MinValue, byte.MaxValue });
+                .Select(item => (byte)item));
         }
 
         public static IEnumerable<short> Shorts()
         {
-            return Enumerable
+            return new[] { short.MinValue, short.MaxValue }
+                .Concat(Enumerable
                 .Range(0, 1000)
-                .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
-                .Concat(new[] { short.MinValue, short.MaxValue });
+                .Select(_ => (short)random.Next(short.MinValue, short.MaxValue)));
         }
 
         public static IEnumerable<int> Ints()
         {
-            return Enumerable
+            return new[] { int.MinValue, int.MaxValue }
+                .Concat(Enumerable
                 .Range(0, 1000)
-                .Select(_ => random.Next(int.MinValue, int.MaxValue))
-                .Concat(new[] { int.MinValue, int.MaxValue });
+                .Select(_ => random.Next(int.MinValue, int.MaxValue)));
         }
 
         public static IEnumerable<long> Longs()
         {
-            return Enumerable
+            return new[] { long.MinValue, long.MaxValue }
+                .Concat(Enumerable
                 .Range(0, 1000)
-                .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
-                .Concat(new[] { long.MinValue, long.MaxValue });
+                .Select(_ => (long)random.Next(int.MinValue, int.MaxValue)));
         }
 
         public static IEnumerable<ushort> Ushorts()
         {
-            return Enumerable
+            return new[] { ushort.MinValue, ushort.MaxValue }
+                .Concat(Enumerable
                 .Range(0, 1000)
-                .Select(_ => (ushort)random.Next(0, ushort.MaxValue))
-                .Concat(new[] { ushort.MinValue, ushort.MaxValue });
+                .Select(_ => (ushort)random.Next(0, ushort.MaxValue)));
         }
 
         public static IEnumerable<uint> Uints()
         {
-            return Enumerable
+            return new[] { uint.MinValue, uint.MaxValue }
+                .Concat(Enumerable
                 .Range(0, 1000)
-                .Select(_ => (uint)random.Next(0, int.MaxValue))
-                .Concat(new[] { uint.MinValue, uint.MaxValue });
+                .Select(_ => (uint)random.Next(0, int.MaxValue)));
         }
 
         public static IEnumerable<ulong> Ulongs()
         {
-            return Enumerable
+            return new[] { ulong.MinValue, ulong.MaxValue }
+                .Concat(Enumerable
                 .Range(0, 1000)
-                .Select(_ => (ulong)random.Next(0, int.MaxValue))
-                .Concat(new[] { ulong.MinValue, ulong.MaxValue });
+                .Select(_ => (ulong)random.Next(0, int.MaxValue)));
         }
 
         public static IEnumerable<float> Floats()
         {
-            return Enumerable
-                .Range(0, 1000)
-                .Select(_ => float.MaxValue * (float)random.NextDouble() + float.MinValue)
-                .Concat(new[]
+            return new[]
                 {
                     float.MinValue,
                     float.MaxValue,
@@ -77,29 +74,34 @@ namespace HandyIpcTests.Mock
                     float.NaN,
                     float.NegativeInfinity,
                     float.PositiveInfinity
-                });
+                }
+                .Concat(Enumerable
+                .Range(0, 1000)
+                .Select(_ => float.MaxValue * (float)random.NextDouble() + float.MinValue));
         }
 
         public static IEnumerable<double> Doubles()
         {
-            return Enumerable
-                .Range(0, 1000)
-                .Select(_ => double.MaxValue * random.NextDouble() + double.MinValue)
-                .Concat(new[] {
+            return new[]
+                {
                     double.MinValue,
                     double.MaxValue,
                     double.Epsilon,
                     double.NaN,
                     double.NegativeInfinity,
-                    double.PositiveInfinity });
+                    double.PositiveInfinity
+                }
+                .Concat(Enumerable
+                .Range(0, 1000)
+                .Select(_ => double.MaxValue * random.NextDouble() + double.MinValue));
         }
 
         public static IEnumerable<char> Chars()
         {
-            return Enumerable
+            return new[] { char.MinValue, char.MaxValue }
+                .Concat(Enumerable
                 .Range(0, 256 * 256)
-                .Select(item => (char)item)
-                .Concat(new[] { char.MinValue, char.MaxValue });
+                .Select(item => (char)item));
         }
 
         public static IEnumerable<object?> Null()
@@ -109,15 +111,15 @@ namespace HandyIpcTests.Mock
 
         public static IEnumerable<byte[]> ByteArrays()
         {
-            return Enumerable
+            return new[] { new byte[0] }
+                .Concat(Enumerable
                 .Range(0, 1000)
                 .Select(_ =>
                 {
                     byte[] result = new byte[random.Next(0, 1024)];
                     random.NextBytes(result);
                     return result;
-                })
-                .Concat(new[] { new byte[0] });
+                }));
         }
     }
 }
