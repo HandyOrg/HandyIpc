@@ -7,12 +7,15 @@
     <RootNamespace>HandyIpcTests</RootNamespace>
   </PropertyGroup>
 
-  <Import Project="HandyIpc.test.targets" />
+  <!--<Import Project="HandyIpc.test.targets" />-->
 
   <ItemGroup>
     <ProjectReference Include="..\HandyIpc.Core\HandyIpc.Core.csproj" />
     <ProjectReference Include="..\HandyIpc.NamedPipe\HandyIpc.NamedPipe.csproj" />
     <ProjectReference Include="..\HandyIpc.Serializer.Json\HandyIpc.Serializer.Json.csproj" />
+    <ProjectReference Include="..\HandyIpc.Generator\HandyIpc.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

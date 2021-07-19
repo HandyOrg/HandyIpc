@@ -78,7 +78,6 @@ namespace HandyIpcTests
                 new Argument(typeof(char), '\0'),
                 new Argument(typeof(byte), (byte)255),
             };
-            mockClient.IsReturnVoid = true;
             buildInTypeTest.TestVoidWithBasicTypeParams(3.14f, 3.14, 42, 42, 42, 42, 42, 42, '\0', 255);
         }
 
