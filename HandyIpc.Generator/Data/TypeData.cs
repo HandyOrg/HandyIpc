@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HandyIpc.BuildTasks.Data
+namespace HandyIpc.Generator.Data
 {
     public class TypeData
     {

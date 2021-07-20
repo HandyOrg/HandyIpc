@@ -1,28 +1,30 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using HandyIpc.BuildTasks.Data;
+using HandyIpc.Generator.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace HandyIpc.BuildTasks
+namespace HandyIpc.Generator
 {
     internal static class Extensions
     {
         public static string GetInterfaceName(this InterfaceDeclarationSyntax @interface)
         {
             var identifier = @interface.Identifier;
-            var interfaceParent = identifier.Parent is not null ? identifier.Parent.Parent : identifier.Parent;
+            var interfaceParent = identifier.Parent is not null
+                ? identifier.Parent.Parent
+                : identifier.Parent;
 
-            if ((interfaceParent as ClassDeclarationSyntax) is not null)
+            if (interfaceParent is ClassDeclarationSyntax classDeclarationSyntax)
             {
-                var classParent = ((ClassDeclarationSyntax)interfaceParent).Identifier;
-                return classParent + "." + identifier.ValueText;
+                var classParent = classDeclarationSyntax.Identifier;
+                return $"{classParent}.{identifier.ValueText}";
             }
 
             return identifier.ValueText;
         }
 
-        public static T GetSyntaxNodeRoot<T>(this SyntaxNode node) where T : SyntaxNode
+        public static T? GetSyntaxNodeRoot<T>(this SyntaxNode node) where T : SyntaxNode
         {
             var root = node;
             while (root.Parent is T)
@@ -30,7 +32,7 @@ namespace HandyIpc.BuildTasks
                 root = root.Parent;
             }
 
-            return (T)root;
+            return root as T;
         }
 
         public static TypeData ToTypeData(this TypeSyntax typeSyntax)

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <MinClientVersion>2.12</MinClientVersion>
-    <GenerateDocumentationFile Condition=" '$(Configuration)' == 'Release' ">true</GenerateDocumentationFile>
     <Authors>Dingping Zhang</Authors>
     <Copyright>Copyright (c) 2020-2021 Dingping Zhang</Copyright>
     <PackageProjectUrl>https://github.com/HandyOrg/HandyIpc</PackageProjectUrl>
