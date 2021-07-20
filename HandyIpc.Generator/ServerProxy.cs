@@ -24,8 +24,7 @@ namespace {@class.Namespace}
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Reflection.Obfuscation(Exclude = true)]
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    public class ServerProxy{@class.GeneratedClassSuffix}{interfaceTypeParameters}
-        : {interfaceType}
+    public class ServerProxy{@class.GeneratedClassSuffix}{interfaceTypeParameters} : {interfaceType}
         {@class.ConstraintClauses}
     {{
         private readonly {interfaceType} _instance;
@@ -51,7 +50,7 @@ namespace {@class.Namespace}
 }}
 ";
             })}
-";
+".RemoveWhiteSpaceLine();
         }
     }
 }

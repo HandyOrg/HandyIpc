@@ -26,8 +26,7 @@ namespace {@class.Namespace}
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Reflection.Obfuscation(Exclude = true)]
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    public class ClientProxy{@class.GeneratedClassSuffix}{interfaceTypeParameters}
-        : {interfaceType}
+    public class ClientProxy{@class.GeneratedClassSuffix}{interfaceTypeParameters} : {interfaceType}
         {@class.ConstraintClauses}
     {{
         private readonly IRmiClient _client;
@@ -79,7 +78,7 @@ namespace {@class.Namespace}
 }}
 ";
             })}
-";
+".RemoveWhiteSpaceLine();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using HandyIpc;
 
 namespace HandyIpcTests.Interfaces
@@ -21,5 +22,13 @@ namespace HandyIpcTests.Interfaces
         TM TestGenericMethod<TM>(TM[] value);
 
         List<TM> TestNestedGeneric<TM>(List<List<List<TM>>> toFlatten);
+
+        void TestTypeOf<T>();
+
+        string TestTypeOf<T, U>();
+
+        Task TestAsync();
+
+        Task<T1> TestAsync(string id);
     }
 }

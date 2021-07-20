@@ -30,14 +30,14 @@ namespace {@class.Namespace}
         {@class.ConstraintClauses}
     {{
         private readonly {interfaceType} _instance;
-{@class.MethodList.Any(item => item.ParameterTypes.Any()).If(@"
+{@class.MethodList.Any(item => item.TypeParameters.Any()).IfLine(@"
         private readonly Lazy<IReadOnlyDictionary<string, MethodInfo>> _genericMethodMapping;
 ")}
 
         public Dispatcher{@class.GeneratedClassSuffix}({interfaceType} instance)
         {{
             _instance = instance;
-{@class.MethodList.Any(item => item.ParameterTypes.Any()).If($@"
+{@class.MethodList.Any(item => item.TypeParameters.Any()).IfLine($@"
             _genericMethodMapping = new Lazy<IReadOnlyDictionary<string, MethodInfo>>(
                 () => _instance.GetGenericMethodMapping(typeof({interfaceType})));
 ")}
@@ -63,9 +63,11 @@ namespace {@class.Namespace}
                 case ""{methodId}""
                 when (_genericMethodMapping.Value.TryGetValue(""{methodId}"", out var methodInfo)):
                 {{
+{method.Parameters.Any().IfLine(@"
                     var args = Signals.GetArguments(ctx.Input, request.ArgumentTypes, ctx.Serializer.Deserialize);
+")}
                     var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodGenericArguments);
-                    var obj = constructedMethodInfo.Invoke(_instance, args);
+                    var obj = constructedMethodInfo.Invoke(_instance, {method.Parameters.Any().If("args", "new object[0]")});
 {method.IsVoid.If($@"
                     {method.IsAwaitable.If("await (Task)obj;")}
                     ctx.Output = Signals.Unit;
@@ -83,7 +85,9 @@ namespace {@class.Namespace}
 ", $@"
                 case ""{methodId}"":
                 {{
-                    var args = Signals.GetArguments(ctx.Input, new Type[] {{ {method.ParameterTypes.Select(type => $"typeof({type})").Join(", ")} }}, ctx.Serializer.Deserialize);
+{method.ParameterTypes.Select(type => $"typeof({type})").Join(", ").IfLine(text => $@"
+                    var args = Signals.GetArguments(ctx.Input, new Type[] {{ {text} }}, ctx.Serializer.Deserialize);
+")}
 {method.IsVoid.If($@"
                     {method.IsAwaitable.If("await ")}_instance.{method.Name}({arguments});
                     ctx.Output = Signals.Unit;
@@ -106,7 +110,7 @@ namespace {@class.Namespace}
 }}
 ";
             })}
-";
+".RemoveWhiteSpaceLine();
         }
     }
 }
