@@ -11,7 +11,7 @@ namespace HandyIpc.Generator
 using System;
 using HandyIpc;
 using HandyIpc.Client;
-{data.ClassList.Line(@class =>
+{data.ClassList.For(@class =>
             {
                 string interfaceTypeParameters = @class.TypeParameters.Join(", ").If(text => $"<{text}>");
                 string interfaceType = $"{@class.InterfaceName}{interfaceTypeParameters}";
@@ -19,7 +19,7 @@ using HandyIpc.Client;
 
 namespace {@class.Namespace}
 {{
-{data.UsingList.Line(@using => $@"
+{data.UsingList.For(@using => $@"
     using {@using};
 ")}
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -39,7 +39,7 @@ namespace {@class.Namespace}
             _identifier = identifier;
             _accessToken = accessToken;
         }}
-{@class.MethodList.Line(method =>
+{@class.MethodList.For(method =>
                 {
                     string methodName = $"{method.Name}{method.TypeParameters.Join(", ").If(text => $"<{text}>")}";
                     string methodId = $"{methodName}({method.ParameterTypes.Join(", ")})";

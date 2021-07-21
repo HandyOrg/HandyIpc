@@ -11,7 +11,7 @@ namespace HandyIpc.Generator
         private static readonly int NewLineLength = Environment.NewLine.Length;
         private static readonly Regex WhiteSpaceLineRegex = new($@"{Environment.NewLine}( +?{Environment.NewLine})+", RegexOptions.Compiled);
 
-        public static string Line<T>(this IEnumerable<T> self, Func<T, string> callback)
+        public static string For<T>(this IEnumerable<T> self, Func<T, string> callback)
         {
             return self
                 .Aggregate(
