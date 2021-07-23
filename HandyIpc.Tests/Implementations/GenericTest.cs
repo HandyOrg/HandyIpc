@@ -1,67 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using HandyIpcTests.Interfaces;
 
 namespace HandyIpcTests.Implementations
 {
-    public class GenericTest<T1, T2, T3> : IGenericTest<T1, T2, T3>
-        where T2 : T3
-        where T1 : class
+    public class GenericTest<T1, T2> : IGenericTest<T1, T2>
+        where T1 : class, new()
     {
-        public void TestVoid()
+        public T1 ReturnOriginalValue(T1 value) => value;
+
+        public string PrintGenericArguments(T1 value1, T2 value2) => $"({typeof(T1)}: {value1}, {typeof(T2)}: {value2})";
+
+        public TM TestGenericConstraint<TM>(TM value) where TM : new() => value;
+
+        public List<TM> SendList<TM>(List<TM> value) => value;
+
+        public TM First<TM>(TM[] value) => value.First();
+
+        public List<TM> Flatten<TM>(List<List<List<TM>>> toFlatten)
         {
-            throw new NotImplementedException();
+            return toFlatten.SelectMany(item => item.SelectMany(subItem => subItem)).ToList();
         }
 
-        public T1 TestGenericT1(T1 value)
-        {
-            throw new NotImplementedException();
-        }
+        public string TestTypeOf<T, U>() => $"{typeof(T)}{typeof(T)}";
 
-        public T1 TestGenericT1(T1 value1, T2 value2)
-        {
-            throw new NotImplementedException();
-        }
+        public Task TestAsync() => Task.FromException(new TestException());
 
-        public TM TestGenericMethod<TM>(TM value) where TM : new()
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<TM> TestGenericMethod<TM>(List<TM> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TM TestGenericMethod<TM>(TM[] value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<TM> TestNestedGeneric<TM>(List<List<List<TM>>> toFlatten)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void TestTypeOf<T>()
-        {
-            throw new NotImplementedException();
-        }
-
-        public string TestTypeOf<T, U>()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task TestAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<T1> TestAsync(string id)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<T1> TestAsync(string id) => Task.FromResult(new T1());
     }
 }

@@ -24,7 +24,7 @@ namespace HandyIpcTests
                 .UseNamedPipe()
                 .Build();
             _buildInTypeTestServerToken = server.Start<IBuildInTypeTest, BuildInTypeTest>();
-            _genericTestServerToken = server.Start(typeof(IGenericTest<,,>), typeof(GenericTest<,,>));
+            _genericTestServerToken = server.Start(typeof(IGenericTest<,>), typeof(GenericTest<,>));
 
             ClientHub = HandyIpcHub
                 .CreateClientFactory()
