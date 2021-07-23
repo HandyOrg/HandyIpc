@@ -13,7 +13,7 @@ namespace HandyIpc
     public static class Signals
     {
         private const string ReqHeader = "handyipc/req";
-        private const string ResHeader = "hangyipc/res";
+        private const string ResHeader = "handyipc/res";
 
         public static readonly byte[] Empty = { 0 };
         public static readonly byte[] Unit = { 1 };
