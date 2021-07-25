@@ -64,7 +64,7 @@ namespace {@class.Namespace}
                 when (_genericMethodMapping.Value.TryGetValue(""{methodId}"", out var methodInfo)):
                 {{
 {method.Parameters.Any().IfLine(@"
-                    var args = Signals.GetArguments(ctx.Input, request.ArgumentTypes, ctx.Serializer.Deserialize);
+                    var args = ctx.Serializer.DeserializeRequestArguments(ctx.Input, request.ArgumentTypes);
 ")}
                     var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodGenericArguments);
                     var obj = constructedMethodInfo.Invoke(_instance, {method.Parameters.Any().If("args", "new object[0]")});
@@ -74,10 +74,10 @@ namespace {@class.Namespace}
 ", $@"
 {method.TaskReturnTypeContainsGenericParameter.If(@"
                     var result = await constructedMethodInfo.ReturnType.UnpackTask(obj);
-                    ctx.Output = Signals.GetResponseValue(result, constructedMethodInfo.ReturnType, ctx.Serializer.Serialize);
+                    ctx.Output = ctx.Serializer.SerializeResponseValue(result, constructedMethodInfo.ReturnType);
 ", $@"
                     var result = {method.IsAwaitable.If($"await ({method.ReturnType})")}obj;
-                    ctx.Output = Signals.GetResponseValue(result, constructedMethodInfo.ReturnType, ctx.Serializer.Serialize);
+                    ctx.Output = ctx.Serializer.SerializeResponseValue(result, constructedMethodInfo.ReturnType);
 ")}
 ")}
                     break;
@@ -86,14 +86,14 @@ namespace {@class.Namespace}
                 case ""{methodId}"":
                 {{
 {method.ParameterTypes.Select(type => $"typeof({type})").Join(", ").IfLine(text => $@"
-                    var args = Signals.GetArguments(ctx.Input, new Type[] {{ {text} }}, ctx.Serializer.Deserialize);
+                    var args = ctx.Serializer.DeserializeRequestArguments(ctx.Input, new Type[] {{ {text} }});
 ")}
 {method.IsVoid.If($@"
                     {method.IsAwaitable.If("await ")}_instance.{method.Name}({arguments});
                     ctx.Output = Signals.Unit;
 ", $@"
                     var result = {method.IsAwaitable.If("await ")}_instance.{method.Name}({arguments});
-                    ctx.Output = Signals.GetResponseValue(result, typeof({method.ReturnType}), ctx.Serializer.Serialize);
+                    ctx.Output = ctx.Serializer.SerializeResponseValue(result, typeof({method.ReturnType}));
 ")}
                     break;
                 }}

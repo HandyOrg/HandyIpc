@@ -20,7 +20,7 @@ namespace HandyIpc.NamedPipe
         public T Invoke<T>(string pipeName, RequestHeader request, IReadOnlyList<Argument> arguments)
         {
             using var invokeOwner = _clientPool.Rent(pipeName);
-            var response = invokeOwner.Value(Signals.GetRequestBytes(request, arguments, _serializer.Serialize));
+            var response = invokeOwner.Value(_serializer.SerializeRequest(request, arguments));
             return Unpack<T>(response);
         }
 
@@ -28,16 +28,16 @@ namespace HandyIpc.NamedPipe
         {
             using var invokeOwner = await _clientPool.RentAsync(pipeName);
             var response = await invokeOwner.Value(
-                Signals.GetRequestBytes(request, arguments, _serializer.Serialize),
+                _serializer.SerializeRequest(request, arguments),
                 CancellationToken.None);
             return Unpack<T>(response);
         }
 
         private T Unpack<T>(byte[] bytes)
         {
-            bool hasValue = Signals.GetResponse(bytes, typeof(T), _serializer.Deserialize, out object? value, out Exception? exception);
+            bool hasValue = _serializer.DeserializeResponse(bytes, typeof(T), out object? value, out Exception? exception);
 
-            return hasValue ? (T) value! : throw exception!;
+            return hasValue ? (T)value! : throw exception!;
         }
     }
 }

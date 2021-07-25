@@ -27,13 +27,13 @@ namespace HandyIpc.Server
             catch (Exception e)
             {
                 ctx.Logger.Error("An unexpected exception occurred on the server", e);
-                ctx.Output = Signals.GetResponseError(e, ctx.Serializer.Serialize);
+                ctx.Output = ctx.Serializer.SerializeResponseError(e);
             }
         }
 
         public static async Task RequestParser(Context ctx, Func<Task> next)
         {
-            ctx.RequestHeader = Signals.GetRequest(ctx.Input, ctx.Serializer.Deserialize);
+            ctx.RequestHeader = ctx.Serializer.DeserializeRequestHeader(ctx.Input);
 
             await next();
         }
@@ -57,7 +57,7 @@ namespace HandyIpc.Server
                 {
                     var exception = new AuthenticationException($"Invalid accessToken: '{request.AccessToken}'.");
                     ctx.Logger.Warning($"Failed to authenticate this request (token: {request.AccessToken}).", exception);
-                    ctx.Output = Signals.GetResponseError(exception, ctx.Serializer.Serialize);
+                    ctx.Output = ctx.Serializer.SerializeResponseError(exception);
                 }
             };
         }
