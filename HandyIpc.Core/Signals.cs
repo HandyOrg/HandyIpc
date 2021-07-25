@@ -17,7 +17,6 @@ namespace HandyIpc
 
         public static readonly byte[] Empty = { 0 };
         public static readonly byte[] Unit = { 1 };
-        public static readonly IReadOnlyList<Argument> EmptyArguments = Array.Empty<Argument>();
 
         private static readonly byte[] ReqHeaderBytes = Encoding.ASCII.GetBytes(ReqHeader);
         private static readonly byte[] ResHeaderBytes = Encoding.ASCII.GetBytes(ResHeader);
@@ -85,22 +84,6 @@ namespace HandyIpc
             }
 
             return result.ToArray();
-        }
-
-        public static IReadOnlyList<Argument> GetArgumentList(object?[]? values, Type[]? types)
-        {
-            if (values is not null && types is not null && values.Length == types.Length)
-            {
-                var result = new Argument[values.Length];
-                for (int i = 0; i < result.Length; i++)
-                {
-                    result[i] = new Argument(types[i], values[i]);
-                }
-
-                return result;
-            }
-
-            return EmptyArguments;
         }
 
         public static byte[] GetResponseValue(object? value, Type? type, Serialize serialize)

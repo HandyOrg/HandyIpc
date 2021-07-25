@@ -44,6 +44,7 @@ namespace {@class.Namespace}
                     string methodName = $"{method.Name}{method.TypeParameters.Join(", ").If(text => $"<{text}>")}";
                     string methodId = $"{methodName}({method.ParameterTypes.Join(", ")})";
                     string methodParameterList = method.ParameterTypes.Zip(method.Parameters, (type, parameter) => $"{type} {parameter}").Join(", ");
+                    string methodArgumentList = method.ParameterTypes.Zip(method.Parameters, (type, parameter) => $"new Argument(typeof({type}), {parameter})").Join(", ");
                     return $@"
 
         {method.IsAwaitable.If("async ")}{method.ReturnType} {interfaceType}.{methodName}({methodParameterList})
@@ -61,10 +62,7 @@ namespace {@class.Namespace}
                     {method.TypeParameters.Select(type => $"typeof({type})").Join(", ").If(text => $"MethodGenericArguments = new[] {{ {text} }},")}
                     {method.TypeParameters.Any().If(method.ParameterTypes.Select(type => $"typeof({type})").Join(", ").If(text => $"ArgumentTypes = new[] {{ {text} }},"))}
                 }},
-                Signals.GetArgumentList(
-                    {method.Parameters.Join(", ").If(text => $"new object[] {{ {text} }},", "null,")}
-                    {method.ParameterTypes.Select(type => $"typeof({type})").Join(", ").If(text => $"new Type[] {{ {text} }}", "null")}
-                ));
+                new Argument[] {{ {methodArgumentList} }});
 {method.IsVoid.If(@"
             if (!response.IsUnit())
             {
