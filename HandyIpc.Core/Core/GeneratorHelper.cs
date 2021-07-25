@@ -4,9 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace HandyIpc.Implementation
+namespace HandyIpc.Core
 {
-    public static class HandyIpcHelper
+    public static class GeneratorHelper
     {
         /// <summary>
         /// Unpack the result of the <see cref="Task"/> or <see cref="Task{T}"/> with the specified instance and the related type.

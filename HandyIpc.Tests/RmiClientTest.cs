@@ -1,5 +1,5 @@
 ﻿using HandyIpc;
-using HandyIpc.Client;
+using HandyIpc.Core;
 using HandyIpcTests.Interfaces;
 using HandyIpcTests.Mock;
 using Xunit;

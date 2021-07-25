@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     public interface ILogger
     {

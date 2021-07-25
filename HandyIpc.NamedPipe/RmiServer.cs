@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using HandyIpc.Server;
+using HandyIpc.Core;
 using static HandyIpc.NamedPipe.PrimitiveMethods;
 
 namespace HandyIpc.NamedPipe

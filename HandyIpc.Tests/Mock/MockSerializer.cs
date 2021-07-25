@@ -1,5 +1,5 @@
-﻿using HandyIpc;
-using System;
+﻿using System;
+using HandyIpc.Core;
 
 namespace HandyIpcTests.Mock
 {

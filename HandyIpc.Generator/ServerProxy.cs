@@ -8,7 +8,7 @@ namespace HandyIpc.Generator
         public static string Generate(TemplateFileData data)
         {
             return $@"
-using HandyIpc;
+using HandyIpc.Core;
 {data.ClassList.For(@class =>
             {
                 string interfaceTypeParameters = @class.TypeParameters.Join(", ").If(text => $"<{text}>");

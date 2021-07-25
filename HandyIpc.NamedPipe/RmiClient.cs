@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using HandyIpc.Client;
+using HandyIpc.Core;
 
 namespace HandyIpc.NamedPipe
 {

@@ -1,5 +1,4 @@
-﻿using HandyIpc.Client;
-using HandyIpc.Server;
+﻿using HandyIpc.Core;
 
 namespace HandyIpc
 {

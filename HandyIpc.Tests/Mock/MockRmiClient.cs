@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using HandyIpc;
-using HandyIpc.Client;
+using HandyIpc.Core;
 using Xunit;
 
 namespace HandyIpcTests.Mock

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace HandyIpc.Client
+namespace HandyIpc.Core
 {
     public interface IRmiClient
     {

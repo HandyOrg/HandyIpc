@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using HandyIpc.Core;
 
-namespace HandyIpc.Client
+namespace HandyIpc
 {
     internal class IpcClientHub : IIpcClientHub
     {

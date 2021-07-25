@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 
-namespace HandyIpc.Server
+namespace HandyIpc.Core
 {
     public delegate Task MiddlewareHandler(Context context, Func<Task> next);
 

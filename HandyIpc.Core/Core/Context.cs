@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HandyIpc.Server
+namespace HandyIpc.Core
 {
     public class Context
     {

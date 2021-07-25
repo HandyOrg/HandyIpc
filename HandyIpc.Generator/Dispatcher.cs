@@ -9,9 +9,7 @@ namespace HandyIpc.Generator
         {
             return $@"
 using System;
-using HandyIpc;
-using HandyIpc.Server;
-using HandyIpc.Implementation;
+using HandyIpc.Core;
 {data.ClassList.For(@class =>
             {
                 string interfaceTypeParameters = @class.TypeParameters.Join(", ").If(text => $"<{text}>");
@@ -40,7 +38,7 @@ namespace {@class.Namespace}
             _instance = instance;
 {@class.MethodList.Any(item => item.TypeParameters.Any()).IfLine($@"
             _genericMethodMapping = new Lazy<IReadOnlyDictionary<string, MethodInfo>>(
-                () => HandyIpcHelper.GetGenericMethodMapping(typeof({interfaceType}), _instance));
+                () => GeneratorHelper.GetGenericMethodMapping(typeof({interfaceType}), _instance));
 ")}
         }}
 
@@ -74,7 +72,7 @@ namespace {@class.Namespace}
                     ctx.Output = Signals.Unit;
 ", $@"
 {method.TaskReturnTypeContainsGenericParameter.If(@"
-                    var result = await HandyIpcHelper.UnpackTask(constructedMethodInfo.ReturnType, obj);
+                    var result = await GeneratorHelper.UnpackTask(constructedMethodInfo.ReturnType, obj);
                     ctx.Output = ctx.Serializer.SerializeResponseValue(result, constructedMethodInfo.ReturnType);
 ", $@"
                     var result = {method.IsAwaitable.If($"await ({method.ReturnType})")}obj;

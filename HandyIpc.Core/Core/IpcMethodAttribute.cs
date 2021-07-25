@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class IpcMethodAttribute : Attribute

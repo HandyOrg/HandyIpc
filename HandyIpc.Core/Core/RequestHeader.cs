@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     /// <summary>
     /// Represents a request for a call to a remote method.

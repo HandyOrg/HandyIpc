@@ -1,4 +1,5 @@
 using HandyIpc;
+using HandyIpc.Core;
 using HandyIpc.Serializer.Json;
 
 namespace HandyIpcTests

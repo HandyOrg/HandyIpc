@@ -9,8 +9,7 @@ namespace HandyIpc.Generator
         {
             return $@"
 using System;
-using HandyIpc;
-using HandyIpc.Client;
+using HandyIpc.Core;
 {data.ClassList.For(@class =>
             {
                 string interfaceTypeParameters = @class.TypeParameters.Join(", ").If(text => $"<{text}>");
@@ -67,7 +66,8 @@ namespace {@class.Namespace}
             if (!response.IsUnit())
             {
                 throw new InvalidOperationException(""A method that returns void type must responses the Unit object."");
-            }", @"
+            }
+", @"
             return response;")}
         }}
 ";
