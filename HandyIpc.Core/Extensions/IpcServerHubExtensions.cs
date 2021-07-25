@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace HandyIpc.Server
 {
-    public static class HandyIpcServerHubExtensions
+    public static class IpcServerHubExtensions
     {
         public static IDisposable Start<TInterface, TImpl>(this IIpcServerHub server, string? accessToken = null)
             where TInterface : class

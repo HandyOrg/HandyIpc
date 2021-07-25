@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace HandyIpc.Server
 {
-    internal class HandyIpcServerHub : IIpcServerHub
+    internal class IpcServerHub : IIpcServerHub
     {
         private sealed class Disposable : IDisposable
         {
@@ -22,7 +22,7 @@ namespace HandyIpc.Server
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
         private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers = new();
 
-        public HandyIpcServerHub(IRmiServer rmiServer)
+        public IpcServerHub(IRmiServer rmiServer)
         {
             _rmiServer = rmiServer;
         }
