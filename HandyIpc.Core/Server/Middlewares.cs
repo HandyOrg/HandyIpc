@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 
 namespace HandyIpc.Server
 {
+    public delegate Task MiddlewareHandler(Context context, Func<Task> next);
+
     public static class Middlewares
     {
+        #region Build-in middlewares
+
         public static async Task Heartbeat(Context ctx, Func<Task> next)
         {
             if (ctx.Input.IsEmpty())
@@ -31,7 +36,7 @@ namespace HandyIpc.Server
             }
         }
 
-        public static async Task RequestParser(Context ctx, Func<Task> next)
+        public static async Task RequestHeaderParser(Context ctx, Func<Task> next)
         {
             ctx.RequestHeader = ctx.Serializer.DeserializeRequestHeader(ctx.Input);
 
@@ -83,6 +88,23 @@ namespace HandyIpc.Server
                     await next();
                 }
             };
+        }
+
+        #endregion
+
+        public static MiddlewareHandler Then(this MiddlewareHandler middleware, MiddlewareHandler nextMiddleware)
+        {
+            return (ctx, next) => middleware(ctx, () => nextMiddleware(ctx, next));
+        }
+
+        public static MiddlewareHandler Compose(this IEnumerable<MiddlewareHandler> middlewareEnumerable)
+        {
+            return middlewareEnumerable.Aggregate((accumulation, item) => accumulation.Then(item));
+        }
+
+        public static MiddlewareHandler Compose(params MiddlewareHandler[] middlewareArray)
+        {
+            return middlewareArray.Compose();
         }
 
         public static Func<byte[], Task<byte[]>> ToHandler(this MiddlewareHandler middleware, ISerializer serializer, ILogger logger)

@@ -29,10 +29,10 @@ namespace HandyIpc.Server
 
         public IDisposable Start(Type interfaceType, Func<object> factory, string? accessToken = null)
         {
-            StartInterface(interfaceType, defaultMiddleware =>
+            StartInterface(interfaceType, middleware =>
             {
                 IIpcDispatcher dispatcher = GetOrAddIpcDispatcher(interfaceType, factory);
-                return defaultMiddleware.Then(dispatcher.Dispatch);
+                return middleware.Then(dispatcher.Dispatch);
             }, accessToken);
 
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
@@ -40,14 +40,14 @@ namespace HandyIpc.Server
 
         public IDisposable Start(Type interfaceType, Func<Type[], object> factory, string? accessToken = null)
         {
-            StartInterface(interfaceType, defaultMiddleware =>
+            StartInterface(interfaceType, middleware =>
             {
                 var genericDispatcher = Middlewares.GetGenericDispatcher(genericTypes =>
                 {
                     var constructedInterfaceType = interfaceType.MakeGenericType(genericTypes);
                     return GetOrAddIpcDispatcher(constructedInterfaceType, () => factory(genericTypes));
                 });
-                return defaultMiddleware.Then(genericDispatcher);
+                return middleware.Then(genericDispatcher);
             }, accessToken);
 
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
@@ -84,10 +84,10 @@ namespace HandyIpc.Server
         {
             lock (_locker)
             {
-                var middleware = Middleware.Compose(
+                var middleware = Middlewares.Compose(
                     Middlewares.Heartbeat,
                     Middlewares.ExceptionHandler,
-                    Middlewares.RequestParser);
+                    Middlewares.RequestHeaderParser);
 
                 if (!string.IsNullOrEmpty(accessToken))
                 {
