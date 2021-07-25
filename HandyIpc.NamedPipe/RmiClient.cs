@@ -17,14 +17,14 @@ namespace HandyIpc.NamedPipe
             _serializer = serializer;
         }
 
-        public T Invoke<T>(string pipeName, Request request, IReadOnlyList<Argument> arguments)
+        public T Invoke<T>(string pipeName, RequestHeader request, IReadOnlyList<Argument> arguments)
         {
             using var invokeOwner = _clientPool.Rent(pipeName);
             var response = invokeOwner.Value(Signals.GetRequestBytes(request, arguments, _serializer.Serialize));
             return Unpack<T>(response);
         }
 
-        public async Task<T> InvokeAsync<T>(string pipeName, Request request, IReadOnlyList<Argument> arguments)
+        public async Task<T> InvokeAsync<T>(string pipeName, RequestHeader request, IReadOnlyList<Argument> arguments)
         {
             using var invokeOwner = await _clientPool.RentAsync(pipeName);
             var response = await invokeOwner.Value(

@@ -33,7 +33,7 @@ namespace HandyIpc.Server
 
         public static async Task RequestParser(Context ctx, Func<Task> next)
         {
-            ctx.Request = Signals.GetRequest(ctx.Input, ctx.Serializer.Deserialize);
+            ctx.RequestHeader = Signals.GetRequest(ctx.Input, ctx.Serializer.Deserialize);
 
             await next();
         }
@@ -42,11 +42,11 @@ namespace HandyIpc.Server
         {
             return async (ctx, next) =>
             {
-                var request = ctx.Request;
+                var request = ctx.RequestHeader;
 
                 if (request is null)
                 {
-                    throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
+                    throw new InvalidOperationException($"The {nameof(Context.RequestHeader)} must be parsed from {nameof(Context.Input)} before it can be used.");
                 }
 
                 if (string.Equals(request.AccessToken, accessToken, StringComparison.InvariantCulture))
@@ -66,11 +66,11 @@ namespace HandyIpc.Server
         {
             return async (ctx, next) =>
             {
-                var request = ctx.Request;
+                var request = ctx.RequestHeader;
 
                 if (request is null)
                 {
-                    throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
+                    throw new InvalidOperationException($"The {nameof(Context.RequestHeader)} must be parsed from {nameof(Context.Input)} before it can be used.");
                 }
 
                 if (request.GenericArguments is not null && request.GenericArguments.Any())

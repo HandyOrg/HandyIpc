@@ -34,9 +34,9 @@ namespace HandyIpc
             return bytes.Count == 1 && bytes[0] == pattern[0];
         }
 
-        public static byte[] GetRequestBytes(Request request, IReadOnlyList<Argument> arguments, Serialize serialize)
+        public static byte[] GetRequestBytes(RequestHeader request, IReadOnlyList<Argument> arguments, Serialize serialize)
         {
-            byte[] requestBytes = serialize(request, typeof(Request));
+            byte[] requestBytes = serialize(request, typeof(RequestHeader));
             List<byte[]> bytesList = new()
             {
                 ReqHeaderBytes,
@@ -56,11 +56,11 @@ namespace HandyIpc
             return bytesList.ConcatBytes();
         }
 
-        public static Request GetRequest(byte[] bytes, Deserialize deserialize)
+        public static RequestHeader GetRequest(byte[] bytes, Deserialize deserialize)
         {
             PreprocessRequestBytes(bytes, out int requestOffset, out int requestLength);
 
-            return (Request)deserialize(bytes.Slice(requestOffset, requestLength), typeof(Request))!;
+            return (RequestHeader)deserialize(bytes.Slice(requestOffset, requestLength), typeof(RequestHeader))!;
         }
 
         public static object?[]? GetArguments(byte[] bytes, Type[] argumentTypes, Deserialize deserialize)

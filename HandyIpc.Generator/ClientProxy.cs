@@ -54,7 +54,7 @@ namespace {@class.Namespace}
             var response = _client.Invoke<{method.IsVoid.If("byte[]", method.ReturnType)}>("
                         )}
                 _identifier,
-                new Request(""{methodId}"")
+                new RequestHeader(""{methodId}"")
                 {{
                     AccessToken = _accessToken,
                     {@class.TypeParameters.Select(type => $"typeof({type})").Join(", ").If(text => $"GenericArguments = new[] {{ {text} }},")}
