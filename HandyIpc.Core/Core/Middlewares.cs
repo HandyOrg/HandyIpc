@@ -54,7 +54,7 @@ namespace HandyIpc.Core
                     throw new InvalidOperationException($"The {nameof(Context.RequestHeader)} must be parsed from {nameof(Context.Input)} before it can be used.");
                 }
 
-                if (string.Equals(request.AccessToken, accessToken, StringComparison.InvariantCulture))
+                if (string.Equals(request.AccessToken, accessToken, StringComparison.Ordinal))
                 {
                     await next();
                 }
