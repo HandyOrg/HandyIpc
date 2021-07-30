@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,6 +28,7 @@ namespace HandyIpc.Core
                 requestBytes,
             };
 
+            // The "for" performance is better than "foreach" or "linq".
             for (int i = 0; i < arguments.Count; i++)
             {
                 var (type, argument) = arguments[i];
@@ -168,13 +169,10 @@ namespace HandyIpc.Core
             requestOffset = offset;
         }
 
-        private static byte[] Slice(this IReadOnlyList<byte> bytes, int start, int length)
+        private static byte[] Slice(this byte[] bytes, int start, int length)
         {
             byte[] result = new byte[length];
-            for (int i = 0; i < length; i++)
-            {
-                result[i] = bytes[start + i];
-            }
+            Array.Copy(bytes, start, result, 0, length);
 
             return result;
         }
@@ -182,20 +180,19 @@ namespace HandyIpc.Core
         private static byte[] ConcatBytes(this IReadOnlyList<byte[]> bytesList)
         {
             int totalLength = 0;
-            // The performance of for loops is greater than that of iterations and linq.
+            // The "for" performance is better than "foreach" or "linq".
             for (int i = 0; i < bytesList.Count; i++)
             {
                 totalLength += bytesList[i].Length;
             }
 
             byte[] result = new byte[totalLength];
-            int p = 0;
-            for (int i = 0; i < bytesList.Count; i++)
+            // The "for" performance is better than "foreach" or "linq".
+            for (int i = 0, offset = 0; i < bytesList.Count; i++)
             {
-                for (int j = 0; j < bytesList[i].Length; j++)
-                {
-                    result[p++] = bytesList[i][j];
-                }
+                byte[] bytes = bytesList[i];
+                bytes.CopyTo(result, offset);
+                offset += bytes.Length;
             }
 
             return result;
