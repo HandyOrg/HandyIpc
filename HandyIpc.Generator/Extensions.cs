@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using HandyIpc.Generator.Data;
 using Microsoft.CodeAnalysis;
@@ -10,14 +10,14 @@ namespace HandyIpc.Generator
     {
         public static string GetInterfaceName(this InterfaceDeclarationSyntax @interface)
         {
-            var identifier = @interface.Identifier;
-            var interfaceParent = identifier.Parent is not null
+            SyntaxToken identifier = @interface.Identifier;
+            SyntaxNode? interfaceParent = identifier.Parent is not null
                 ? identifier.Parent.Parent
                 : identifier.Parent;
 
             if (interfaceParent is ClassDeclarationSyntax classDeclarationSyntax)
             {
-                var classParent = classDeclarationSyntax.Identifier;
+                SyntaxToken classParent = classDeclarationSyntax.Identifier;
                 return $"{classParent}.{identifier.ValueText}";
             }
 
@@ -26,7 +26,7 @@ namespace HandyIpc.Generator
 
         public static T? GetSyntaxNodeRoot<T>(this SyntaxNode node) where T : SyntaxNode
         {
-            var root = node;
+            SyntaxNode? root = node;
             while (root.Parent is T)
             {
                 root = root.Parent;
@@ -54,19 +54,8 @@ namespace HandyIpc.Generator
 
         public static bool ContainsTypes(this TypeData typeData, params string[] types)
         {
-            if (types.Contains(typeData.Name)) return true;
-            if (typeData.Children is not null)
-            {
-                foreach (var typeDataChild in typeData.Children)
-                {
-                    if (typeDataChild.ContainsTypes(types))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            return types.Contains(typeData.Name) ||
+                   typeData.Children is not null && typeData.Children.Any(typeDataChild => typeDataChild.ContainsTypes(types));
         }
 
         public static string ToListString(this IEnumerable<string> items)

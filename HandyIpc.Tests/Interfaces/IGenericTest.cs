@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HandyIpc;
 
@@ -12,7 +12,7 @@ namespace HandyIpcTests.Interfaces
 
         string PrintGenericArguments(T1 value1, T2 value2);
 
-        TM TestGenericConstraint<TM>(TM value) where TM : new();
+        TM TestGenericConstraint<TM>(TM value) where TM : class, new();
 
         List<TM> SendList<TM>(List<TM> value);
 

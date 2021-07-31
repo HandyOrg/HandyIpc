@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -19,7 +19,10 @@ namespace HandyIpc.Core
         /// <returns>The result from the task instance.</returns>
         public static async Task<object?> UnpackTask(Type taskType, object task)
         {
-            if (task is not Task taskInstance) return null;
+            if (task is not Task taskInstance)
+            {
+                return null;
+            }
 
             await taskInstance;
             return taskType.GetProperty("Result")?.GetMethod.Invoke(task, null);

@@ -1,4 +1,4 @@
-﻿using HandyIpc.Core;
+using HandyIpc.Core;
 
 namespace HandyIpc
 {

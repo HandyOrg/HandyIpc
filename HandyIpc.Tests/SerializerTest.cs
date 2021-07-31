@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using HandyIpc;
 using HandyIpc.Core;
 using Xunit;
 using static HandyIpcTests.Mock.MockDataGenerator;

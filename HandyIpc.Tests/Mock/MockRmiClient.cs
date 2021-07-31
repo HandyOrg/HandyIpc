@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HandyIpc;
 using HandyIpc.Core;
 using Xunit;
 

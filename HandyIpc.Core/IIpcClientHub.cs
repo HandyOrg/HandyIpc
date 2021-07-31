@@ -1,4 +1,4 @@
-﻿namespace HandyIpc
+namespace HandyIpc
 {
     /// <summary>
     /// It represents a hub of IPC client instances.
