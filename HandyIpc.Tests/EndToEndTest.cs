@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
+using HandyIpc;
+using HandyIpc.NamedPipe;
+using HandyIpc.Serializer.Json;
 using HandyIpcTests.Implementations;
 using HandyIpcTests.Interfaces;
 using HandyIpcTests.Mock;
@@ -93,10 +96,15 @@ namespace HandyIpcTests
             }
         }
 
-        [Fact(Skip = "Deconstruct of interfaces to be improved")]
+        [Fact]
         public void TestInvokeWithoutAccessToken()
         {
-            var @interface = _fixture.ClientHub.Of<IBuildInTypeTest>("error_access_token");
+            var @interface = HandyIpcHub
+                .CreateClientFactory()
+                .UseJsonSerializer()
+                .UseNamedPipe()
+                .Build()
+                .Of<IBuildInTypeTest>("error_access_token");
 
             Assert.Throws<AuthenticationException>(() => @interface.TestByte(0b01));
         }
