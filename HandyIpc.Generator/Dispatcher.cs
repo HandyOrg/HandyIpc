@@ -56,13 +56,11 @@ namespace {@namespace}
             {{
 {methods.For(method =>
 {
-    var parameterTypes = method.Parameters
-        .Select(item => item.Type)
-        .Select(item => item.ToFullDeclaration())
-        .ToList()
-        .AsReadOnly();
     string methodId = method.GenerateMethodId();
-    string arguments = parameterTypes.Select((type, i) => $"({type})args[{i}]").Join(", ");
+    string arguments = method.Parameters
+        .Select(item => item.Type)
+        .Select(item => item.ToTypeDeclaration())
+        .Select((type, i) => $"({type})args[{i}]").Join(", ");
     bool isAwaitable = method.ReturnType.IsAwaitable();
     bool isVoid = method.ReturnType.IsVoid();
     bool containsTypeParameter = method.ReturnType is INamedTypeSymbol namedTypeSymbol &&
@@ -90,7 +88,7 @@ namespace {@namespace}
                     var result = await GeneratorHelper.UnpackTask(constructedMethodInfo.ReturnType, obj);
                     ctx.Output = ctx.Serializer.SerializeResponseValue(result, constructedMethodInfo.ReturnType);
 " : $@"
-                    var result = {(isAwaitable ? $"await ({method.ReturnType.ToFullDeclaration()})" : null)}obj;
+                    var result = {(isAwaitable ? $"await ({method.ReturnType.ToTypeDeclaration()})" : null)}obj;
                     ctx.Output = ctx.Serializer.SerializeResponseValue(result, constructedMethodInfo.ReturnType);
 ")}
 ")}
@@ -99,7 +97,10 @@ namespace {@namespace}
 " : $@"
                 case ""{methodId}"":
                 {{
-{parameterTypes.Select(type => $"typeof({type})").Join(", ").If(text => $@"
+{method.Parameters
+    .Select(item => item.Type)
+    .Select(item => item.ToFullDeclaration())
+    .Select(type => $"typeof({type})").Join(", ").If(text => $@"
                     var args = ctx.Serializer.DeserializeRequestArguments(ctx.Input, new Type[] {{ {text} }});
 ", RemoveLineIfEmpty)}
 {Text(isVoid ? $@"

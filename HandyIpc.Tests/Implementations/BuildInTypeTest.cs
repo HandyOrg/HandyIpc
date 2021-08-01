@@ -41,7 +41,7 @@ namespace HandyIpcTests.Implementations
 
         public byte TestByte(byte value) => value;
 
-        public object TestNull(object value) => value;
+        public object? TestNull(object? value) => value;
 
         public byte[] TestByteArray(byte[] value) => value;
     }

@@ -14,6 +14,12 @@ namespace HandyIpc.Generator
             return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         }
 
+        public static string ToTypeDeclaration(this ITypeSymbol symbol)
+        {
+            bool nullable = !symbol.IsValueType && symbol.NullableAnnotation == NullableAnnotation.Annotated;
+            return $"{symbol.ToFullDeclaration()}{(nullable ? '?' : null)}";
+        }
+
         public static (string @namespace, string className, string typeParameters) GenerateNameFromInterface(this INamedTypeSymbol interfaceSymbol)
         {
             const string globalNamespace = "HandyIpc.Implementation";

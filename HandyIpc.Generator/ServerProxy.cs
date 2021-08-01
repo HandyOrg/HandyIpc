@@ -34,11 +34,7 @@ namespace {@namespace}
 {
     string methodName = method.ToFullDeclaration();
     string methodParameterList = method.Parameters
-        .Select(parameter =>
-        {
-            bool nullable = !parameter.Type.IsValueType && parameter.NullableAnnotation == NullableAnnotation.Annotated;
-            return $"{parameter.Type.ToFullDeclaration()}{(nullable ? "?" : string.Empty)} @{parameter.Name}";
-        })
+        .Select(parameter => $"{parameter.Type.ToTypeDeclaration()} @{parameter.Name}")
         .Join(", ");
     bool isAwaitable = method.ReturnType.IsAwaitable();
     bool isVoid = method.ReturnType.IsVoid();
@@ -49,7 +45,7 @@ namespace {@namespace}
 {Text(method.TypeParameters.Any() ? $@"
         [global::HandyIpc.Core.IpcMethod(""{method.GenerateMethodId()}"")]
 " : RemoveLineIfEmpty)}
-        {method.ReturnType.ToFullDeclaration()} {interfaceType}.{methodName}({methodParameterList})
+        {method.ReturnType.ToTypeDeclaration()} {interfaceType}.{methodName}({methodParameterList})
         {{
             {(!isVoid || isAwaitable ? "return " : null)}_instance.{methodName}({method.Parameters.Select(parameter => $"@{parameter.Name}").Join(", ")});
         }}

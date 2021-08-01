@@ -1,8 +1,5 @@
 using HandyIpc;
 
-// TODO: Write this rule to README.md: Must disable the nullable feature in contract file.
-#nullable disable
-
 namespace HandyIpcTests.Interfaces
 {
     [IpcContract(Identifier = nameof(IBuildInTypeTest))]
@@ -42,7 +39,7 @@ namespace HandyIpcTests.Interfaces
 
         byte TestByte(byte value);
 
-        object TestNull(object value);
+        object? TestNull(object? value);
 
         byte[] TestByteArray(byte[] value);
     }
