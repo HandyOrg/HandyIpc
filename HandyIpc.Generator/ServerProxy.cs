@@ -1,56 +1,61 @@
-﻿using System.Linq;
-using HandyIpc.Generator.Data;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 
 namespace HandyIpc.Generator
 {
     public static class ServerProxy
     {
-        public static string Generate(TemplateFileData data)
+        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods)
         {
-            return $@"
-using HandyIpc.Core;
-{data.ClassList.For(@class =>
-            {
-                string interfaceTypeParameters = @class.TypeParameters.Join(", ").If(text => $"<{text}>");
-                string interfaceType = $"{@class.InterfaceName}{interfaceTypeParameters}";
-                return $@"
+            var (@namespace, className, typeParameters) = @interface.GenerateNameFromInterface();
+            string interfaceType = @interface.ToFullDeclaration();
 
-namespace {@class.Namespace}
+            return $@"
+namespace {@namespace}
 {{
-{data.UsingList.For(@using => $@"
-    using {@using};
-")}
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Reflection.Obfuscation(Exclude = true)]
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    public class ServerProxy{@class.GeneratedClassSuffix}{interfaceTypeParameters} : {interfaceType}
-        {@class.ConstraintClauses}
+    public class {nameof(ServerProxy)}{className}{typeParameters} : {interfaceType}
+{@interface.TypeParameters.For(typeParameter => $@"
+        {typeParameter.ToGenericConstraint()}
+")}
     {{
         private readonly {interfaceType} _instance;
 
-        public ServerProxy{@class.GeneratedClassSuffix}({interfaceType} instance) 
+        public {nameof(ServerProxy)}{className}({interfaceType} instance)
         {{
             _instance = instance;
         }}
-{@class.MethodList.For(method =>
-            {
-                string methodName = $"{method.Name}{method.TypeParameters.Join(", ").If(text => $"<{text}>")}";
-                string methodParameterList = method.ParameterTypes.Zip(method.Parameters, (type, parameter) => $"{type} {parameter}").Join(", ");
-                return $@"
+{methods.For(method =>
+{
+    string methodName = method.ToFullDeclaration();
+    string methodId = method.GenerateMethodId();
+    string methodParameterList = method.Parameters
+        .Select(parameter =>
+        {
+            bool nullable = !parameter.Type.IsValueType && parameter.NullableAnnotation == NullableAnnotation.Annotated;
+            return $"{parameter.Type.ToFullDeclaration()}{(nullable ? "?" : string.Empty)} @{parameter.Name}";
+        })
+        .Join(", ");
+    bool isAwaitable = method.ReturnType.IsAwaitable();
+    bool isVoid = method.ReturnType.IsVoid();
 
-        [IpcMethod(""{methodName}({method.ParameterTypes.Join(", ")})"")]
-        {method.ReturnType} {interfaceType}.{methodName}({methodParameterList})
+    return $@"
+
+        /// <inheritdoc />
+        [global::HandyIpc.Core.IpcMethod(""{methodId}"")]
+        {method.ReturnType.ToFullDeclaration()} {interfaceType}.{methodName}({methodParameterList})
         {{
-            {(!method.IsVoid || method.IsAwaitable).If("return ")}{$"_instance.{methodName}({method.Parameters.Join(", ")});"}
+            {(!isVoid || isAwaitable ? "return " : null)}_instance.{methodName}({method.Parameters.Select(parameter => $"@{parameter.Name}").Join(", ")});
         }}
 ";
-            })}
+})}
     }}
 }}
-";
-            })}
-".RemoveWhiteSpaceLine();
+".FormatCode();
         }
     }
 }

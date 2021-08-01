@@ -1,56 +1,57 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace HandyIpc.Generator
 {
     public static class TemplateExtensions
     {
+        public const string RemoveLineIfEmpty = " ";
+        public const string KeepLineIfEmpty = "";
+        public const string LineTrimmedFlag = "#\"#";
+
         private static readonly int NewLineLength = Environment.NewLine.Length;
         private static readonly Regex WhiteSpaceLineRegex = new($@"{Environment.NewLine}( +?{Environment.NewLine})+", RegexOptions.Compiled);
 
-        public static string For<T>(this IEnumerable<T> self, Func<T, string> callback)
+        public static string For<T>(this IEnumerable<T> self, Func<T, string> callback, string fallbackIfEmpty = RemoveLineIfEmpty)
         {
-            return self
-                .Aggregate(
-                    new StringBuilder(),
-                    (sb, item) => sb.AppendLine(callback(item).TrimNewLine()))
-                .ToString();
+            return self.For((item, _) => callback(item), fallbackIfEmpty);
         }
 
-        public static string Join<T>(this IEnumerable<T> self, string separator, Func<T, string>? callback = null)
+        public static string For<T>(this IEnumerable<T> self, Func<T, int, string> callback, string fallbackIfEmpty = RemoveLineIfEmpty)
         {
-            return string.Join(separator, self.Select(item => callback?.Invoke(item) ?? item?.ToString() ?? string.Empty));
+            var list = self.ToList();
+            if (list.Count == 0)
+            {
+                return fallbackIfEmpty;
+            }
+
+            return string.Join(Environment.NewLine, list.Select((item, index) => callback(item, index).TrimNewLine()));
         }
 
-        public static string If(this string? self, Func<string, string> ifTrueCallback, string? ifFalseText = null)
+        public static string Join<T>(this IEnumerable<T> self, string separator = "", Func<T, string>? callback = null)
+        {
+            return string.Join(separator, self.Select(item => callback?.Invoke(item) ?? item?.ToString() ?? KeepLineIfEmpty));
+        }
+
+        public static string If(this string? self, Func<string, string> ifTrueCallback, string? ifFalseText = KeepLineIfEmpty)
         {
             return string.IsNullOrEmpty(self)
                 ? ifFalseText?.TrimNewLine() ?? string.Empty
                 : ifTrueCallback(self!.TrimNewLine()).TrimNewLine();
         }
 
-        public static string IfLine(this string? self, Func<string, string> ifTrueCallback)
+        public static string FormatCode(this string text)
         {
-            return self.If(ifTrueCallback, " ");
-        }
+            text = text
+                .Replace(LineTrimmedFlag, string.Empty)
+                .TrimStart(Environment.NewLine.ToCharArray());
 
-        public static string If(this bool self, string ifTrueText, string? ifFalseText = null)
-        {
-            return self ? ifTrueText.TrimNewLine() : ifFalseText?.TrimNewLine() ?? string.Empty;
-        }
-
-        public static string IfLine(this bool self, string text)
-        {
-            return self.If(text, " ");
-        }
-
-        public static string RemoveWhiteSpaceLine(this string text)
-        {
             return WhiteSpaceLineRegex.Replace(text, Environment.NewLine);
         }
+
+        public static string Text(string? text) => text.TrimNewLine();
 
         private static string TrimNewLine(this string? text)
         {
@@ -64,7 +65,7 @@ namespace HandyIpc.Generator
                 ? text.Length - start - NewLineLength
                 : text.Length - start;
 
-            return text.Substring(start, length);
+            return $"{LineTrimmedFlag}{text.Substring(start, length)}{LineTrimmedFlag}";
         }
     }
 }
