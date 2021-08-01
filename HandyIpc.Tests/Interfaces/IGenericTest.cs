@@ -4,7 +4,7 @@ using HandyIpc;
 
 namespace HandyIpcTests.Interfaces
 {
-    [IpcContract(Identifier = "IGenericTest<T1, in T2, T3>")]
+    [IpcContract]
     public interface IGenericTest<T1, in T2>
         where T1 : class, new()
     {

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using HandyIpcTests.Implementations;
 using HandyIpcTests.Interfaces;
@@ -19,7 +20,7 @@ namespace HandyIpcTests
         [Fact]
         public void TestIBuildInTypeTestInterface()
         {
-            var @interface = _fixture.ClientHub.Of<IBuildInTypeTest>();
+            var @interface = _fixture.ClientHub.Of<IBuildInTypeTest>("{763EA8B3-79AB-413B-9B41-3290755EE7F0}");
 
             Assert.Throws<TestException>(() => @interface.TestVoidWithParams());
 
@@ -90,6 +91,14 @@ namespace HandyIpcTests
             {
                 Assert.Equal(value, @interface.TestByteArray(value));
             }
+        }
+
+        [Fact(Skip = "Deconstruct of interfaces to be improved")]
+        public void TestInvokeWithoutAccessToken()
+        {
+            var @interface = _fixture.ClientHub.Of<IBuildInTypeTest>("error_access_token");
+
+            Assert.Throws<AuthenticationException>(() => @interface.TestByte(0b01));
         }
 
         [Fact]
