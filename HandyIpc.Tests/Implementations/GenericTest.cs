@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HandyIpcTests.Interfaces;
@@ -12,7 +12,9 @@ namespace HandyIpcTests.Implementations
 
         public string PrintGenericArguments(T1 value1, T2 value2) => $"({typeof(T1)}: {value1}, {typeof(T2)}: {value2})";
 
-        public TM TestGenericConstraint<TM>(TM value) where TM : new() => value;
+        public TM TestGenericConstraint<TM>(TM value) where TM : class, new() => value;
+
+        TM IGenericTest<T1, T2>.TestGenericConstraint<TM>(TM value) where TM : class => value;
 
         public List<TM> SendList<TM>(List<TM> value) => value;
 

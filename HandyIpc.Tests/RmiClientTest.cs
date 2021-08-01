@@ -1,5 +1,5 @@
 ﻿using HandyIpc;
-using HandyIpc.Client;
+using HandyIpc.Core;
 using HandyIpcTests.Interfaces;
 using HandyIpcTests.Mock;
 using Xunit;
@@ -81,7 +81,7 @@ namespace HandyIpcTests
             buildInTypeTest.TestVoidWithBasicTypeParams(3.14f, 3.14, 42, 42, 42, 42, 42, 42, '\0', 255);
         }
 
-        private static Request GetRequestForBuildInType(string methodName)
+        private static RequestHeader GetRequestForBuildInType(string methodName)
         {
             return new(methodName)
             {

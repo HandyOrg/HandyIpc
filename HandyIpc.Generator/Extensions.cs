@@ -1,84 +1,110 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using HandyIpc.Generator.Data;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HandyIpc.Generator
 {
     internal static class Extensions
     {
-        public static string GetInterfaceName(this InterfaceDeclarationSyntax @interface)
-        {
-            var identifier = @interface.Identifier;
-            var interfaceParent = identifier.Parent is not null
-                ? identifier.Parent.Parent
-                : identifier.Parent;
+        public static INamedTypeSymbol TaskTypeSymbol { get; set; } = null!;
 
-            if (interfaceParent is ClassDeclarationSyntax classDeclarationSyntax)
+        public static string ToFullDeclaration(this ISymbol symbol)
+        {
+            return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        }
+
+        public static (string @namespace, string className, string typeParameters) GenerateNameFromInterface(this INamedTypeSymbol interfaceSymbol)
+        {
+            const string globalNamespace = "HandyIpc.Implementation";
+
+            string classNameWithGeneric = interfaceSymbol.ToDisplayString();
+            int lastDot = classNameWithGeneric.LastIndexOf('.');
+            if (lastDot > 0)
             {
-                var classParent = classDeclarationSyntax.Identifier;
-                return $"{classParent}.{identifier.ValueText}";
+                classNameWithGeneric = classNameWithGeneric.Substring(lastDot + 1);
             }
 
-            return identifier.ValueText;
-        }
-
-        public static T? GetSyntaxNodeRoot<T>(this SyntaxNode node) where T : SyntaxNode
-        {
-            var root = node;
-            while (root.Parent is T)
+            string className = interfaceSymbol.Name;
+            string @namespace = interfaceSymbol.ContainingNamespace?.ToDisplayString() ?? globalNamespace;
+            if (interfaceSymbol.ContainingNamespace is { IsGlobalNamespace: true })
             {
-                root = root.Parent;
+                @namespace = globalNamespace;
             }
 
-            return root as T;
+            string containingType = interfaceSymbol.ContainingType is not null ? $"{interfaceSymbol.ContainingType.Name}_" : string.Empty;
+
+            return (
+                @namespace,
+                className: $"{containingType}{className}",
+                typeParameters: classNameWithGeneric.Substring(className.Length));
         }
 
-        public static TypeData ToTypeData(this TypeSyntax typeSyntax)
+        public static string ToGenericConstraint(this ITypeParameterSymbol typeParameter)
         {
-            return typeSyntax is GenericNameSyntax generic
-                ? new TypeData(generic.Identifier.ValueText)
-                {
-                    Children = generic.TypeArgumentList.Arguments.Select(a => a.ToTypeData()).ToList()
-                }
-                : new TypeData(typeSyntax.ToString());
-        }
-
-        public static string ToTypeString(this TypeData typeData)
-        {
-            return typeData.Name + (typeData.Children?.Count > 0
-                       ? $"<{typeData.Children.Select(item => item.ToTypeString()).ToListString()}>"
-                       : string.Empty);
-        }
-
-        public static bool ContainsTypes(this TypeData typeData, params string[] types)
-        {
-            if (types.Contains(typeData.Name)) return true;
-            if (typeData.Children is not null)
+            var parameters = new List<string>();
+            if (typeParameter.HasReferenceTypeConstraint)
             {
-                foreach (var typeDataChild in typeData.Children)
-                {
-                    if (typeDataChild.ContainsTypes(types))
-                    {
-                        return true;
-                    }
-                }
+                parameters.Add("class");
             }
 
-            return false;
-        }
-
-        public static string ToListString(this IEnumerable<string> items)
-        {
-            return string.Join(", ", items);
-        }
-
-        public static void AddIfMissing<T>(this IList<T> list, T item)
-        {
-            if (!list.Contains(item))
+            if (typeParameter.HasUnmanagedTypeConstraint)
             {
-                list.Add(item);
+                parameters.Add("unmanaged");
+            }
+
+            if (typeParameter.HasValueTypeConstraint)
+            {
+                parameters.Add("struct");
+            }
+
+            if (typeParameter.HasNotNullConstraint)
+            {
+                parameters.Add("notnull");
+            }
+
+            parameters.AddRange(typeParameter.ConstraintTypes.Select(ToFullDeclaration));
+
+            if (typeParameter.HasConstructorConstraint)
+            {
+                parameters.Add("new()");
+            }
+
+            return parameters.Count > 0
+                ? $"where { typeParameter.Name} : { string.Join(", ", parameters)}"
+                : string.Empty;
+        }
+
+        public static bool IsOrInheritsFrom(this ITypeSymbol self, ITypeSymbol other)
+        {
+            return self.EnumerateSelfAndBaseType().Any(item => item.Equals(other, SymbolEqualityComparer.Default));
+        }
+
+        public static bool IsVoid(this ITypeSymbol symbol)
+        {
+            return string.Equals(symbol.Name, "Void", StringComparison.OrdinalIgnoreCase) ||
+                   symbol.Equals(TaskTypeSymbol, SymbolEqualityComparer.Default);
+        }
+
+        public static bool IsAwaitable(this ITypeSymbol type)
+        {
+            return type.IsOrInheritsFrom(TaskTypeSymbol);
+        }
+
+        public static string GenerateMethodId(this IMethodSymbol method)
+        {
+            string methodName = $"{method.Name}{method.TypeParameters.Join(", ").If(text => $"<{text}>")}";
+
+            return $"{methodName}({method.Parameters.Select(item => item.Type).Select(item => item.ToFullDeclaration()).Join(", ")})";
+        }
+
+        public static IEnumerable<ITypeSymbol> EnumerateSelfAndBaseType(this ITypeSymbol symbol)
+        {
+            ITypeSymbol? current = symbol;
+            while (current is not null)
+            {
+                yield return current;
+                current = current.BaseType;
             }
         }
     }

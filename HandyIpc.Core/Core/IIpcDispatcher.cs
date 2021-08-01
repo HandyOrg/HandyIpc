@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
-namespace HandyIpc.Server
+namespace HandyIpc.Core
 {
     public interface IIpcDispatcher
     {

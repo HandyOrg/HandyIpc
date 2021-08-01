@@ -1,12 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using HandyIpc.Core;
 
-namespace HandyIpc.Server
+namespace HandyIpc
 {
-    internal class HandyIpcServerHub : IIpcServerHub
+    internal class IpcServerHub : IIpcServerHub
     {
         private sealed class Disposable : IDisposable
         {
@@ -22,17 +23,17 @@ namespace HandyIpc.Server
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
         private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers = new();
 
-        public HandyIpcServerHub(IRmiServer rmiServer)
+        public IpcServerHub(IRmiServer rmiServer)
         {
             _rmiServer = rmiServer;
         }
 
         public IDisposable Start(Type interfaceType, Func<object> factory, string? accessToken = null)
         {
-            StartInterface(interfaceType, defaultMiddleware =>
+            StartInterface(interfaceType, middleware =>
             {
                 IIpcDispatcher dispatcher = GetOrAddIpcDispatcher(interfaceType, factory);
-                return defaultMiddleware.Then(dispatcher.Dispatch);
+                return middleware.Then(dispatcher.Dispatch);
             }, accessToken);
 
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
@@ -40,14 +41,14 @@ namespace HandyIpc.Server
 
         public IDisposable Start(Type interfaceType, Func<Type[], object> factory, string? accessToken = null)
         {
-            StartInterface(interfaceType, defaultMiddleware =>
+            StartInterface(interfaceType, middleware =>
             {
                 var genericDispatcher = Middlewares.GetGenericDispatcher(genericTypes =>
                 {
                     var constructedInterfaceType = interfaceType.MakeGenericType(genericTypes);
                     return GetOrAddIpcDispatcher(constructedInterfaceType, () => factory(genericTypes));
                 });
-                return defaultMiddleware.Then(genericDispatcher);
+                return middleware.Then(genericDispatcher);
             }, accessToken);
 
             return new Disposable(() => StopAndRemoveInterface(interfaceType));
@@ -84,10 +85,10 @@ namespace HandyIpc.Server
         {
             lock (_locker)
             {
-                var middleware = Middleware.Compose(
+                var middleware = Middlewares.Compose(
                     Middlewares.Heartbeat,
                     Middlewares.ExceptionHandler,
-                    Middlewares.RequestParser);
+                    Middlewares.RequestHeaderParser);
 
                 if (!string.IsNullOrEmpty(accessToken))
                 {

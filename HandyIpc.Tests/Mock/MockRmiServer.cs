@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using HandyIpc;
-using HandyIpc.Server;
+using HandyIpc.Core;
 
 namespace HandyIpcTests.Mock
 {

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using HandyIpc.Server;
+using HandyIpc.Core;
 using static HandyIpc.NamedPipe.PrimitiveMethods;
 
 namespace HandyIpc.NamedPipe
@@ -25,7 +25,10 @@ namespace HandyIpc.NamedPipe
                 {
                     var stream = await CreateServerStreamAsync(identifier, token);
 
-                    if (token.IsCancellationRequested) break;
+                    if (token.IsCancellationRequested)
+                    {
+                        break;
+                    }
 
                     // Do not await the request handler, and go to await next stream connection directly.
 #pragma warning disable 4014

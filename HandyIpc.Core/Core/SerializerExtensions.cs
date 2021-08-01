@@ -1,42 +1,25 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using HandyIpc.Extensions;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
-    public delegate byte[] Serialize(object? value, Type type);
-
-    public delegate object? Deserialize(byte[] bytes, Type type);
-
-    public static class Signals
+    public static class SerializerExtensions
     {
         private const string ReqHeader = "handyipc/req";
         private const string ResHeader = "handyipc/res";
 
-        public static readonly byte[] Empty = { 0 };
-        public static readonly byte[] Unit = { 1 };
-        public static readonly IReadOnlyList<Argument> EmptyArguments = Array.Empty<Argument>();
-
+        private static readonly byte[] Version = { 1 };
         private static readonly byte[] ReqHeaderBytes = Encoding.ASCII.GetBytes(ReqHeader);
         private static readonly byte[] ResHeaderBytes = Encoding.ASCII.GetBytes(ResHeader);
-        private static readonly byte[] Version = { 1 };
+
         private static readonly byte[] ResponseValueFlag = { 1 };
         private static readonly byte[] ResponseErrorFlag = { 0 };
 
-        public static bool IsEmpty(this byte[] bytes) => bytes.Is(Empty);
-
-        public static bool IsUnit(this byte[] bytes) => bytes.Is(Unit);
-
-        private static bool Is(this IReadOnlyList<byte> bytes, IReadOnlyList<byte> pattern)
+        public static byte[] SerializeRequest(this ISerializer self, RequestHeader request, IReadOnlyList<Argument> arguments)
         {
-            return bytes.Count == 1 && bytes[0] == pattern[0];
-        }
-
-        public static byte[] GetRequestBytes(Request request, IReadOnlyList<Argument> arguments, Serialize serialize)
-        {
-            byte[] requestBytes = serialize(request, typeof(Request));
+            byte[] requestBytes = self.Serialize(request, typeof(RequestHeader));
             List<byte[]> bytesList = new()
             {
                 ReqHeaderBytes,
@@ -45,10 +28,11 @@ namespace HandyIpc
                 requestBytes,
             };
 
+            // The "for" performance is better than "foreach" or "linq".
             for (int i = 0; i < arguments.Count; i++)
             {
                 var (type, argument) = arguments[i];
-                byte[] argumentBytes = serialize(argument, type);
+                byte[] argumentBytes = self.Serialize(argument, type);
                 bytesList.Add(BitConverter.GetBytes(argumentBytes.Length));
                 bytesList.Add(argumentBytes);
             }
@@ -56,14 +40,14 @@ namespace HandyIpc
             return bytesList.ConcatBytes();
         }
 
-        public static Request GetRequest(byte[] bytes, Deserialize deserialize)
+        public static RequestHeader DeserializeRequestHeader(this ISerializer self, byte[] bytes)
         {
             PreprocessRequestBytes(bytes, out int requestOffset, out int requestLength);
 
-            return (Request)deserialize(bytes.Slice(requestOffset, requestLength), typeof(Request))!;
+            return (RequestHeader)self.Deserialize(bytes.Slice(requestOffset, requestLength), typeof(RequestHeader))!;
         }
 
-        public static object?[]? GetArguments(byte[] bytes, Type[] argumentTypes, Deserialize deserialize)
+        public static object?[]? DeserializeRequestArguments(this ISerializer self, byte[] bytes, Type[] argumentTypes)
         {
             PreprocessRequestBytes(bytes, out int requestOffset, out int requestLength);
 
@@ -80,30 +64,14 @@ namespace HandyIpc
                 int argumentLength = BitConverter.ToInt32(bytes.Slice(argumentOffset, sizeof(int)), 0);
                 argumentOffset += sizeof(int);
 
-                result.Add(deserialize(bytes.Slice(argumentOffset, argumentLength), argumentTypes[typeIndex++]));
+                result.Add(self.Deserialize(bytes.Slice(argumentOffset, argumentLength), argumentTypes[typeIndex++]));
                 argumentOffset += argumentLength;
             }
 
             return result.ToArray();
         }
 
-        public static IReadOnlyList<Argument> GetArgumentList(object?[]? values, Type[]? types)
-        {
-            if (values is not null && types is not null && values.Length == types.Length)
-            {
-                var result = new Argument[values.Length];
-                for (int i = 0; i < result.Length; i++)
-                {
-                    result[i] = new Argument(types[i], values[i]);
-                }
-
-                return result;
-            }
-
-            return EmptyArguments;
-        }
-
-        public static byte[] GetResponseValue(object? value, Type? type, Serialize serialize)
+        public static byte[] SerializeResponseValue(this ISerializer self, object? value, Type? type)
         {
             List<byte[]> result = new()
             {
@@ -114,7 +82,7 @@ namespace HandyIpc
 
             if (value is not null && type is not null)
             {
-                byte[] valueBytes = serialize(value, type);
+                byte[] valueBytes = self.Serialize(value, type);
                 result.Add(BitConverter.GetBytes(valueBytes.Length));
                 result.Add(valueBytes);
             }
@@ -122,10 +90,10 @@ namespace HandyIpc
             return result.ConcatBytes();
         }
 
-        public static byte[] GetResponseError(Exception exception, Serialize serialize)
+        public static byte[] SerializeResponseError(this ISerializer self, Exception exception)
         {
-            byte[] typeBytes = serialize(exception.GetType(), typeof(Type));
-            byte[] exceptionBytes = serialize(exception, exception.GetType());
+            byte[] typeBytes = self.Serialize(exception.GetType(), typeof(Type));
+            byte[] exceptionBytes = self.Serialize(exception, exception.GetType());
             List<byte[]> result = new()
             {
                 ResHeaderBytes,
@@ -140,7 +108,7 @@ namespace HandyIpc
             return result.ConcatBytes();
         }
 
-        public static bool GetResponse(byte[] bytes, Type type, Deserialize deserialize, out object? value, out Exception? exception)
+        public static bool DeserializeResponse(this ISerializer self, byte[] bytes, Type valueType, out object? value, out Exception? exception)
         {
             int offset = 0;
             if (!bytes.Slice(offset, ResHeaderBytes.Length).SequenceEqual(ResHeaderBytes))
@@ -164,7 +132,7 @@ namespace HandyIpc
                 {
                     int valueLength = BitConverter.ToInt32(bytes.Slice(offset, sizeof(int)), 0);
                     offset += sizeof(int);
-                    value = deserialize(bytes.Slice(offset, valueLength), type);
+                    value = self.Deserialize(bytes.Slice(offset, valueLength), valueType);
                 }
             }
             else
@@ -172,13 +140,13 @@ namespace HandyIpc
                 int errorTypeLength = BitConverter.ToInt32(bytes.Slice(offset, sizeof(int)), 0);
                 offset += sizeof(int);
 
-                Type errorType = (Type)deserialize(bytes.Slice(offset, errorTypeLength), typeof(Type))!;
+                Type errorType = (Type)self.Deserialize(bytes.Slice(offset, errorTypeLength), typeof(Type))!;
                 offset += errorTypeLength;
 
                 int errorLength = BitConverter.ToInt32(bytes.Slice(offset, sizeof(int)), 0);
                 offset += sizeof(int);
 
-                exception = (Exception?)deserialize(bytes.Slice(offset, errorLength), errorType);
+                exception = (Exception?)self.Deserialize(bytes.Slice(offset, errorLength), errorType);
                 value = null;
             }
 
@@ -199,6 +167,35 @@ namespace HandyIpc
             requestLength = BitConverter.ToInt32(bytes.Slice(offset, sizeof(int)), 0);
             offset += sizeof(int);
             requestOffset = offset;
+        }
+
+        private static byte[] Slice(this byte[] bytes, int start, int length)
+        {
+            byte[] result = new byte[length];
+            Array.Copy(bytes, start, result, 0, length);
+
+            return result;
+        }
+
+        private static byte[] ConcatBytes(this IReadOnlyList<byte[]> bytesList)
+        {
+            int totalLength = 0;
+            // The "for" performance is better than "foreach" or "linq".
+            for (int i = 0; i < bytesList.Count; i++)
+            {
+                totalLength += bytesList[i].Length;
+            }
+
+            byte[] result = new byte[totalLength];
+            // The "for" performance is better than "foreach" or "linq".
+            for (int i = 0, offset = 0; i < bytesList.Count; i++)
+            {
+                byte[] bytes = bytesList[i];
+                bytes.CopyTo(result, offset);
+                offset += bytes.Length;
+            }
+
+            return result;
         }
     }
 }

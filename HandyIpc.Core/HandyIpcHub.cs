@@ -1,5 +1,4 @@
-﻿using HandyIpc.Client;
-using HandyIpc.Server;
+using HandyIpc.Core;
 
 namespace HandyIpc
 {
@@ -15,7 +14,7 @@ namespace HandyIpc
         /// <returns>The factory of the IPC client hub.</returns>
         public static IIpcFactory<IRmiClient, IIpcClientHub> CreateClientFactory()
         {
-            return new IpcFactory<IRmiClient, IIpcClientHub>(rmiClient => new HandyIpcClientHub(rmiClient));
+            return new IpcFactory<IRmiClient, IIpcClientHub>(rmiClient => new IpcClientHub(rmiClient));
         }
 
         /// <summary>
@@ -25,7 +24,7 @@ namespace HandyIpc
         /// <returns>The factory of the IPC server hub.</returns>
         public static IIpcFactory<IRmiServer, IIpcServerHub> CreateServerFactory()
         {
-            return new IpcFactory<IRmiServer, IIpcServerHub>(rmiServer => new HandyIpcServerHub(rmiServer));
+            return new IpcFactory<IRmiServer, IIpcServerHub>(rmiServer => new IpcServerHub(rmiServer));
         }
     }
 }

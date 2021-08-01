@@ -1,14 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
+using HandyIpc.Core;
 
-namespace HandyIpc.Client
+namespace HandyIpc
 {
-    internal class HandyIpcClientHub : IIpcClientHub
+    internal class IpcClientHub : IIpcClientHub
     {
         private readonly IRmiClient _rmiClient;
         private readonly ConcurrentDictionary<Type, object> _typeInstanceMapping = new();
 
-        public HandyIpcClientHub(IRmiClient rmiClient)
+        public IpcClientHub(IRmiClient rmiClient)
         {
             _rmiClient = rmiClient;
         }

@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace HandyIpc.Server
+namespace HandyIpc
 {
     /// <summary>
     /// It represents a hub of IPC server instances.

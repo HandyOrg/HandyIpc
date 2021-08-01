@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     public readonly struct Argument
     {

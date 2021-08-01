@@ -1,7 +1,7 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace HandyIpc.Server
+namespace HandyIpc.Core
 {
     public interface IRmiServer
     {

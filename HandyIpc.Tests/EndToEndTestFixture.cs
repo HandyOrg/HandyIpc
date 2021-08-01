@@ -1,9 +1,7 @@
 ﻿using System;
 using HandyIpc;
-using HandyIpc.Client;
 using HandyIpc.NamedPipe;
 using HandyIpc.Serializer.Json;
-using HandyIpc.Server;
 using HandyIpcTests.Implementations;
 using HandyIpcTests.Interfaces;
 

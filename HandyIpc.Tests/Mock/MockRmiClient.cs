@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HandyIpc;
-using HandyIpc.Client;
+using HandyIpc.Core;
 using Xunit;
 
 namespace HandyIpcTests.Mock
@@ -11,7 +10,7 @@ namespace HandyIpcTests.Mock
     {
         string ExpectedIdentifier { get; set; }
 
-        Request ExpectedRequest { get; set; }
+        RequestHeader ExpectedRequest { get; set; }
 
         IReadOnlyList<Argument> ExpectedArguments { get; set; }
 
@@ -22,13 +21,13 @@ namespace HandyIpcTests.Mock
     {
         public string ExpectedIdentifier { get; set; } = null!;
 
-        public Request ExpectedRequest { get; set; } = null!;
+        public RequestHeader ExpectedRequest { get; set; } = null!;
 
         public IReadOnlyList<Argument> ExpectedArguments { get; set; } = null!;
 
         public bool IsReturnVoid { get; set; }
 
-        public T Invoke<T>(string identifier, Request request, IReadOnlyList<Argument> arguments)
+        public T Invoke<T>(string identifier, RequestHeader request, IReadOnlyList<Argument> arguments)
         {
             AssertAll(identifier, request, arguments);
 
@@ -36,7 +35,7 @@ namespace HandyIpcTests.Mock
             return IsReturnVoid ? (T)(object)Signals.Unit : default!;
         }
 
-        public Task<T> InvokeAsync<T>(string identifier, Request request, IReadOnlyList<Argument> arguments)
+        public Task<T> InvokeAsync<T>(string identifier, RequestHeader request, IReadOnlyList<Argument> arguments)
         {
             AssertAll(identifier, request, arguments);
 
@@ -44,7 +43,7 @@ namespace HandyIpcTests.Mock
             return Task.FromResult<T>(default!);
         }
 
-        private void AssertAll(string identifier, Request request, IReadOnlyList<Argument> arguments)
+        private void AssertAll(string identifier, RequestHeader request, IReadOnlyList<Argument> arguments)
         {
             Assert.Equal(ExpectedIdentifier, identifier);
 

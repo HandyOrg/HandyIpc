@@ -1,4 +1,3 @@
-﻿using System;
 using HandyIpcTests.Interfaces;
 
 namespace HandyIpcTests.Implementations

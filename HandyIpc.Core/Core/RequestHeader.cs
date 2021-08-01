@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Reflection;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     /// <summary>
     /// Represents a request for a call to a remote method.
     /// </summary>
     [Obfuscation(Exclude = true)]
-    public class Request
+    public class RequestHeader
     {
         /// <summary>
         /// Gets the access token, which may be empty/null.
@@ -38,9 +38,9 @@ namespace HandyIpc
         public Type[]? ArgumentTypes { get; set; }
 
         /// <summary>
-        /// Initializes an instance of <see cref="Request"/> type with the specified method name.
+        /// Initializes an instance of <see cref="RequestHeader"/> type with the specified method name.
         /// </summary>
         /// <param name="methodName">The specified method name.</param>
-        public Request(string methodName) => MethodName = methodName;
+        public RequestHeader(string methodName) => MethodName = methodName;
     }
 }
