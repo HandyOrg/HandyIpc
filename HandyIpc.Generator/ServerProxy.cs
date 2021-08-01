@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using static HandyIpc.Generator.TemplateExtensions;
 
 namespace HandyIpc.Generator
 {
@@ -32,7 +33,6 @@ namespace {@namespace}
 {methods.For(method =>
 {
     string methodName = method.ToFullDeclaration();
-    string methodId = method.GenerateMethodId();
     string methodParameterList = method.Parameters
         .Select(parameter =>
         {
@@ -46,7 +46,9 @@ namespace {@namespace}
     return $@"
 
         /// <inheritdoc />
-        [global::HandyIpc.Core.IpcMethod(""{methodId}"")]
+{Text(method.TypeParameters.Any() ? $@"
+        [global::HandyIpc.Core.IpcMethod(""{method.GenerateMethodId()}"")]
+" : RemoveLineIfEmpty)}
         {method.ReturnType.ToFullDeclaration()} {interfaceType}.{methodName}({methodParameterList})
         {{
             {(!isVoid || isAwaitable ? "return " : null)}_instance.{methodName}({method.Parameters.Select(parameter => $"@{parameter.Name}").Join(", ")});
