@@ -46,12 +46,31 @@ namespace HandyIpc.Generator
                 })
                 .Select(@interface => (
                     @interface,
-                    methods: @interface.GetMembers().OfType<IMethodSymbol>().ToList().AsReadOnly()))
-                .Where(item => item.methods.Any());
+                    methods: @interface.GetMembers().OfType<IMethodSymbol>().ToList().AsReadOnly()));
 
             var fileNameCounter = new Dictionary<string, int>();
             foreach (var (@interface, methods) in contractInterfaces)
             {
+                if (@interface.Interfaces.Length > 0)
+                {
+                    foreach (Location location in @interface.Locations)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(NoInheritance, location, @interface.Name));
+                    }
+
+                    continue;
+                }
+
+                if (!methods.Any())
+                {
+                    foreach (Location location in @interface.Locations)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(MustContainsMethod, location, @interface.Name));
+                    }
+
+                    continue;
+                }
+
                 string clientProxySource = ClientProxy.Generate(@interface, methods);
                 string serverProxySource = ServerProxy.Generate(@interface, methods);
                 string dispatcherSource = Dispatcher.Generate(@interface, methods);
@@ -94,8 +113,7 @@ namespace HandyIpc.Generator
 
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
             {
-                if (syntaxNode is InterfaceDeclarationSyntax interfaceDeclarationSyntax &&
-                    interfaceDeclarationSyntax.AttributeLists.Count > 0)
+                if (syntaxNode is InterfaceDeclarationSyntax { AttributeLists: { Count: > 0 } } interfaceDeclarationSyntax)
                 {
                     CandidateInterfaces.Add(interfaceDeclarationSyntax);
                 }

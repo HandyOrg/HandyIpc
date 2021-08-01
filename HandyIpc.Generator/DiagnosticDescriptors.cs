@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 
 namespace HandyIpc.Generator
 {
@@ -16,7 +16,7 @@ namespace HandyIpc.Generator
         public static readonly DiagnosticDescriptor NoInheritance = new(
             "HI002",
             "The contract interface is inheritance-free",
-            "The contract interface ({0}) is not allowed to derive from other interfaces, except for the IDisposable interface",
+            "The contract interface '{0}' is not allowed to inherit from other interfaces. Consider removing interfaces it inherits from.",
             "HandyIpc",
             DiagnosticSeverity.Error,
             true);
@@ -24,7 +24,7 @@ namespace HandyIpc.Generator
         public static readonly DiagnosticDescriptor MustContainsMethod = new(
             "HI003",
             "The contract interface must contains methods",
-            "The interface ({0}) does not contain any methods and no related code will be generated",
+            "The interface '{0}' does not contain any methods and no related code will be generated. Consider implementing some methods, or removing the interface, or removing the IpcContractAttribute.",
             "HandyIpc",
             DiagnosticSeverity.Warning,
             true);

@@ -1,4 +1,4 @@
-﻿using HandyIpc;
+using HandyIpc;
 
 // TODO: Write this rule to README.md: Must disable the nullable feature in contract file.
 #nullable disable
