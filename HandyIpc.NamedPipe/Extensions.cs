@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
@@ -18,7 +18,7 @@ namespace HandyIpc.NamedPipe
         /// <returns>The factory instance itself.</returns>
         public static IIpcFactory<IRmiClient, IIpcClientHub> UseNamedPipe(this IIpcFactory<IRmiClient, IIpcClientHub> self)
         {
-            return self.Use(serializer => new RmiClient(serializer));
+            return self.Use(_ => new RmiClient());
         }
 
         /// <summary>

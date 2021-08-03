@@ -38,20 +38,26 @@ namespace HandyIpc.Core
 
         public static async Task RequestHeaderParser(Context ctx, Func<Task> next)
         {
-            ctx.RequestHeader = ctx.Serializer.DeserializeRequestHeader(ctx.Input);
-
-            await next();
+            if (Request.TryParse(ctx.Input, ctx.Serializer, out Request request))
+            {
+                ctx.Request = request;
+                await next();
+            }
+            else
+            {
+                throw new ArgumentException("Invalid request bytes.");
+            }
         }
 
         public static MiddlewareHandler GetAuthenticator(string accessToken)
         {
             return async (ctx, next) =>
             {
-                var request = ctx.RequestHeader;
+                var request = ctx.Request;
 
                 if (request is null)
                 {
-                    throw new InvalidOperationException($"The {nameof(Context.RequestHeader)} must be parsed from {nameof(Context.Input)} before it can be used.");
+                    throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
                 }
 
                 if (string.Equals(request.AccessToken, accessToken, StringComparison.Ordinal))
@@ -71,16 +77,16 @@ namespace HandyIpc.Core
         {
             return async (ctx, next) =>
             {
-                var request = ctx.RequestHeader;
+                var request = ctx.Request;
 
                 if (request is null)
                 {
-                    throw new InvalidOperationException($"The {nameof(Context.RequestHeader)} must be parsed from {nameof(Context.Input)} before it can be used.");
+                    throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
                 }
 
-                if (request.GenericArguments is not null && request.GenericArguments.Any())
+                if (request.TypeArguments.Any())
                 {
-                    var proxy = getProxy(request.GenericArguments);
+                    IIpcDispatcher proxy = getProxy(request.TypeArguments.ToArray());
                     await proxy.Dispatch(ctx, next);
                 }
                 else

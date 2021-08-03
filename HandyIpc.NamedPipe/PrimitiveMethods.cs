@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,7 +43,7 @@ namespace HandyIpc.NamedPipe
                         continue;
                     }
 
-                    var output = await handler(buffer);
+                    byte[] output = await handler(buffer);
 
                     if (!stream.IsConnected || token.IsCancellationRequested)
                     {

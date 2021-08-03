@@ -1,12 +1,11 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
     public interface IRmiClient
     {
-        T Invoke<T>(string identifier, RequestHeader request, IReadOnlyList<Argument> arguments);
+        byte[] Invoke(string identifier, byte[] requestBytes);
 
-        Task<T> InvokeAsync<T>(string identifier, RequestHeader request, IReadOnlyList<Argument> arguments);
+        Task<byte[]> InvokeAsync(string identifier, byte[] requestBytes);
     }
 }

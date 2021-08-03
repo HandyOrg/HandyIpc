@@ -12,7 +12,7 @@ namespace HandyIpc.Core
 
         public IDictionary<object, object> Items { get; } = new Dictionary<object, object>();
 
-        public RequestHeader? RequestHeader { get; set; }
+        public Request? Request { get; set; }
 
         public ISerializer Serializer { get; }
 
