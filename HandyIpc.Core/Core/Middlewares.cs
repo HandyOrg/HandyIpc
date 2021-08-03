@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
-    public delegate Task MiddlewareHandler(Context context, Func<Task> next);
+    public delegate Task Middleware(Context context, Func<Task> next);
+
+    public delegate Task<byte[]> RequestHandler(byte[] input);
 
     public static class Middlewares
     {
@@ -49,7 +51,7 @@ namespace HandyIpc.Core
             }
         }
 
-        public static MiddlewareHandler GetAuthenticator(string accessToken)
+        public static Middleware GetAuthenticator(string accessToken)
         {
             return async (ctx, next) =>
             {
@@ -73,7 +75,7 @@ namespace HandyIpc.Core
             };
         }
 
-        public static MiddlewareHandler GetGenericDispatcher(Func<Type[], IIpcDispatcher> getProxy)
+        public static Middleware GetGenericDispatcher(Func<Type[], IIpcDispatcher> getProxy)
         {
             return async (ctx, next) =>
             {
@@ -98,22 +100,22 @@ namespace HandyIpc.Core
 
         #endregion
 
-        public static MiddlewareHandler Then(this MiddlewareHandler middleware, MiddlewareHandler nextMiddleware)
+        public static Middleware Then(this Middleware middleware, Middleware nextMiddleware)
         {
             return (ctx, next) => middleware(ctx, () => nextMiddleware(ctx, next));
         }
 
-        public static MiddlewareHandler Compose(this IEnumerable<MiddlewareHandler> middlewareEnumerable)
+        public static Middleware Compose(this IEnumerable<Middleware> middlewareEnumerable)
         {
             return middlewareEnumerable.Aggregate((accumulation, item) => accumulation.Then(item));
         }
 
-        public static MiddlewareHandler Compose(params MiddlewareHandler[] middlewareArray)
+        public static Middleware Compose(params Middleware[] middlewareArray)
         {
             return middlewareArray.Compose();
         }
 
-        public static Func<byte[], Task<byte[]>> ToHandler(this MiddlewareHandler middleware, ISerializer serializer, ILogger logger)
+        public static RequestHandler ToHandler(this Middleware middleware, ISerializer serializer, ILogger logger)
         {
             return async input =>
             {

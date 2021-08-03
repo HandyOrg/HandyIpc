@@ -26,7 +26,7 @@ namespace HandyIpc
         /// which can only return an instance derived from <see cref="IRmiServer"/> or <see cref="IRmiClient"/>.
         /// </param>
         /// <returns>The interface instance itself.</returns>
-        IIpcFactory<TRmi, THub> Use(Func<ISerializer, TRmi> factory);
+        IIpcFactory<TRmi, THub> Use(Func<TRmi> factory);
 
         /// <summary>
         /// Builds an instance of the <typeparamref name="THub"/> type.

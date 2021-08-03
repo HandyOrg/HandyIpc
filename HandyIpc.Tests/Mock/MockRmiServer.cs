@@ -7,7 +7,7 @@ namespace HandyIpcTests.Mock
 {
     public class MockRmiServer : IRmiServer
     {
-        public async Task RunAsync(string identifier, MiddlewareHandler middleware, CancellationToken token)
+        public async Task RunAsync(string identifier, RequestHandler handler, CancellationToken token)
         {
             throw new NotImplementedException();
         }

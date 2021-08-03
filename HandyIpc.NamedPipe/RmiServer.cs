@@ -8,16 +8,14 @@ namespace HandyIpc.NamedPipe
 {
     internal class RmiServer : IRmiServer
     {
-        private readonly ISerializer _serializer;
         private readonly ILogger _logger;
 
-        public RmiServer(ISerializer serializer, ILogger logger)
+        public RmiServer(ILogger logger)
         {
-            _serializer = serializer;
             _logger = logger;
         }
 
-        public async Task RunAsync(string identifier, MiddlewareHandler middleware, CancellationToken token)
+        public async Task RunAsync(string identifier, RequestHandler handler, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
@@ -32,7 +30,7 @@ namespace HandyIpc.NamedPipe
 
                     // Do not await the request handler, and go to await next stream connection directly.
 #pragma warning disable 4014
-                    HandleRequestAsync(stream, middleware.ToHandler(_serializer, _logger), token);
+                    HandleRequestAsync(stream, handler, token);
 #pragma warning restore 4014
                 }
                 catch (OperationCanceledException)

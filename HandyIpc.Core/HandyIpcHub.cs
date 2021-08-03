@@ -14,7 +14,8 @@ namespace HandyIpc
         /// <returns>The factory of the IPC client hub.</returns>
         public static IIpcFactory<IRmiClient, IIpcClientHub> CreateClientFactory()
         {
-            return new IpcFactory<IRmiClient, IIpcClientHub>(rmiClient => new IpcClientHub(rmiClient));
+            return new IpcFactory<IRmiClient, IIpcClientHub>(
+                (rmiClient, serializer) => new IpcClientHub(rmiClient, serializer));
         }
 
         /// <summary>
@@ -24,7 +25,8 @@ namespace HandyIpc
         /// <returns>The factory of the IPC server hub.</returns>
         public static IIpcFactory<IRmiServer, IIpcServerHub> CreateServerFactory()
         {
-            return new IpcFactory<IRmiServer, IIpcServerHub>(rmiServer => new IpcServerHub(rmiServer));
+            return new IpcFactory<IRmiServer, IIpcServerHub>(
+                (rmiServer, serializer) => new IpcServerHub(rmiServer, serializer));
         }
     }
 }

@@ -5,6 +5,6 @@ namespace HandyIpc.Core
 {
     public interface IRmiServer
     {
-        Task RunAsync(string identifier, MiddlewareHandler middleware, CancellationToken token);
+        Task RunAsync(string identifier, RequestHandler handler, CancellationToken token);
     }
 }

@@ -19,13 +19,15 @@ namespace HandyIpc
         }
 
         private readonly IRmiServer _rmiServer;
+        private readonly ISerializer _serializer;
         private readonly object _locker = new();
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
         private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers = new();
 
-        public IpcServerHub(IRmiServer rmiServer)
+        public IpcServerHub(IRmiServer rmiServer, ISerializer serializer)
         {
             _rmiServer = rmiServer;
+            _serializer = serializer;
         }
 
         public IDisposable Start(Type interfaceType, Func<object> factory, string? accessToken = null)
@@ -81,7 +83,7 @@ namespace HandyIpc
             }
         }
 
-        private void StartInterface(Type interfaceType, Func<MiddlewareHandler, MiddlewareHandler> append, string? accessToken)
+        private void StartInterface(Type interfaceType, Func<Middleware, Middleware> append, string? accessToken)
         {
             lock (_locker)
             {
@@ -100,7 +102,7 @@ namespace HandyIpc
 
                 string identifier = interfaceType.ResolveIdentifier();
                 // Async run the server without waiting.
-                _rmiServer.RunAsync(identifier, middleware, source.Token);
+                _rmiServer.RunAsync(identifier, middleware.ToHandler(_serializer, new DebugLogger()), source.Token);
 
                 _runningInterfaces.Add(interfaceType, source);
             }

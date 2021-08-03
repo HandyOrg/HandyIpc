@@ -2,6 +2,7 @@ using System;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
+using HandyIpc.Core;
 
 namespace HandyIpc.NamedPipe
 {
@@ -17,10 +18,7 @@ namespace HandyIpc.NamedPipe
             return stream;
         }
 
-        public static async Task HandleRequestAsync(
-            NamedPipeServerStream stream,
-            Func<byte[], Task<byte[]>> handler,
-            CancellationToken token)
+        public static async Task HandleRequestAsync(NamedPipeServerStream stream, RequestHandler handler, CancellationToken token)
         {
             using (stream)
             {
