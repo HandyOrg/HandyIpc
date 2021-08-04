@@ -48,7 +48,12 @@ namespace {@namespace}
         .ToList()
         .AsReadOnly();
     string methodId = method.GenerateMethodId();
-    string parameters = method.Parameters.Select(parameter => $"{parameter.Type.ToTypeDeclaration()} @{parameter.Name}").Join(", ");
+    // Add underscores to the end of parameters to avoid user fields with the same name as the generated local variables.
+    var parameterNames = method.Parameters.Select(parameter => $"{parameter.Name}_").ToList();
+    string parameters = method.Parameters
+        .Select(item => item.Type.ToTypeDeclaration())
+        .Zip(parameterNames, (type, parameter) => $"{type} {parameter}")
+        .Join(", ");
     bool isAwaitable = method.ReturnType.IsAwaitable();
     bool isVoid = method.ReturnType.IsVoid();
 
@@ -70,7 +75,7 @@ namespace {@namespace}
 {parameterTypes.Select(type => $"typeof({type})").Join(", ").If(text => $@"
                 ArgumentTypes = new[] {{ {text} }},
 ", RemoveLineIfEmpty)}
-{method.Parameters.Select(parameter => $"@{parameter.Name}").Join(", ").If(text => $@"
+{parameterNames.Join(", ").If(text => $@"
                 Arguments = new object[] {{ {text} }},
 ", RemoveLineIfEmpty)}
             }};
