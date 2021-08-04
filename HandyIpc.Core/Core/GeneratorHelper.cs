@@ -30,8 +30,7 @@ namespace HandyIpc.Core
 
         public static T UnpackResponse<T>(byte[] bytes, ISerializer serializer)
         {
-            bool hasValue = serializer.DeserializeResponse(bytes, typeof(T), out object? value, out Exception? exception);
-
+            bool hasValue = Response.TryParse(bytes, typeof(T), serializer, out object? value, out Exception? exception);
             return hasValue ? (T)value! : throw exception!;
         }
 

@@ -87,11 +87,10 @@ namespace {@namespace}
 " : $@"
 {Text(containsTypeParameter ? @"
                     var result = await GeneratorHelper.UnpackTask(constructedMethodInfo.ReturnType, obj);
-                    ctx.Output = ctx.Serializer.SerializeResponseValue(result, constructedMethodInfo.ReturnType);
 " : $@"
                     var result = {(isAwaitable ? $"await ({method.ReturnType.ToTypeDeclaration()})" : null)}obj;
-                    ctx.Output = ctx.Serializer.SerializeResponseValue(result, constructedMethodInfo.ReturnType);
 ")}
+                    ctx.Output = Response.Value(result, constructedMethodInfo.ReturnType, ctx.Serializer);
 ")}
                     break;
                 }}
@@ -110,7 +109,7 @@ namespace {@namespace}
                     ctx.Output = Signals.Unit;
 " : $@"
                     var result = {(isAwaitable ? "await " : null)}_instance.{method.Name}({arguments});
-                    ctx.Output = ctx.Serializer.SerializeResponseValue(result, typeof({method.ReturnType.ToFullDeclaration()}));
+                    ctx.Output = Response.Value(result, typeof({method.ReturnType.ToFullDeclaration()}), ctx.Serializer);
 ")}
                     break;
                 }}
