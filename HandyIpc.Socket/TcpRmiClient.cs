@@ -7,14 +7,8 @@ namespace HandyIpc.Socket
 {
     internal class TcpRmiClient : IRmiClient
     {
-        public T Invoke<T>(string identifier, RequestHeader request, IReadOnlyList<Argument> arguments)
-        {
-            throw new NotImplementedException();
-        }
+        public byte[] Invoke(string identifier, byte[] requestBytes) => throw new NotImplementedException();
 
-        public async Task<T> InvokeAsync<T>(string identifier, RequestHeader request, IReadOnlyList<Argument> arguments)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<byte[]> InvokeAsync(string identifier, byte[] requestBytes) => throw new NotImplementedException();
     }
 }

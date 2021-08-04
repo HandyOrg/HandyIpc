@@ -17,6 +17,7 @@ namespace {@namespace}
 {{
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
     using HandyIpc.Core;
@@ -46,10 +47,10 @@ namespace {@namespace}
 
         public async Task Dispatch(Context ctx, Func<Task> next)
         {{
-            var request = ctx.RequestHeader;
+            var request = ctx.Request;
             if (request is null)
             {{
-                throw new InvalidOperationException($""The {{nameof(Context.RequestHeader)}} must be parsed from {{nameof(Context.Input)}} before it can be used."");
+                throw new InvalidOperationException($""The {{nameof(Context.Request)}} must be parsed from {{nameof(Context.Input)}} before it can be used."");
             }}
 
             switch (request.MethodName)
@@ -76,9 +77,9 @@ namespace {@namespace}
                 when (_genericMethodMapping.Value.TryGetValue(""{methodId}"", out var methodInfo)):
                 {{
 {Text(method.Parameters.Any() ? @"
-                    var args = ctx.Serializer.DeserializeRequestArguments(ctx.Input, request.ArgumentTypes);
+                    var args = request.Arguments.ToArray();
 " : RemoveLineIfEmpty)}
-                    var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodGenericArguments);
+                    var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodTypeArguments.ToArray());
                     var obj = constructedMethodInfo.Invoke(_instance, {(method.Parameters.Any() ? "args" : "new object[0]")});
 {Text(isVoid ? $@"
                     {(isAwaitable ? "await (Task)obj;" : null)}
@@ -101,7 +102,8 @@ namespace {@namespace}
     .Select(item => item.Type)
     .Select(item => item.ToFullDeclaration())
     .Select(type => $"typeof({type})").Join(", ").If(text => $@"
-                    var args = ctx.Serializer.DeserializeRequestArguments(ctx.Input, new Type[] {{ {text} }});
+                    request.ArgumentTypes = new Type[] {{ {text} }};
+                    var args = request.Arguments;
 ", RemoveLineIfEmpty)}
 {Text(isVoid ? $@"
                     {(isAwaitable ? "await " : null)}_instance.{method.Name}({arguments});

@@ -40,22 +40,38 @@ namespace HandyIpc.Core
         /// <summary>
         /// Gets the access token, which may be empty string.
         /// </summary>
-        public string AccessToken => _accessToken ??= Deserialize<string>(_accessTokenRange);
+        public string AccessToken
+        {
+            get => _accessToken ??= Deserialize<string>(_accessTokenRange);
+            set => _accessToken = value;
+        }
 
         /// <summary>
         /// Gets the generic argument that are defined on the interface.
         /// </summary>
-        public IReadOnlyList<Type> TypeArguments => _typeArguments ??= DeserializeArray<Type>(_typeArgumentsRange);
+        public IReadOnlyList<Type> TypeArguments
+        {
+            get => _typeArguments ??= DeserializeArray<Type>(_typeArgumentsRange);
+            set => _typeArguments = value;
+        }
 
         /// <summary>
         /// Gets the name of the method.
         /// </summary>
-        public string MethodName => _methodName ??= Deserialize<string>(_methodNameRange);
+        public string MethodName
+        {
+            get => _methodName ??= Deserialize<string>(_methodNameRange);
+            set => _methodName = value;
+        }
 
         /// <summary>
         /// Gets the generic arguments that are defined on the method.
         /// </summary>
-        public IReadOnlyList<Type> MethodTypeArguments => _methodTypeArguments ??= DeserializeArray<Type>(_methodTypeArgumentsRange);
+        public IReadOnlyList<Type> MethodTypeArguments
+        {
+            get => _methodTypeArguments ??= DeserializeArray<Type>(_methodTypeArgumentsRange);
+            set => _methodTypeArguments = value;
+        }
 
         /// <summary>
         /// Gets types of arguments on the method.
@@ -63,35 +79,35 @@ namespace HandyIpc.Core
         /// <remarks>
         /// The property has been filled only if the method is a generic method.
         /// </remarks>
-        public IReadOnlyList<Type> ArgumentTypes => _argumentTypes ??= DeserializeArray<Type>(_argumentTypesRange);
+        public IReadOnlyList<Type> ArgumentTypes
+        {
+            get => _argumentTypes ??= DeserializeArray<Type>(_argumentTypesRange);
+            set => _argumentTypes = value;
+        }
 
         /// <summary>
         /// Gets arguments of the method.
         /// </summary>
-        public IReadOnlyList<object?> Arguments => _arguments ??= DeserializeArray<object?>(_argumentsRange);
-
-        public Request(
-            ISerializer serializer,
-            string methodName,
-            string? accessToken = null,
-            IReadOnlyList<Type>? typeArguments = null,
-            IReadOnlyList<Type>? methodTypeArguments = null,
-            IReadOnlyList<Type>? argumentTypes = null,
-            IReadOnlyList<object?>? arguments = null)
+        public IReadOnlyList<object?> Arguments
         {
-            // FIXME: Replace these initialization with the 'Property { get; init; }' syntax.
+            get => _arguments ??= DeserializeArray<object?>(_argumentsRange, index => ArgumentTypes[index]);
+            set => _arguments = value;
+        }
+
+        public Request(ISerializer serializer, string methodName)
+        {
             _serializer = serializer;
             _methodName = methodName;
-            _accessToken = accessToken ?? string.Empty;
-            _typeArguments = typeArguments ?? EmptyTypeList;
-            _methodTypeArguments = methodTypeArguments ?? EmptyTypeList;
-            _argumentTypes = argumentTypes ?? EmptyTypeList;
-            _arguments = arguments ?? EmptyObjectList;
+            _accessToken = string.Empty;
+            _typeArguments = EmptyTypeList;
+            _methodTypeArguments = EmptyTypeList;
+            _argumentTypes = EmptyTypeList;
+            _arguments = EmptyObjectList;
 
             _bytes = null!;
         }
 
-        public Request(ISerializer serializer, byte[] bytes)
+        private Request(ISerializer serializer, byte[] bytes)
         {
             _serializer = serializer;
             _bytes = bytes;
@@ -123,8 +139,11 @@ namespace HandyIpc.Core
             byte[] typeArgumentsBytes = SerializeArray(TypeArguments);
             byte[] methodNameBytes = _serializer.Serialize(MethodName, typeof(string));
             byte[] methodTypeArgumentsBytes = SerializeArray(MethodTypeArguments);
-            byte[] argumentTypesBytes = SerializeArray(ArgumentTypes);
-            byte[] argumentsBytes = SerializeArray(Arguments);
+            // Send parameter types only if the method is a generic method,
+            // because the parameter types may contain generic types that cannot be determined at compile time
+            // and they need to be monomorphism at runtime.
+            byte[] argumentTypesBytes = MethodTypeArguments.Any() ? SerializeArray(ArgumentTypes) : EmptyArray;
+            byte[] argumentsBytes = SerializeArray(Arguments, index => ArgumentTypes[index]);
 
             byte[][] bytesList =
             {
@@ -193,17 +212,19 @@ namespace HandyIpc.Core
             return true;
         }
 
-        private byte[] SerializeArray<T>(IReadOnlyList<T> array)
+        private byte[] SerializeArray<T>(IReadOnlyList<T> array, Func<int, Type>? typeProvider = null)
         {
             if (array.Count == 0)
             {
                 return EmptyArray;
             }
 
+            typeProvider ??= (_ => typeof(T));
+
             List<byte[]> result = new();
             for (int i = 0; i < array.Count; i++)
             {
-                byte[] bytes = _serializer.Serialize(array[i], typeof(T));
+                byte[] bytes = _serializer.Serialize(array[i], typeProvider(i));
                 result.Add(BitConverter.GetBytes(bytes.Length));
                 result.Add(bytes);
             }
@@ -217,18 +238,20 @@ namespace HandyIpc.Core
             return (T)_serializer.Deserialize(_bytes.Slice(start, length), typeof(T))!;
         }
 
-        private IReadOnlyList<T> DeserializeArray<T>((int start, int length) range)
+        private IReadOnlyList<T> DeserializeArray<T>((int start, int length) range, Func<int, Type>? typeProvider = null)
         {
+            typeProvider ??= (_ => typeof(T));
+
             (int start, int length) = range;
             int end = start + length;
             List<T> result = new();
-            int offset = 0;
-            while (offset < end)
+
+            for (int offset = start, index = 0; offset < end; index++)
             {
-                int dataLength = BitConverter.ToInt32(_bytes, start + offset);
+                int dataLength = BitConverter.ToInt32(_bytes, offset);
                 offset += sizeof(int);
 
-                T data = (T)_serializer.Deserialize(_bytes.Slice(offset, dataLength), typeof(T))!;
+                T data = (T)_serializer.Deserialize(_bytes.Slice(offset, dataLength), typeProvider(index))!;
                 offset += dataLength;
 
                 result.Add(data);
