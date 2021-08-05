@@ -16,8 +16,6 @@ namespace HandyIpc
     /// </typeparam>
     public interface IIpcFactory<in TRmi, out THub>
     {
-        IIpcFactory<TRmi, THub> Use(Func<ISerializer> factory);
-
         /// <summary>
         /// Use a <typeparamref name="TRmi"/> provider for the underlying communication.
         /// </summary>
@@ -27,6 +25,20 @@ namespace HandyIpc
         /// </param>
         /// <returns>The interface instance itself.</returns>
         IIpcFactory<TRmi, THub> Use(Func<TRmi> factory);
+
+        /// <summary>
+        /// Use a <see cref="ISerializer"/> provider for serialization and deserialization.
+        /// </summary>
+        /// <param name="factory">A factory for creating the <see cref="ISerializer"/> instance.</param>
+        /// <returns>The interface instance itself.</returns>
+        IIpcFactory<TRmi, THub> Use(Func<ISerializer> factory);
+
+        /// <summary>
+        /// Use a <see cref="ILogger"/> provider for logging.
+        /// </summary>
+        /// <param name="factory">A factory for creating the <see cref="ILogger"/> instance.</param>
+        /// <returns>The interface instance itself.</returns>
+        IIpcFactory<TRmi, THub> Use(Func<ILogger> factory);
 
         /// <summary>
         /// Builds an instance of the <typeparamref name="THub"/> type.

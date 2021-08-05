@@ -8,13 +8,6 @@ namespace HandyIpc.NamedPipe
 {
     internal class RmiServer : IRmiServer
     {
-        private readonly ILogger _logger;
-
-        public RmiServer(ILogger logger)
-        {
-            _logger = logger;
-        }
-
         public async Task RunAsync(string identifier, RequestHandler handler, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
@@ -36,10 +29,6 @@ namespace HandyIpc.NamedPipe
                 catch (OperationCanceledException)
                 {
                     // Ignore
-                }
-                catch (Exception e)
-                {
-                    _logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
                 }
             }
         }

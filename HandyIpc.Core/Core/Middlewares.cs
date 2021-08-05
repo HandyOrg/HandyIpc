@@ -55,7 +55,7 @@ namespace HandyIpc.Core
         {
             return async (ctx, next) =>
             {
-                var request = ctx.Request;
+                Request? request = ctx.Request;
 
                 if (request is null)
                 {
@@ -79,7 +79,7 @@ namespace HandyIpc.Core
         {
             return async (ctx, next) =>
             {
-                var request = ctx.Request;
+                Request? request = ctx.Request;
 
                 if (request is null)
                 {

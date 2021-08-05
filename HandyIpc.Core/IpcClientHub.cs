@@ -20,7 +20,7 @@ namespace HandyIpc
         {
             return (T)_typeInstanceMapping.GetOrAdd(typeof(T), key =>
             {
-                var type = key.GetClientType();
+                Type type = key.GetClientType();
 
                 if (key.IsGenericType)
                 {

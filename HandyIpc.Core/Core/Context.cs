@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 
 namespace HandyIpc.Core
 {
     public class Context
     {
-        private static readonly byte[] EmptyBytes = new byte[0];
+        private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
         public byte[] Input { get; }
 

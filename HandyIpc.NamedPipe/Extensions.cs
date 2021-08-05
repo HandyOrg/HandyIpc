@@ -30,9 +30,9 @@ namespace HandyIpc.NamedPipe
         /// and it will print to the Output window on the Visual Studio.
         /// </param>
         /// <returns>The factory instance itself.</returns>
-        public static IIpcFactory<IRmiServer, IIpcServerHub> UseNamedPipe(this IIpcFactory<IRmiServer, IIpcServerHub> self, ILogger? logger = null)
+        public static IIpcFactory<IRmiServer, IIpcServerHub> UseNamedPipe(this IIpcFactory<IRmiServer, IIpcServerHub> self)
         {
-            return self.Use(() => new RmiServer(logger ?? new DebugLogger()));
+            return self.Use(() => new RmiServer());
         }
 
         internal static byte[] ReadAllBytes(this PipeStream self)

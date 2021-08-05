@@ -20,14 +20,16 @@ namespace HandyIpc
 
         private readonly IRmiServer _rmiServer;
         private readonly ISerializer _serializer;
+        private readonly ILogger _logger;
         private readonly object _locker = new();
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
         private readonly ConcurrentDictionary<Type, IIpcDispatcher> _ipcDispatchers = new();
 
-        public IpcServerHub(IRmiServer rmiServer, ISerializer serializer)
+        public IpcServerHub(IRmiServer rmiServer, ISerializer serializer, ILogger logger)
         {
             _rmiServer = rmiServer;
             _serializer = serializer;
+            _logger = logger;
         }
 
         public IDisposable Start(Type interfaceType, Func<object> factory, string? accessToken = null)
@@ -45,9 +47,9 @@ namespace HandyIpc
         {
             StartInterface(interfaceType, middleware =>
             {
-                var genericDispatcher = Middlewares.GetGenericDispatcher(genericTypes =>
+                Middleware genericDispatcher = Middlewares.GetGenericDispatcher(genericTypes =>
                 {
-                    var constructedInterfaceType = interfaceType.MakeGenericType(genericTypes);
+                    Type constructedInterfaceType = interfaceType.MakeGenericType(genericTypes);
                     return GetOrAddIpcDispatcher(constructedInterfaceType, () => factory(genericTypes));
                 });
                 return middleware.Then(genericDispatcher);
@@ -60,7 +62,7 @@ namespace HandyIpc
         {
             lock (_locker)
             {
-                if (_runningInterfaces.TryGetValue(interfaceType, out var source))
+                if (_runningInterfaces.TryGetValue(interfaceType, out CancellationTokenSource source))
                 {
                     _runningInterfaces.Remove(interfaceType);
                     source.Cancel();
@@ -87,7 +89,7 @@ namespace HandyIpc
         {
             lock (_locker)
             {
-                var middleware = Middlewares.Compose(
+                Middleware middleware = Middlewares.Compose(
                     Middlewares.Heartbeat,
                     Middlewares.ExceptionHandler,
                     Middlewares.RequestHeaderParser);
@@ -102,7 +104,7 @@ namespace HandyIpc
 
                 string identifier = interfaceType.ResolveIdentifier();
                 // Async run the server without waiting.
-                _rmiServer.RunAsync(identifier, middleware.ToHandler(_serializer, new DebugLogger()), source.Token);
+                _rmiServer.RunAsync(identifier, middleware.ToHandler(_serializer, _logger), source.Token);
 
                 _runningInterfaces.Add(interfaceType, source);
             }
@@ -112,7 +114,7 @@ namespace HandyIpc
         {
             return _ipcDispatchers.GetOrAdd(interfaceType, _ =>
             {
-                var instance = factory();
+                object instance = factory();
 
                 Guards.ThrowIfNot(interfaceType.IsInstanceOfType(instance),
                     $"The instance created by the factory corresponding to the {interfaceType} interface " +
@@ -130,7 +132,7 @@ namespace HandyIpc
                 // such as Dispatch methods, and Proxy only implements the IContract interface declared by users,
                 // this does not lead to naming conflicts even if the user also declares a Dispatch method
                 // with the same signature in the IContract interface.
-                var proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
+                object proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
                 return (IIpcDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
             });
         }
