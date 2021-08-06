@@ -7,11 +7,11 @@ using HandyIpc.Core;
 
 namespace HandyIpc.Socket
 {
-    internal class TcpRmiServer : IRmiServer
+    internal class TcpRmiServer : RmiServerBase
     {
         private static readonly char[] IdentifierSplitter = { ':', ' ' };
 
-        public async Task RunAsync(string identifier, RequestHandler handler, CancellationToken token)
+        public override async Task RunAsync(string identifier, RequestHandler handler, CancellationToken token)
         {
             string[] address = identifier.Split(IdentifierSplitter, StringSplitOptions.RemoveEmptyEntries);
             if (address.Length != 2)
@@ -21,7 +21,6 @@ namespace HandyIpc.Socket
 
             TcpListener listener = new TcpListener(IPAddress.Parse(address[0]), int.Parse(address[1]));
             var client = await listener.AcceptTcpClientAsync();
-            client.GetStream().ReadAsync(,,)
         }
     }
 }

@@ -4,14 +4,14 @@ using HandyIpc.Core;
 
 namespace HandyIpc.Socket
 {
-    internal class TcpRmiClient : IRmiClient
+    internal class TcpRmiClient : RmiClientBase
     {
-        public byte[] Invoke(string identifier, byte[] requestBytes)
+        public override byte[] Invoke(string identifier, byte[] requestBytes)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<byte[]> InvokeAsync(string identifier, byte[] requestBytes)
+        public override async Task<byte[]> InvokeAsync(string identifier, byte[] requestBytes)
         {
             throw new NotImplementedException();
         }

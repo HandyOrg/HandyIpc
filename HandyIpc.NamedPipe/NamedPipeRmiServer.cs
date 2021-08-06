@@ -6,9 +6,9 @@ using static HandyIpc.NamedPipe.PrimitiveMethods;
 
 namespace HandyIpc.NamedPipe
 {
-    internal class RmiServer : IRmiServer
+    internal class NamedPipeRmiServer : RmiServerBase
     {
-        public async Task RunAsync(string identifier, RequestHandler handler, CancellationToken token)
+        public override async Task RunAsync(string identifier, RequestHandler handler, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
@@ -29,6 +29,10 @@ namespace HandyIpc.NamedPipe
                 catch (OperationCanceledException)
                 {
                     // Ignore
+                }
+                catch (Exception e)
+                {
+                    Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
                 }
             }
         }

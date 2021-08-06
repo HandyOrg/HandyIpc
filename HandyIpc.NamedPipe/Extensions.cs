@@ -16,23 +16,19 @@ namespace HandyIpc.NamedPipe
         /// </summary>
         /// <param name="self">An factory instance.</param>
         /// <returns>The factory instance itself.</returns>
-        public static IIpcFactory<IRmiClient, IIpcClientHub> UseNamedPipe(this IIpcFactory<IRmiClient, IIpcClientHub> self)
+        public static IIpcFactory<RmiClientBase, IIpcClientHub> UseNamedPipe(this IIpcFactory<RmiClientBase, IIpcClientHub> self)
         {
-            return self.Use(() => new RmiClient());
+            return self.Use(() => new NamedPipeRmiClient());
         }
 
         /// <summary>
         /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IIpcServerHub"/> instance.
         /// </summary>
         /// <param name="self">An factory instance.</param>
-        /// <param name="logger">
-        /// An logger for logging server log. The default is <see cref="DebugLogger"/> instance,
-        /// and it will print to the Output window on the Visual Studio.
-        /// </param>
         /// <returns>The factory instance itself.</returns>
-        public static IIpcFactory<IRmiServer, IIpcServerHub> UseNamedPipe(this IIpcFactory<IRmiServer, IIpcServerHub> self)
+        public static IIpcFactory<RmiServerBase, IIpcServerHub> UseNamedPipe(this IIpcFactory<RmiServerBase, IIpcServerHub> self)
         {
-            return self.Use(() => new RmiServer());
+            return self.Use(() => new NamedPipeRmiServer());
         }
 
         internal static byte[] ReadAllBytes(this PipeStream self)

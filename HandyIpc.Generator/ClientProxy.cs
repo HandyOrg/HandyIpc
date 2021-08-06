@@ -27,12 +27,12 @@ namespace {@namespace}
         {typeParameter.ToGenericConstraint()}
 ")}
     {{
-        private readonly IRmiClient _client;
+        private readonly RmiClientBase _client;
         private readonly ISerializer _serializer;
         private readonly string _identifier;
         private readonly string _accessToken;
 
-        public {nameof(ClientProxy)}{className}(IRmiClient client, ISerializer serializer, string identifier, string accessToken)
+        public {nameof(ClientProxy)}{className}(RmiClientBase client, ISerializer serializer, string identifier, string accessToken)
         {{
             _client = client;
             _serializer = serializer;

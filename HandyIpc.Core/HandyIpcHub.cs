@@ -9,24 +9,32 @@ namespace HandyIpc
     {
         /// <summary>
         /// Creates a new factory of the IPC client hub to build the <see cref="IIpcClientHub"/> instance
-        /// with the specified <see cref="IRmiClient"/> provider.
+        /// with the specified <see cref="RmiClientBase"/> provider.
         /// </summary>
         /// <returns>The factory of the IPC client hub.</returns>
-        public static IIpcFactory<IRmiClient, IIpcClientHub> CreateClientFactory()
+        public static IIpcFactory<RmiClientBase, IIpcClientHub> CreateClientFactory()
         {
-            return new IpcFactory<IRmiClient, IIpcClientHub>(
-                (rmiClient, serializer, _) => new IpcClientHub(rmiClient, serializer));
+            return new IpcFactory<RmiClientBase, IIpcClientHub>(
+                (rmiClient, serializer, logger) =>
+                {
+                    rmiClient.SetLogger(logger);
+                    return new IpcClientHub(rmiClient, serializer);
+                });
         }
 
         /// <summary>
         /// Creates a new factory of the IPC server hub to build the <see cref="IIpcServerHub"/> instance
-        /// with the specified <see cref="IRmiServer"/> provider.
+        /// with the specified <see cref="RmiServerBase"/> provider.
         /// </summary>
         /// <returns>The factory of the IPC server hub.</returns>
-        public static IIpcFactory<IRmiServer, IIpcServerHub> CreateServerFactory()
+        public static IIpcFactory<RmiServerBase, IIpcServerHub> CreateServerFactory()
         {
-            return new IpcFactory<IRmiServer, IIpcServerHub>(
-                (rmiServer, serializer, logger) => new IpcServerHub(rmiServer, serializer, logger));
+            return new IpcFactory<RmiServerBase, IIpcServerHub>(
+                (rmiServer, serializer, logger) =>
+                {
+                    rmiServer.SetLogger(logger);
+                    return new IpcServerHub(rmiServer, serializer, logger);
+                });
         }
     }
 }

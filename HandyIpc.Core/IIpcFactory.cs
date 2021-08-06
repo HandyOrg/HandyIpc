@@ -7,8 +7,8 @@ namespace HandyIpc
     /// It represents the factory of the IPC server or client hub.
     /// </summary>
     /// <typeparam name="TRmi">
-    /// The service of remote method invocation, which can only be <see cref="IRmiServer"/>
-    /// or <see cref="IRmiClient"/> type.
+    /// The service of remote method invocation, which can only be <see cref="RmiServerBase"/>
+    /// or <see cref="RmiClientBase"/> type.
     /// </typeparam>
     /// <typeparam name="THub">
     /// The hub of the IPC server or client, which can only be <see cref="IIpcServerHub"/>
@@ -21,7 +21,7 @@ namespace HandyIpc
         /// </summary>
         /// <param name="factory">
         /// A factory of the <typeparamref name="TRmi"/> (Remote method invocation) type,
-        /// which can only return an instance derived from <see cref="IRmiServer"/> or <see cref="IRmiClient"/>.
+        /// which can only return an instance derived from <see cref="RmiServerBase"/> or <see cref="RmiClientBase"/>.
         /// </param>
         /// <returns>The interface instance itself.</returns>
         IIpcFactory<TRmi, THub> Use(Func<TRmi> factory);

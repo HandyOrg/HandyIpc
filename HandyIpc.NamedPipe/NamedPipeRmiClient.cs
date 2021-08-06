@@ -4,23 +4,23 @@ using HandyIpc.Core;
 
 namespace HandyIpc.NamedPipe
 {
-    internal class RmiClient : IRmiClient
+    internal class NamedPipeRmiClient : RmiClientBase
     {
         private readonly ClientConnectionPool _clientPool;
 
-        public RmiClient()
+        public NamedPipeRmiClient()
         {
             _clientPool = new ClientConnectionPool();
         }
 
-        public byte[] Invoke(string pipeName, byte[] requestBytes)
+        public override byte[] Invoke(string pipeName, byte[] requestBytes)
         {
             using var invokeOwner = _clientPool.Rent(pipeName);
             byte[] response = invokeOwner.Value(requestBytes);
             return response;
         }
 
-        public async Task<byte[]> InvokeAsync(string pipeName, byte[] requestBytes)
+        public override async Task<byte[]> InvokeAsync(string pipeName, byte[] requestBytes)
         {
             using var invokeOwner = await _clientPool.RentAsync(pipeName);
             byte[] response = await invokeOwner.Value(requestBytes, CancellationToken.None);

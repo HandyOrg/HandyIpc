@@ -6,11 +6,11 @@ namespace HandyIpc
 {
     internal class IpcClientHub : IIpcClientHub
     {
-        private readonly IRmiClient _rmiClient;
+        private readonly RmiClientBase _rmiClient;
         private readonly ISerializer _serializer;
         private readonly ConcurrentDictionary<Type, object> _typeInstanceMapping = new();
 
-        public IpcClientHub(IRmiClient rmiClient, ISerializer serializer)
+        public IpcClientHub(RmiClientBase rmiClient, ISerializer serializer)
         {
             _rmiClient = rmiClient;
             _serializer = serializer;

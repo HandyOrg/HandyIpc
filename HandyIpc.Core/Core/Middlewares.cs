@@ -38,7 +38,7 @@ namespace HandyIpc.Core
             }
         }
 
-        public static async Task RequestHeaderParser(Context ctx, Func<Task> next)
+        public static async Task RequestParser(Context ctx, Func<Task> next)
         {
             if (Request.TryParse(ctx.Input, ctx.Serializer, out Request request))
             {
@@ -55,12 +55,7 @@ namespace HandyIpc.Core
         {
             return async (ctx, next) =>
             {
-                Request? request = ctx.Request;
-
-                if (request is null)
-                {
-                    throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
-                }
+                Request request = CheckRequest(ctx);
 
                 if (string.Equals(request.AccessToken, accessToken, StringComparison.Ordinal))
                 {
@@ -79,12 +74,7 @@ namespace HandyIpc.Core
         {
             return async (ctx, next) =>
             {
-                Request? request = ctx.Request;
-
-                if (request is null)
-                {
-                    throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
-                }
+                Request request = CheckRequest(ctx);
 
                 if (request.TypeArguments.Any())
                 {
@@ -96,6 +86,18 @@ namespace HandyIpc.Core
                     await next();
                 }
             };
+        }
+
+        private static Request CheckRequest(Context ctx)
+        {
+            Request? request = ctx.Request;
+
+            if (request is null)
+            {
+                throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
+            }
+
+            return request;
         }
 
         #endregion
