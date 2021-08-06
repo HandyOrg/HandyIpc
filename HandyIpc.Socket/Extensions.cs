@@ -1,5 +1,3 @@
-using System;
-using System.Net.Sockets;
 using HandyIpc.Core;
 
 namespace HandyIpc.Socket
@@ -8,22 +6,22 @@ namespace HandyIpc.Socket
     {
         public static IIpcFactory<IRmiClient, IIpcClientHub> UseTcp(this IIpcFactory<IRmiClient, IIpcClientHub> self)
         {
-            throw new NotImplementedException();
+            return self.Use(() => new TcpRmiClient());
         }
 
         public static IIpcFactory<IRmiServer, IIpcServerHub> UseTcp(this IIpcFactory<IRmiServer, IIpcServerHub> self, ILogger? logger = null)
         {
-            throw new NotImplementedException();
+            return self.Use(() => new TcpRmiServer());
         }
 
         public static IIpcFactory<IRmiClient, IIpcClientHub> UseUdp(this IIpcFactory<IRmiClient, IIpcClientHub> self)
         {
-            throw new NotImplementedException();
+            return self.Use(() => new UdpRmiClient());
         }
 
         public static IIpcFactory<IRmiServer, IIpcServerHub> UseUdp(this IIpcFactory<IRmiServer, IIpcServerHub> self, ILogger? logger = null)
         {
-            throw new NotImplementedException();
+            return self.Use(() => new UdpRmiServer());
         }
     }
 }
