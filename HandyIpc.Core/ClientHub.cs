@@ -4,13 +4,13 @@ using HandyIpc.Core;
 
 namespace HandyIpc
 {
-    internal class IpcClientHub : IIpcClientHub
+    internal class ClientHub : IClientHub
     {
         private readonly RmiClientBase _rmiClient;
         private readonly ISerializer _serializer;
         private readonly ConcurrentDictionary<Type, object> _typeInstanceMapping = new();
 
-        public IpcClientHub(RmiClientBase rmiClient, ISerializer serializer)
+        public ClientHub(RmiClientBase rmiClient, ISerializer serializer)
         {
             _rmiClient = rmiClient;
             _serializer = serializer;

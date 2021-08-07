@@ -6,7 +6,7 @@ using HandyIpc.Core;
 
 namespace HandyIpc
 {
-    internal class IpcServerHub : IIpcServerHub
+    internal class ServerHub : IServerHub
     {
         private sealed class Disposable : IDisposable
         {
@@ -24,7 +24,7 @@ namespace HandyIpc
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
         private readonly Dictionary<Type, IRequestDispatcher> _ipcDispatchers = new();
 
-        public IpcServerHub(RmiServerBase rmiServer, ISerializer serializer, ILogger logger)
+        public ServerHub(RmiServerBase rmiServer, ISerializer serializer, ILogger logger)
         {
             _rmiServer = rmiServer;
             _serializer = serializer;

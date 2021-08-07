@@ -8,20 +8,20 @@ namespace HandyIpc
 {
     public static class Extensions
     {
-        public static IDisposable Start<TInterface, TImpl>(this IIpcServerHub server, string? accessToken = null)
+        public static IDisposable Start<TInterface, TImpl>(this IServerHub server, string? accessToken = null)
             where TInterface : class
             where TImpl : TInterface, new()
         {
             return server.Start<TInterface>(() => new TImpl(), accessToken);
         }
 
-        public static IDisposable Start<TInterface>(this IIpcServerHub server, Func<TInterface> factory, string? accessToken = null)
+        public static IDisposable Start<TInterface>(this IServerHub server, Func<TInterface> factory, string? accessToken = null)
             where TInterface : class
         {
             return server.Start(typeof(TInterface), factory, accessToken);
         }
 
-        public static IDisposable Start(this IIpcServerHub server, Type interfaceType, Type classType, string? accessToken = null)
+        public static IDisposable Start(this IServerHub server, Type interfaceType, Type classType, string? accessToken = null)
         {
             // TODO: Add defensive code.
 

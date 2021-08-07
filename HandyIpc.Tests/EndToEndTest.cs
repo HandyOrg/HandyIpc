@@ -100,7 +100,7 @@ namespace HandyIpcTests
         public void TestInvokeWithoutAccessToken()
         {
             var @interface = HandyIpcHub
-                .CreateClientFactory()
+                .CreateClientBuilder()
                 .UseJsonSerializer()
                 .UseNamedPipe()
                 .Build()

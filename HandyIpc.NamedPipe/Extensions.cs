@@ -12,21 +12,21 @@ namespace HandyIpc.NamedPipe
         private const int BatchBufferSize = 4 * 1024;
 
         /// <summary>
-        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IIpcClientHub"/> instance.
+        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IClientHub"/> instance.
         /// </summary>
         /// <param name="self">An factory instance.</param>
         /// <returns>The factory instance itself.</returns>
-        public static IIpcFactory<RmiClientBase, IIpcClientHub> UseNamedPipe(this IIpcFactory<RmiClientBase, IIpcClientHub> self)
+        public static IHubBuilder<RmiClientBase, IClientHub> UseNamedPipe(this IHubBuilder<RmiClientBase, IClientHub> self)
         {
             return self.Use(() => new NamedPipeRmiClient());
         }
 
         /// <summary>
-        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IIpcServerHub"/> instance.
+        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IServerHub"/> instance.
         /// </summary>
         /// <param name="self">An factory instance.</param>
         /// <returns>The factory instance itself.</returns>
-        public static IIpcFactory<RmiServerBase, IIpcServerHub> UseNamedPipe(this IIpcFactory<RmiServerBase, IIpcServerHub> self)
+        public static IHubBuilder<RmiServerBase, IServerHub> UseNamedPipe(this IHubBuilder<RmiServerBase, IServerHub> self)
         {
             return self.Use(() => new NamedPipeRmiServer());
         }

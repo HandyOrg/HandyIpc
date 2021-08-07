@@ -12,12 +12,12 @@ namespace HandyIpcTests
         private readonly IDisposable _buildInTypeTestServerToken;
         private readonly IDisposable _genericTestServerToken;
 
-        public IIpcClientHub ClientHub { get; }
+        public IClientHub ClientHub { get; }
 
         public EndToEndTestFixture()
         {
             var server = HandyIpcHub
-                .CreateServerFactory()
+                .CreateServerBuilder()
                 .UseJsonSerializer()
                 .UseNamedPipe()
                 .Build();
@@ -25,7 +25,7 @@ namespace HandyIpcTests
             _genericTestServerToken = server.Start(typeof(IGenericTest<,>), typeof(GenericTest<,>));
 
             ClientHub = HandyIpcHub
-                .CreateClientFactory()
+                .CreateClientBuilder()
                 .UseJsonSerializer()
                 .UseNamedPipe()
                 .Build();

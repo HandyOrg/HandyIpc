@@ -11,10 +11,10 @@ namespace HandyIpc
     /// or <see cref="RmiClientBase"/> type.
     /// </typeparam>
     /// <typeparam name="THub">
-    /// The hub of the IPC server or client, which can only be <see cref="IIpcServerHub"/>
-    /// or <see cref="IIpcClientHub"/> type.
+    /// The hub of the IPC server or client, which can only be <see cref="IServerHub"/>
+    /// or <see cref="IClientHub"/> type.
     /// </typeparam>
-    public interface IIpcFactory<in TRmi, out THub>
+    public interface IHubBuilder<in TRmi, out THub>
     {
         /// <summary>
         /// Use a <typeparamref name="TRmi"/> provider for the underlying communication.
@@ -24,21 +24,21 @@ namespace HandyIpc
         /// which can only return an instance derived from <see cref="RmiServerBase"/> or <see cref="RmiClientBase"/>.
         /// </param>
         /// <returns>The interface instance itself.</returns>
-        IIpcFactory<TRmi, THub> Use(Func<TRmi> factory);
+        IHubBuilder<TRmi, THub> Use(Func<TRmi> factory);
 
         /// <summary>
         /// Use a <see cref="ISerializer"/> provider for serialization and deserialization.
         /// </summary>
         /// <param name="factory">A factory for creating the <see cref="ISerializer"/> instance.</param>
         /// <returns>The interface instance itself.</returns>
-        IIpcFactory<TRmi, THub> Use(Func<ISerializer> factory);
+        IHubBuilder<TRmi, THub> Use(Func<ISerializer> factory);
 
         /// <summary>
         /// Use a <see cref="ILogger"/> provider for logging.
         /// </summary>
         /// <param name="factory">A factory for creating the <see cref="ILogger"/> instance.</param>
         /// <returns>The interface instance itself.</returns>
-        IIpcFactory<TRmi, THub> Use(Func<ILogger> factory);
+        IHubBuilder<TRmi, THub> Use(Func<ILogger> factory);
 
         /// <summary>
         /// Builds an instance of the <typeparamref name="THub"/> type.
