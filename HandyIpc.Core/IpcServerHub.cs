@@ -22,7 +22,7 @@ namespace HandyIpc
         private readonly ILogger _logger;
         private readonly object _locker = new();
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
-        private readonly Dictionary<Type, IIpcDispatcher> _ipcDispatchers = new();
+        private readonly Dictionary<Type, IRequestDispatcher> _ipcDispatchers = new();
 
         public IpcServerHub(RmiServerBase rmiServer, ISerializer serializer, ILogger logger)
         {
@@ -35,7 +35,7 @@ namespace HandyIpc
         {
             lock (_locker)
             {
-                IIpcDispatcher dispatcher = GetOrAddIpcDispatcher(interfaceType, factory);
+                IRequestDispatcher dispatcher = GetOrAddIpcDispatcher(interfaceType, factory);
                 StartInterface(interfaceType, dispatcher.Dispatch, accessToken);
 
                 return new Disposable(() => StopAndRemoveInterface(interfaceType));
@@ -96,9 +96,9 @@ namespace HandyIpc
             _runningInterfaces.Add(interfaceType, source);
         }
 
-        private IIpcDispatcher GetOrAddIpcDispatcher(Type interfaceType, Func<object> factory)
+        private IRequestDispatcher GetOrAddIpcDispatcher(Type interfaceType, Func<object> factory)
         {
-            if (!_ipcDispatchers.TryGetValue(interfaceType, out IIpcDispatcher dispatcher))
+            if (!_ipcDispatchers.TryGetValue(interfaceType, out IRequestDispatcher dispatcher))
             {
                 object instance = factory();
 
@@ -119,7 +119,7 @@ namespace HandyIpc
                 // this does not lead to naming conflicts even if the user also declares a Dispatch method
                 // with the same signature in the IContract interface.
                 object proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
-                dispatcher = (IIpcDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
+                dispatcher = (IRequestDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
                 _ipcDispatchers.Add(interfaceType, dispatcher);
             }
 

@@ -70,7 +70,7 @@ namespace HandyIpc.Core
             };
         }
 
-        public static Middleware GetGenericDispatcher(Func<Type[], IIpcDispatcher> getProxy)
+        public static Middleware GetGenericDispatcher(Func<Type[], IRequestDispatcher> getProxy)
         {
             return async (ctx, next) =>
             {
@@ -78,7 +78,7 @@ namespace HandyIpc.Core
 
                 if (request.TypeArguments.Any())
                 {
-                    IIpcDispatcher proxy = getProxy(request.TypeArguments.ToArray());
+                    IRequestDispatcher proxy = getProxy(request.TypeArguments.ToArray());
                     await proxy.Dispatch(ctx, next);
                 }
                 else
