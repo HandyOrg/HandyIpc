@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using HandyIpc.Core;
 
@@ -22,7 +21,7 @@ namespace HandyIpc
         private readonly ILogger _logger;
         private readonly object _locker = new();
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
-        private readonly Dictionary<Type, IRequestDispatcher> _ipcDispatchers = new();
+        private readonly MiddlewareCache _middlewareCache = new();
 
         public ServerHub(RmiServerBase rmiServer, ISerializer serializer, ILogger logger)
         {
@@ -35,8 +34,8 @@ namespace HandyIpc
         {
             lock (_locker)
             {
-                IRequestDispatcher dispatcher = GetOrAddIpcDispatcher(interfaceType, factory);
-                StartInterface(interfaceType, dispatcher.Dispatch, accessToken);
+                Middleware middleware = _rmiServer.BuildMiddleware(interfaceType, factory, accessToken, _middlewareCache);
+                StartInterface(interfaceType, middleware);
 
                 return new Disposable(() => StopAndRemoveInterface(interfaceType));
             }
@@ -46,12 +45,8 @@ namespace HandyIpc
         {
             lock (_locker)
             {
-                Middleware genericDispatcher = Middlewares.GetGenericDispatcher(genericTypes =>
-                {
-                    Type constructedInterfaceType = interfaceType.MakeGenericType(genericTypes);
-                    return GetOrAddIpcDispatcher(constructedInterfaceType, () => factory(genericTypes));
-                });
-                StartInterface(interfaceType, genericDispatcher, accessToken);
+                Middleware middleware = _rmiServer.BuildMiddleware(interfaceType, factory, accessToken, _middlewareCache);
+                StartInterface(interfaceType, middleware);
 
                 return new Disposable(() => StopAndRemoveInterface(interfaceType));
             }
@@ -66,64 +61,20 @@ namespace HandyIpc
                     _runningInterfaces.Remove(interfaceType);
                     source.Cancel();
 
-                    if (interfaceType.IsGenericType)
-                    {
-                        _ipcDispatchers
-                            .Where(item => EqualityComparer<Type>.Default.Equals(
-                                item.Key.GetGenericTypeDefinition(),
-                                interfaceType))
-                            .Select(item => item.Key)
-                            .ToList()
-                            .ForEach(item => _ipcDispatchers.Remove(item));
-                    }
-                    else
-                    {
-                        _ipcDispatchers.Remove(interfaceType);
-                    }
+                    _middlewareCache.Remove(interfaceType);
                 }
             }
         }
 
-        private void StartInterface(Type interfaceType, Middleware dispatcher, string? accessToken)
+        private void StartInterface(Type interfaceType, Middleware middleware)
         {
-            Middleware middleware = _rmiServer.BuildMiddleware(dispatcher, accessToken);
-            var source = new CancellationTokenSource();
             string identifier = interfaceType.ResolveIdentifier();
+            var source = new CancellationTokenSource();
 
             // Async run the server without waiting.
             _rmiServer.RunAsync(identifier, middleware.ToHandler(_serializer, _logger), source.Token);
 
             _runningInterfaces.Add(interfaceType, source);
-        }
-
-        private IRequestDispatcher GetOrAddIpcDispatcher(Type interfaceType, Func<object> factory)
-        {
-            if (!_ipcDispatchers.TryGetValue(interfaceType, out IRequestDispatcher dispatcher))
-            {
-                object instance = factory();
-
-                Guards.ThrowIfNot(interfaceType.IsInstanceOfType(instance),
-                    $"The instance created by the factory corresponding to the {interfaceType} interface " +
-                    $"does not implement the {interfaceType} interface.", nameof(factory));
-
-                // NOTE:
-                // 1. Why would we need a Proxy class?
-                // To call generic methods remotely.
-                // As we know, the server cannot know the possible generic parameters at compile time,
-                // and a "MethodName to generic MethodInfo" mapping table must be maintained,
-                // then determining the specific generic type at runtime by MethodInfo.MakeGenericMethod().
-                //
-                // 2. Why can't the XxxDispatcher and XxxProxy be combined into one class?
-                // Because the Dispatcher class has some members declared by this framework,
-                // such as Dispatch methods, and Proxy only implements the IContract interface declared by users,
-                // this does not lead to naming conflicts even if the user also declares a Dispatch method
-                // with the same signature in the IContract interface.
-                object proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
-                dispatcher = (IRequestDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
-                _ipcDispatchers.Add(interfaceType, dispatcher);
-            }
-
-            return dispatcher;
         }
     }
 }
