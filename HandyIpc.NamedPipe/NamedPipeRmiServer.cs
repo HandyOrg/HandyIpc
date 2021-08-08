@@ -1,8 +1,8 @@
 using System;
+using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
 using HandyIpc.Core;
-using static HandyIpc.NamedPipe.PrimitiveMethods;
 
 namespace HandyIpc.NamedPipe
 {
@@ -33,6 +33,37 @@ namespace HandyIpc.NamedPipe
                 catch (Exception e)
                 {
                     Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
+                }
+            }
+        }
+
+        private static async Task<NamedPipeServerStream> CreateServerStreamAsync(string pipeName, CancellationToken token)
+        {
+            var stream = new NamedPipeServerStream(pipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances);
+            await stream.WaitForConnectionAsync(token);
+            return stream;
+        }
+
+        private static async Task HandleRequestAsync(NamedPipeServerStream stream, RequestHandler handler, CancellationToken token)
+        {
+            using (stream)
+            {
+                while (true)
+                {
+                    if (!stream.IsConnected || token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    byte[] buffer = await stream.ReadAllBytesAsync(token);
+                    if (buffer.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    byte[] output = await handler(buffer);
+                    await stream.WriteAsync(output, 0, output.Length, token);
+                    await stream.FlushAsync(token);
                 }
             }
         }
