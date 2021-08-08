@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using HandyIpc.Core;
 
 namespace HandyIpc
@@ -71,10 +72,24 @@ namespace HandyIpc
             string identifier = interfaceType.ResolveIdentifier();
             var source = new CancellationTokenSource();
 
+#pragma warning disable 4014
             // Async run the server without waiting.
-            _rmiServer.RunAsync(identifier, middleware.ToHandler(_serializer, _logger), source.Token);
+            CatchException(_rmiServer.RunAsync(identifier, middleware.ToHandler(_serializer, _logger), source.Token));
+#pragma warning restore 4014
 
             _runningInterfaces.Add(interfaceType, source);
+        }
+
+        private async Task CatchException(Task task)
+        {
+            try
+            {
+                await task;
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Unexpected exception occurred when starting the server instance.", e);
+            }
         }
     }
 }

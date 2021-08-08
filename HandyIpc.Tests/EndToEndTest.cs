@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HandyIpc;
 using HandyIpc.NamedPipe;
 using HandyIpc.Serializer.Json;
+using HandyIpc.Socket;
 using HandyIpcTests.Implementations;
 using HandyIpcTests.Interfaces;
 using HandyIpcTests.Mock;
@@ -102,7 +103,7 @@ namespace HandyIpcTests
             var @interface = HandyIpcHub
                 .CreateClientBuilder()
                 .UseJsonSerializer()
-                .UseNamedPipe()
+                .UseTcp()
                 .Build()
                 .Of<IBuildInTypeTest>("error_access_token");
 
