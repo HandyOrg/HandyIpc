@@ -28,6 +28,12 @@ namespace HandyIpc.Core
             return taskType.GetProperty("Result")?.GetMethod.Invoke(task, null);
         }
 
+        public static T UnpackResponse<T>(byte[] bytes, ISerializer serializer)
+        {
+            bool hasValue = Response.TryParse(bytes, typeof(T), serializer, out object? value, out Exception? exception);
+            return hasValue ? (T)value! : throw exception!;
+        }
+
         public static IReadOnlyDictionary<string, MethodInfo> GetGenericMethodMapping(Type interfaceType, object instance)
         {
             return instance.GetType()

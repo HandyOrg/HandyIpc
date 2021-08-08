@@ -13,7 +13,7 @@ namespace HandyIpc.Serializer.Json
             TypeNameHandling = TypeNameHandling.Auto,
         };
 
-        public static IIpcFactory<TRmi, THub> UseJsonSerializer<TRmi, THub>(this IIpcFactory<TRmi, THub> self)
+        public static IHubBuilder<TRmi, THub> UseJsonSerializer<TRmi, THub>(this IHubBuilder<TRmi, THub> self)
         {
             return self.Use(() => new JsonSerializer());
         }

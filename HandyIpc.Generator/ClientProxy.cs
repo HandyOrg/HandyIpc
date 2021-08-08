@@ -27,13 +27,15 @@ namespace {@namespace}
         {typeParameter.ToGenericConstraint()}
 ")}
     {{
-        private readonly IRmiClient _client;
+        private readonly RmiClientBase _client;
+        private readonly ISerializer _serializer;
         private readonly string _identifier;
         private readonly string _accessToken;
 
-        public {nameof(ClientProxy)}{className}(IRmiClient client, string identifier, string accessToken)
+        public {nameof(ClientProxy)}{className}(RmiClientBase client, ISerializer serializer, string identifier, string accessToken)
         {{
             _client = client;
+            _serializer = serializer;
             _identifier = identifier;
             _accessToken = accessToken;
         }}
@@ -46,8 +48,12 @@ namespace {@namespace}
         .ToList()
         .AsReadOnly();
     string methodId = method.GenerateMethodId();
-    string parameters = method.Parameters.Select(parameter => $"{parameter.Type.ToTypeDeclaration()} @{parameter.Name}").Join(", ");
-    string arguments = method.Parameters.Select(parameter => $"new Argument(typeof({parameter.Type.ToFullDeclaration()}), @{parameter.Name})").Join(", ");
+    // Add underscores to the end of parameters to avoid user fields with the same name as the generated local variables.
+    var parameterNames = method.Parameters.Select(parameter => $"{parameter.Name}_").ToList();
+    string parameters = method.Parameters
+        .Select(item => item.Type.ToTypeDeclaration())
+        .Zip(parameterNames, (type, parameter) => $"{type} {parameter}")
+        .Join(", ");
     bool isAwaitable = method.ReturnType.IsAwaitable();
     bool isVoid = method.ReturnType.IsVoid();
 
@@ -56,20 +62,36 @@ namespace {@namespace}
         /// <inheritdoc />
         {(isAwaitable ? "async " : null)}{method.ReturnType.ToTypeDeclaration()} {interfaceType}.{methodName}({parameters})
         {{
-{Text(isAwaitable ? $@"
-            var response = await _client.InvokeAsync<{(isVoid ? "byte[]" : ExtractTypeFromTask(method.ReturnType))}>(
-" : $@"
-            var response = _client.Invoke<{(isVoid ? "byte[]" : method.ReturnType.ToTypeDeclaration())}>("
+{Text($@"
+            var request = new Request(_serializer, ""{methodId}"")
+            {{
+                AccessToken = _accessToken ?? string.Empty,
+{@interface.TypeParameters.Select(type => $"typeof({type.ToFullDeclaration()})").Join(", ").If(text => $@"
+                TypeArguments = new[] {{ {text} }},
+", RemoveLineIfEmpty)}
+{method.TypeParameters.Select(type => $"typeof({type.ToFullDeclaration()})").Join(", ").If(text => $@"
+                MethodTypeArguments = new[] {{ {text} }},
+", RemoveLineIfEmpty)}
+{parameterTypes.Select(type => $"typeof({type})").Join(", ").If(text => $@"
+                ArgumentTypes = new[] {{ {text} }},
+", RemoveLineIfEmpty)}
+{parameterNames.Join(", ").If(text => $@"
+                Arguments = new object[] {{ {text} }},
+", RemoveLineIfEmpty)}
+            }};
+")}
+{Text(isAwaitable ? @"
+            var responseBytes = await _client.InvokeAsync(_identifier, request.ToBytes());
+" : @"
+            var responseBytes = _client.Invoke(_identifier, request.ToBytes());
+"
 )}
-                _identifier,
-                new RequestHeader(""{methodId}"")
-                {{
-                    AccessToken = _accessToken,
-                    {@interface.TypeParameters.Select(type => $"typeof({type.ToFullDeclaration()})").Join(", ").If(text => $"GenericArguments = new[] {{ {text} }},")}
-                    {method.TypeParameters.Select(type => $"typeof({type.ToFullDeclaration()})").Join(", ").If(text => $"MethodGenericArguments = new[] {{ {text} }},")}
-                    {(method.TypeParameters.Any() ? parameterTypes.Select(type => $"typeof({type})").Join(", ").If(text => $"ArgumentTypes = new[] {{ {text} }},") : null)}
-                }},
-                new Argument[] {{ {arguments} }});
+{Text(isAwaitable ? $@"
+            var response = GeneratorHelper.UnpackResponse<{(isVoid ? "byte[]" : ExtractTypeFromTask(method.ReturnType))}>(responseBytes, _serializer);
+" : $@"
+            var response = GeneratorHelper.UnpackResponse<{(isVoid ? "byte[]" : method.ReturnType.ToTypeDeclaration())}>(responseBytes, _serializer);
+")}
+
 {Text(isVoid ? @"
             if (!response.IsUnit())
             {

@@ -47,8 +47,8 @@ The design of this library API was inspired by [orleans](https://github.com/dotn
 
 ```csharp
     // Create a server hub and enable requested interface services.
-    IIpcServerHub server = HandyIpcHub
-        .CreateServerFactory()
+    IServerHub server = HandyIpcHub
+        .CreateServerBuilder()
         .UseJsonSerializer()
         .UseNamedPipe()
         .Build();
@@ -61,8 +61,8 @@ The design of this library API was inspired by [orleans](https://github.com/dotn
 
 ```csharp
     // Create a client hub and resolve requested interface proxy.
-    IIpcClientHub client = HandyIpcHub
-        .CreateClientFactory()
+    IClientHub client = HandyIpcHub
+        .CreateClientBuilder()
         .UseJsonSerializer()
         .UseNamedPipe()
         .Build();

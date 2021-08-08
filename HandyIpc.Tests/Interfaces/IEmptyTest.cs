@@ -1,4 +1,4 @@
-﻿using HandyIpc;
+using HandyIpc;
 
 namespace HandyIpcTests.Interfaces
 {

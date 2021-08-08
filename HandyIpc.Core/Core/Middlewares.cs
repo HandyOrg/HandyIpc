@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
-    public delegate Task MiddlewareHandler(Context context, Func<Task> next);
+    public delegate Task Middleware(Context context, Func<Task> next);
+
+    public delegate Task<byte[]> RequestHandler(byte[] input);
 
     public static class Middlewares
     {
@@ -32,27 +34,28 @@ namespace HandyIpc.Core
             catch (Exception e)
             {
                 ctx.Logger.Error("An unexpected exception occurred on the server", e);
-                ctx.Output = ctx.Serializer.SerializeResponseError(e);
+                ctx.Output = Response.Error(e, ctx.Serializer);
             }
         }
 
-        public static async Task RequestHeaderParser(Context ctx, Func<Task> next)
+        public static async Task RequestParser(Context ctx, Func<Task> next)
         {
-            ctx.RequestHeader = ctx.Serializer.DeserializeRequestHeader(ctx.Input);
-
-            await next();
+            if (Request.TryParse(ctx.Input, ctx.Serializer, out Request request))
+            {
+                ctx.Request = request;
+                await next();
+            }
+            else
+            {
+                throw new ArgumentException("Invalid request bytes.");
+            }
         }
 
-        public static MiddlewareHandler GetAuthenticator(string accessToken)
+        public static Middleware GetAuthenticator(string accessToken)
         {
             return async (ctx, next) =>
             {
-                var request = ctx.RequestHeader;
-
-                if (request is null)
-                {
-                    throw new InvalidOperationException($"The {nameof(Context.RequestHeader)} must be parsed from {nameof(Context.Input)} before it can be used.");
-                }
+                Request request = CheckRequest(ctx);
 
                 if (string.Equals(request.AccessToken, accessToken, StringComparison.Ordinal))
                 {
@@ -62,25 +65,20 @@ namespace HandyIpc.Core
                 {
                     var exception = new AuthenticationException($"Invalid accessToken: '{request.AccessToken}'.");
                     ctx.Logger.Warning($"Failed to authenticate this request (token: {request.AccessToken}).", exception);
-                    ctx.Output = ctx.Serializer.SerializeResponseError(exception);
+                    ctx.Output = Response.Error(exception, ctx.Serializer);
                 }
             };
         }
 
-        public static MiddlewareHandler GetGenericDispatcher(Func<Type[], IIpcDispatcher> getProxy)
+        public static Middleware GetGenericDispatcher(Func<Type[], IRequestDispatcher> getProxy)
         {
             return async (ctx, next) =>
             {
-                var request = ctx.RequestHeader;
+                Request request = CheckRequest(ctx);
 
-                if (request is null)
+                if (request.TypeArguments.Any())
                 {
-                    throw new InvalidOperationException($"The {nameof(Context.RequestHeader)} must be parsed from {nameof(Context.Input)} before it can be used.");
-                }
-
-                if (request.GenericArguments is not null && request.GenericArguments.Any())
-                {
-                    var proxy = getProxy(request.GenericArguments);
+                    IRequestDispatcher proxy = getProxy(request.TypeArguments.ToArray());
                     await proxy.Dispatch(ctx, next);
                 }
                 else
@@ -90,24 +88,36 @@ namespace HandyIpc.Core
             };
         }
 
+        private static Request CheckRequest(Context ctx)
+        {
+            Request? request = ctx.Request;
+
+            if (request is null)
+            {
+                throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
+            }
+
+            return request;
+        }
+
         #endregion
 
-        public static MiddlewareHandler Then(this MiddlewareHandler middleware, MiddlewareHandler nextMiddleware)
+        public static Middleware Then(this Middleware middleware, Middleware nextMiddleware)
         {
             return (ctx, next) => middleware(ctx, () => nextMiddleware(ctx, next));
         }
 
-        public static MiddlewareHandler Compose(this IEnumerable<MiddlewareHandler> middlewareEnumerable)
+        public static Middleware Compose(this IEnumerable<Middleware> middlewareEnumerable)
         {
             return middlewareEnumerable.Aggregate((accumulation, item) => accumulation.Then(item));
         }
 
-        public static MiddlewareHandler Compose(params MiddlewareHandler[] middlewareArray)
+        public static Middleware Compose(params Middleware[] middlewareArray)
         {
             return middlewareArray.Compose();
         }
 
-        public static Func<byte[], Task<byte[]>> ToHandler(this MiddlewareHandler middleware, ISerializer serializer, ILogger logger)
+        public static RequestHandler ToHandler(this Middleware middleware, ISerializer serializer, ILogger logger)
         {
             return async input =>
             {

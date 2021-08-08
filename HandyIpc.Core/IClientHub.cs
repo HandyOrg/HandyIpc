@@ -3,7 +3,7 @@ namespace HandyIpc
     /// <summary>
     /// It represents a hub of IPC client instances.
     /// </summary>
-    public interface IIpcClientHub
+    public interface IClientHub
     {
         /// <summary>
         /// Gets or adds a IPC client instance with the specified interface type,

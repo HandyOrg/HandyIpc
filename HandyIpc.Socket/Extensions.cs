@@ -1,37 +1,55 @@
+using System;
 using System.Collections.Generic;
-using System.IO.Pipes;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using HandyIpc.Core;
 
-namespace HandyIpc.NamedPipe
+namespace HandyIpc.Socket
 {
     public static class Extensions
     {
         private const int BatchBufferSize = 4 * 1024;
 
-        /// <summary>
-        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IClientHub"/> instance.
-        /// </summary>
-        /// <param name="self">An factory instance.</param>
-        /// <returns>The factory instance itself.</returns>
-        public static IHubBuilder<RmiClientBase, IClientHub> UseNamedPipe(this IHubBuilder<RmiClientBase, IClientHub> self)
+        private static readonly char[] IdentifierSplitter = { ':', ' ' };
+
+        public static IHubBuilder<RmiClientBase, IClientHub> UseTcp(this IHubBuilder<RmiClientBase, IClientHub> self)
         {
-            return self.Use(() => new NamedPipeRmiClient());
+            return self.Use(() => new TcpRmiClient());
         }
 
-        /// <summary>
-        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IServerHub"/> instance.
-        /// </summary>
-        /// <param name="self">An factory instance.</param>
-        /// <returns>The factory instance itself.</returns>
-        public static IHubBuilder<RmiServerBase, IServerHub> UseNamedPipe(this IHubBuilder<RmiServerBase, IServerHub> self)
+        public static IHubBuilder<RmiServerBase, IServerHub> UseTcp(this IHubBuilder<RmiServerBase, IServerHub> self, ILogger? logger = null)
         {
-            return self.Use(() => new NamedPipeRmiServer());
+            return self.Use(() => new TcpRmiServer());
         }
 
-        internal static byte[] ReadAllBytes(this PipeStream self)
+        public static IHubBuilder<RmiClientBase, IClientHub> UseUdp(this IHubBuilder<RmiClientBase, IClientHub> self)
+        {
+            return self.Use(() => new UdpRmiClient());
+        }
+
+        public static IHubBuilder<RmiServerBase, IServerHub> UseUdp(this IHubBuilder<RmiServerBase, IServerHub> self, ILogger? logger = null)
+        {
+            return self.Use(() => new UdpRmiServer());
+        }
+
+        internal static (IPAddress ip, int port) ToIpEndPoint(this string connectionString)
+        {
+            const int ipIndex = 0;
+            const int portIndex = 1;
+
+            string[] address = connectionString.Split(IdentifierSplitter, StringSplitOptions.RemoveEmptyEntries);
+            if (address.Length != 2)
+            {
+                throw new FormatException($"Invalid identifier. The correct format is 'x.x.x.x:port', rather than '{connectionString}'");
+            }
+
+            return (IPAddress.Parse(address[ipIndex]), int.Parse(address[portIndex]));
+        }
+
+        internal static byte[] ReadAllBytes(this Stream self)
         {
             // TODO: Refactoring by System.IO.Pipelines, ArrayPool or stackalloc and so on.
             var collector = new List<byte[]>();
@@ -49,7 +67,7 @@ namespace HandyIpc.NamedPipe
             return ConcatBytesList(collector);
         }
 
-        internal static async Task<byte[]> ReadAllBytesAsync(this PipeStream self, CancellationToken token)
+        internal static async Task<byte[]> ReadAllBytesAsync(this Stream self, CancellationToken token)
         {
             // TODO: Refactoring by System.IO.Pipelines, ArrayPool or stackalloc and so on.
             var collector = new List<byte[]>();

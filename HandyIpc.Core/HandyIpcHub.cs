@@ -8,23 +8,33 @@ namespace HandyIpc
     public class HandyIpcHub
     {
         /// <summary>
-        /// Creates a new factory of the IPC client hub to build the <see cref="IIpcClientHub"/> instance
-        /// with the specified <see cref="IRmiClient"/> provider.
+        /// Creates a new factory of the IPC client hub to build the <see cref="IClientHub"/> instance
+        /// with the specified <see cref="RmiClientBase"/> provider.
         /// </summary>
         /// <returns>The factory of the IPC client hub.</returns>
-        public static IIpcFactory<IRmiClient, IIpcClientHub> CreateClientFactory()
+        public static IHubBuilder<RmiClientBase, IClientHub> CreateClientBuilder()
         {
-            return new IpcFactory<IRmiClient, IIpcClientHub>(rmiClient => new IpcClientHub(rmiClient));
+            return new HubBuilder<RmiClientBase, IClientHub>(
+                (rmiClient, serializer, logger) =>
+                {
+                    rmiClient.SetLogger(logger);
+                    return new ClientHub(rmiClient, serializer);
+                });
         }
 
         /// <summary>
-        /// Creates a new factory of the IPC server hub to build the <see cref="IIpcServerHub"/> instance
-        /// with the specified <see cref="IRmiServer"/> provider.
+        /// Creates a new factory of the IPC server hub to build the <see cref="IServerHub"/> instance
+        /// with the specified <see cref="RmiServerBase"/> provider.
         /// </summary>
         /// <returns>The factory of the IPC server hub.</returns>
-        public static IIpcFactory<IRmiServer, IIpcServerHub> CreateServerFactory()
+        public static IHubBuilder<RmiServerBase, IServerHub> CreateServerBuilder()
         {
-            return new IpcFactory<IRmiServer, IIpcServerHub>(rmiServer => new IpcServerHub(rmiServer));
+            return new HubBuilder<RmiServerBase, IServerHub>(
+                (rmiServer, serializer, logger) =>
+                {
+                    rmiServer.SetLogger(logger);
+                    return new ServerHub(rmiServer, serializer, logger);
+                });
         }
     }
 }

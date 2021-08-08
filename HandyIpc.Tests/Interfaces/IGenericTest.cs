@@ -4,7 +4,7 @@ using HandyIpc;
 
 namespace HandyIpcTests.Interfaces
 {
-    [IpcContract]
+    [IpcContract(Identifier = "127.0.0.1:10087")]
     public interface IGenericTest<T1, in T2>
         where T1 : class, new()
     {

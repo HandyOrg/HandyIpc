@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
-    public interface IIpcDispatcher
+    public interface IRequestDispatcher
     {
         Task Dispatch(Context context, Func<Task> next);
     }

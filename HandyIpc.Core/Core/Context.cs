@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 
 namespace HandyIpc.Core
 {
     public class Context
     {
-        private static readonly byte[] EmptyBytes = new byte[0];
+        private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
         public byte[] Input { get; }
 
@@ -12,7 +13,7 @@ namespace HandyIpc.Core
 
         public IDictionary<object, object> Items { get; } = new Dictionary<object, object>();
 
-        public RequestHeader? RequestHeader { get; set; }
+        public Request? Request { get; set; }
 
         public ISerializer Serializer { get; }
 
