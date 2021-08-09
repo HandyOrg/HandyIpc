@@ -33,15 +33,23 @@ namespace HandyIpc.Socket
             return response;
         }
 
-        private static ClientItem CreateClient(string connectionString)
+        private ClientItem CreateClient(string connectionString)
         {
-            (IPAddress ip, int port) = connectionString.ToIpEndPoint();
-            TcpClient client = new();
-            client.Connect(ip, port);
-            return new ClientItem(client);
+            try
+            {
+                (IPAddress ip, int port) = connectionString.ToIpEndPoint();
+                TcpClient client = new();
+                client.Connect(ip, port);
+                return new ClientItem(client);
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Unexpected exception occurred when sending message by creating tcp client.", e);
+                throw;
+            }
         }
 
-        private static bool CheckClient(ClientItem item)
+        private bool CheckClient(ClientItem item)
         {
             try
             {
@@ -50,28 +58,38 @@ namespace HandyIpc.Socket
             }
             catch (Exception e)
             {
+                Logger.Error("Unexpected exception occurred when sending message by tcp client.", e);
                 item.Dispose();
                 return false;
             }
         }
 
-        private static async Task<AsyncClientItem> CreateAsyncClient(string connectionString)
+        private async Task<AsyncClientItem> CreateAsyncClient(string connectionString)
         {
-            (IPAddress ip, int port) = connectionString.ToIpEndPoint();
-            TcpClient client = new();
-            await client.ConnectAsync(ip, port);
-            return new AsyncClientItem(client);
+            try
+            {
+                (IPAddress ip, int port) = connectionString.ToIpEndPoint();
+                TcpClient client = new();
+                await client.ConnectAsync(ip, port);
+                return new AsyncClientItem(client);
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Unexpected exception occurred when sending ping by creating tcp client.", e);
+                throw;
+            }
         }
 
-        private static async Task<bool> CheckAsyncClient(AsyncClientItem item)
+        private async Task<bool> CheckAsyncClient(AsyncClientItem item)
         {
             try
             {
                 byte[] response = await item.InvokeAsync(Signals.Empty, CancellationToken.None);
                 return response.IsEmpty();
             }
-            catch
+            catch (Exception e)
             {
+                Logger.Error("Unexpected exception occurred when sending ping by tcp client.", e);
                 item.Dispose();
                 return false;
             }
