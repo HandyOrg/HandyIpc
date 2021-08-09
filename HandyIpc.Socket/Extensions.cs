@@ -99,11 +99,7 @@ namespace HandyIpc.Socket
             if (actualCount < BatchBufferSize)
             {
                 byte[] tailBytes = new byte[actualCount];
-                for (int i = 0; i < actualCount; i++)
-                {
-                    tailBytes[i] = bytes[i];
-                }
-
+                Array.Copy(bytes, tailBytes, actualCount);
                 collector.Add(tailBytes);
                 return true;
             }
