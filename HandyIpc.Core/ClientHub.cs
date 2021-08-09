@@ -16,7 +16,7 @@ namespace HandyIpc
             _serializer = serializer;
         }
 
-        public T Of<T>(string? accessToken = null)
+        public T Resolve<T>(string? accessToken = null)
         {
             return (T)_typeInstanceMapping.GetOrAdd(typeof(T), key =>
             {

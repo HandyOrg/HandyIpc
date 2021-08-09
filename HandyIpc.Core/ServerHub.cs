@@ -31,7 +31,7 @@ namespace HandyIpc
             _logger = logger;
         }
 
-        public IDisposable Start(Type interfaceType, Func<object> factory, string? accessToken = null)
+        public IDisposable Register(Type interfaceType, Func<object> factory, string? accessToken = null)
         {
             lock (_locker)
             {
@@ -42,7 +42,7 @@ namespace HandyIpc
             }
         }
 
-        public IDisposable Start(Type interfaceType, Func<Type[], object> factory, string? accessToken = null)
+        public IDisposable Register(Type interfaceType, Func<Type[], object> factory, string? accessToken = null)
         {
             lock (_locker)
             {

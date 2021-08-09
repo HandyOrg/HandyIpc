@@ -21,8 +21,8 @@ namespace HandyIpcTests
                 .UseJsonSerializer()
                 .UseTcp()
                 .BuildServerHub();
-            _buildInTypeTestServerToken = server.Start<IBuildInTypeTest, BuildInTypeTest>("{763EA8B3-79AB-413B-9B41-3290755EE7F0}");
-            _genericTestServerToken = server.Start(typeof(IGenericTest<,>), typeof(GenericTest<,>));
+            _buildInTypeTestServerToken = server.Register<IBuildInTypeTest, BuildInTypeTest>("{763EA8B3-79AB-413B-9B41-3290755EE7F0}");
+            _genericTestServerToken = server.Register(typeof(IGenericTest<,>), typeof(GenericTest<,>));
 
             ClientHub = HandyIpcHub
                 .CreateBuilder()

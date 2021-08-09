@@ -8,30 +8,30 @@ namespace HandyIpc
 {
     public static class Extensions
     {
-        public static IDisposable Start<TInterface, TImpl>(this IServerHub server, string? accessToken = null)
+        public static IDisposable Register<TInterface, TImpl>(this IServerHub server, string? accessToken = null)
             where TInterface : class
             where TImpl : TInterface, new()
         {
-            return server.Start<TInterface>(() => new TImpl(), accessToken);
+            return server.Register<TInterface>(() => new TImpl(), accessToken);
         }
 
-        public static IDisposable Start<TInterface>(this IServerHub server, Func<TInterface> factory, string? accessToken = null)
+        public static IDisposable Register<TInterface>(this IServerHub server, Func<TInterface> factory, string? accessToken = null)
             where TInterface : class
         {
-            return server.Start(typeof(TInterface), factory, accessToken);
+            return server.Register(typeof(TInterface), factory, accessToken);
         }
 
-        public static IDisposable Start(this IServerHub server, Type interfaceType, Type classType, string? accessToken = null)
+        public static IDisposable Register(this IServerHub server, Type interfaceType, Type classType, string? accessToken = null)
         {
             // TODO: Add defensive code.
 
             return classType.ContainsGenericParameters
-                ? server.Start(interfaceType, genericTypes =>
+                ? server.Register(interfaceType, genericTypes =>
                 {
                     var constructedClassType = classType.MakeGenericType(genericTypes);
                     return Activator.CreateInstance(constructedClassType);
                 }, accessToken)
-                : server.Start(interfaceType, () => Activator.CreateInstance(classType), accessToken);
+                : server.Register(interfaceType, () => Activator.CreateInstance(classType), accessToken);
         }
 
         internal static Type GetClientType(this Type interfaceType)

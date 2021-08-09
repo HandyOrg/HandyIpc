@@ -110,7 +110,7 @@ namespace HandyIpc.Socket
                     stream.Flush();
                     return stream.ReadAllBytes();
                 }
-                catch (Exception e)
+                catch
                 {
                     _client.Dispose();
                     throw;
