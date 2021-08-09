@@ -17,16 +17,16 @@ namespace HandyIpc
             public void Dispose() => _dispose();
         }
 
-        private readonly RmiServerBase _rmiServer;
+        private readonly ReceiverBase _receiver;
         private readonly ISerializer _serializer;
         private readonly ILogger _logger;
         private readonly object _locker = new();
         private readonly Dictionary<Type, CancellationTokenSource> _runningInterfaces = new();
         private readonly MiddlewareCache _middlewareCache = new();
 
-        public ServerHub(RmiServerBase rmiServer, ISerializer serializer, ILogger logger)
+        public ServerHub(ReceiverBase receiver, ISerializer serializer, ILogger logger)
         {
-            _rmiServer = rmiServer;
+            _receiver = receiver;
             _serializer = serializer;
             _logger = logger;
         }
@@ -35,7 +35,7 @@ namespace HandyIpc
         {
             lock (_locker)
             {
-                Middleware middleware = _rmiServer.BuildMiddleware(interfaceType, factory, accessToken, _middlewareCache);
+                Middleware middleware = _receiver.BuildMiddleware(interfaceType, factory, accessToken, _middlewareCache);
                 StartInterface(interfaceType, middleware);
 
                 return new Disposable(() => StopAndRemoveInterface(interfaceType));
@@ -46,7 +46,7 @@ namespace HandyIpc
         {
             lock (_locker)
             {
-                Middleware middleware = _rmiServer.BuildMiddleware(interfaceType, factory, accessToken, _middlewareCache);
+                Middleware middleware = _receiver.BuildMiddleware(interfaceType, factory, accessToken, _middlewareCache);
                 StartInterface(interfaceType, middleware);
 
                 return new Disposable(() => StopAndRemoveInterface(interfaceType));
@@ -74,7 +74,7 @@ namespace HandyIpc
 
 #pragma warning disable 4014
             // Async run the server without waiting.
-            CatchException(_rmiServer.RunAsync(identifier, middleware.ToHandler(_serializer, _logger), source.Token));
+            CatchException(_receiver.StartAsync(identifier, middleware.ToHandler(_serializer, _logger), source.Token));
 #pragma warning restore 4014
 
             _runningInterfaces.Add(interfaceType, source);

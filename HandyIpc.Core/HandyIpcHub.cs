@@ -9,12 +9,12 @@ namespace HandyIpc
     {
         /// <summary>
         /// Creates a new factory of the IPC client hub to build the <see cref="IClientHub"/> instance
-        /// with the specified <see cref="RmiClientBase"/> provider.
+        /// with the specified <see cref="SenderBase"/> provider.
         /// </summary>
         /// <returns>The factory of the IPC client hub.</returns>
-        public static IHubBuilder<RmiClientBase, IClientHub> CreateClientBuilder()
+        public static IHubBuilder<SenderBase, IClientHub> CreateClientBuilder()
         {
-            return new HubBuilder<RmiClientBase, IClientHub>(
+            return new HubBuilder<SenderBase, IClientHub>(
                 (rmiClient, serializer, logger) =>
                 {
                     rmiClient.SetLogger(logger);
@@ -24,12 +24,12 @@ namespace HandyIpc
 
         /// <summary>
         /// Creates a new factory of the IPC server hub to build the <see cref="IServerHub"/> instance
-        /// with the specified <see cref="RmiServerBase"/> provider.
+        /// with the specified <see cref="ReceiverBase"/> provider.
         /// </summary>
         /// <returns>The factory of the IPC server hub.</returns>
-        public static IHubBuilder<RmiServerBase, IServerHub> CreateServerBuilder()
+        public static IHubBuilder<ReceiverBase, IServerHub> CreateServerBuilder()
         {
-            return new HubBuilder<RmiServerBase, IServerHub>(
+            return new HubBuilder<ReceiverBase, IServerHub>(
                 (rmiServer, serializer, logger) =>
                 {
                     rmiServer.SetLogger(logger);

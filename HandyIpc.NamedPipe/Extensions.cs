@@ -17,9 +17,9 @@ namespace HandyIpc.NamedPipe
         /// </summary>
         /// <param name="self">An factory instance.</param>
         /// <returns>The factory instance itself.</returns>
-        public static IHubBuilder<RmiClientBase, IClientHub> UseNamedPipe(this IHubBuilder<RmiClientBase, IClientHub> self)
+        public static IHubBuilder<SenderBase, IClientHub> UseNamedPipe(this IHubBuilder<SenderBase, IClientHub> self)
         {
-            return self.Use(() => new NamedPipeRmiClient());
+            return self.Use(() => new NamedPipeSender());
         }
 
         /// <summary>
@@ -27,9 +27,9 @@ namespace HandyIpc.NamedPipe
         /// </summary>
         /// <param name="self">An factory instance.</param>
         /// <returns>The factory instance itself.</returns>
-        public static IHubBuilder<RmiServerBase, IServerHub> UseNamedPipe(this IHubBuilder<RmiServerBase, IServerHub> self)
+        public static IHubBuilder<ReceiverBase, IServerHub> UseNamedPipe(this IHubBuilder<ReceiverBase, IServerHub> self)
         {
-            return self.Use(() => new NamedPipeRmiServer());
+            return self.Use(() => new NamedPipeReceiver());
         }
 
         internal static byte[] ReadAllBytes(this PipeStream self)

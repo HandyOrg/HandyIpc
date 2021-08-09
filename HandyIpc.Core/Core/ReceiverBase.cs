@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
-    public abstract class RmiServerBase
+    public abstract class ReceiverBase
     {
         protected ILogger Logger { get; private set; } = null!;
 
@@ -32,7 +32,7 @@ namespace HandyIpc.Core
             return BuildBasicMiddleware(accessToken).Then(genericDispatcher);
         }
 
-        public abstract Task RunAsync(string identifier, RequestHandler handler, CancellationToken token);
+        public abstract Task StartAsync(string identifier, RequestHandler handler, CancellationToken token);
 
         private static Middleware BuildBasicMiddleware(string? accessToken)
         {

@@ -15,14 +15,14 @@ namespace HandyIpc.Socket
 
         private static readonly char[] IdentifierSplitter = { ':', ' ' };
 
-        public static IHubBuilder<RmiClientBase, IClientHub> UseTcp(this IHubBuilder<RmiClientBase, IClientHub> self)
+        public static IHubBuilder<SenderBase, IClientHub> UseTcp(this IHubBuilder<SenderBase, IClientHub> self)
         {
-            return self.Use(() => new TcpRmiClient());
+            return self.Use(() => new TcpSender());
         }
 
-        public static IHubBuilder<RmiServerBase, IServerHub> UseTcp(this IHubBuilder<RmiServerBase, IServerHub> self, ILogger? logger = null)
+        public static IHubBuilder<ReceiverBase, IServerHub> UseTcp(this IHubBuilder<ReceiverBase, IServerHub> self, ILogger? logger = null)
         {
-            return self.Use(() => new TcpRmiServer());
+            return self.Use(() => new TcpReceiver());
         }
 
         internal static (IPAddress ip, int port) ToIpEndPoint(this string connectionString)

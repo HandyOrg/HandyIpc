@@ -27,14 +27,14 @@ namespace {@namespace}
         {typeParameter.ToGenericConstraint()}
 ")}
     {{
-        private readonly RmiClientBase _client;
+        private readonly SenderBase _sender;
         private readonly ISerializer _serializer;
         private readonly string _identifier;
         private readonly string _accessToken;
 
-        public {nameof(ClientProxy)}{className}(RmiClientBase client, ISerializer serializer, string identifier, string accessToken)
+        public {nameof(ClientProxy)}{className}(SenderBase sender, ISerializer serializer, string identifier, string accessToken)
         {{
-            _client = client;
+            _sender = sender;
             _serializer = serializer;
             _identifier = identifier;
             _accessToken = accessToken;
@@ -81,9 +81,9 @@ namespace {@namespace}
             }};
 ")}
 {Text(isAwaitable ? @"
-            var responseBytes = await _client.InvokeAsync(_identifier, request.ToBytes());
+            var responseBytes = await _sender.SendAsync(_identifier, request.ToBytes());
 " : @"
-            var responseBytes = _client.Invoke(_identifier, request.ToBytes());
+            var responseBytes = _sender.Send(_identifier, request.ToBytes());
 "
 )}
 {Text(isAwaitable ? $@"

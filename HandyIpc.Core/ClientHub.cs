@@ -6,13 +6,13 @@ namespace HandyIpc
 {
     internal class ClientHub : IClientHub
     {
-        private readonly RmiClientBase _rmiClient;
+        private readonly SenderBase _sender;
         private readonly ISerializer _serializer;
         private readonly ConcurrentDictionary<Type, object> _typeInstanceMapping = new();
 
-        public ClientHub(RmiClientBase rmiClient, ISerializer serializer)
+        public ClientHub(SenderBase sender, ISerializer serializer)
         {
-            _rmiClient = rmiClient;
+            _sender = sender;
             _serializer = serializer;
         }
 
@@ -28,7 +28,7 @@ namespace HandyIpc
                 }
 
                 string identifier = key.ResolveIdentifier();
-                return Activator.CreateInstance(type, _rmiClient, _serializer, identifier, accessToken);
+                return Activator.CreateInstance(type, _sender, _serializer, identifier, accessToken);
             });
         }
     }
