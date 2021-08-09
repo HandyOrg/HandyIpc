@@ -25,16 +25,6 @@ namespace HandyIpc.Socket
             return self.Use(() => new TcpRmiServer());
         }
 
-        public static IHubBuilder<RmiClientBase, IClientHub> UseUdp(this IHubBuilder<RmiClientBase, IClientHub> self)
-        {
-            return self.Use(() => new UdpRmiClient());
-        }
-
-        public static IHubBuilder<RmiServerBase, IServerHub> UseUdp(this IHubBuilder<RmiServerBase, IServerHub> self, ILogger? logger = null)
-        {
-            return self.Use(() => new UdpRmiServer());
-        }
-
         internal static (IPAddress ip, int port) ToIpEndPoint(this string connectionString)
         {
             const int ipIndex = 0;
