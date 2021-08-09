@@ -4,7 +4,6 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using HandyIpc.Core;
 
 namespace HandyIpc.NamedPipe
 {
@@ -13,23 +12,15 @@ namespace HandyIpc.NamedPipe
         private const int BatchBufferSize = 4 * 1024;
 
         /// <summary>
-        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IClientHub"/> instance.
+        /// Uses the Named Pipe as the underlying communication technology for building the IPC hub instance.
         /// </summary>
         /// <param name="self">An factory instance.</param>
         /// <returns>The factory instance itself.</returns>
-        public static IHubBuilder<SenderBase, IClientHub> UseNamedPipe(this IHubBuilder<SenderBase, IClientHub> self)
+        public static IHubBuilder UseNamedPipe(this IHubBuilder self)
         {
-            return self.Use(() => new NamedPipeSender());
-        }
-
-        /// <summary>
-        /// Uses the Named Pipe as the underlying communication technology for building the <see cref="IServerHub"/> instance.
-        /// </summary>
-        /// <param name="self">An factory instance.</param>
-        /// <returns>The factory instance itself.</returns>
-        public static IHubBuilder<ReceiverBase, IServerHub> UseNamedPipe(this IHubBuilder<ReceiverBase, IServerHub> self)
-        {
-            return self.Use(() => new NamedPipeReceiver());
+            return self
+                .Use(() => new NamedPipeSender())
+                .Use(() => new NamedPipeReceiver());
         }
 
         internal static byte[] ReadAllBytes(this PipeStream self)

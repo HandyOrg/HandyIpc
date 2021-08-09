@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using HandyIpc.Core;
 
 namespace HandyIpc.Socket
 {
@@ -15,14 +14,11 @@ namespace HandyIpc.Socket
 
         private static readonly char[] IdentifierSplitter = { ':', ' ' };
 
-        public static IHubBuilder<SenderBase, IClientHub> UseTcp(this IHubBuilder<SenderBase, IClientHub> self)
+        public static IHubBuilder UseTcp(this IHubBuilder self)
         {
-            return self.Use(() => new TcpSender());
-        }
-
-        public static IHubBuilder<ReceiverBase, IServerHub> UseTcp(this IHubBuilder<ReceiverBase, IServerHub> self, ILogger? logger = null)
-        {
-            return self.Use(() => new TcpReceiver());
+            return self
+                .Use(() => new TcpSender())
+                .Use(() => new TcpReceiver());
         }
 
         internal static (IPAddress ip, int port) ToIpEndPoint(this string connectionString)

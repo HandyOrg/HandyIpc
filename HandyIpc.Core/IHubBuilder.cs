@@ -6,44 +6,50 @@ namespace HandyIpc
     /// <summary>
     /// It represents the factory of the IPC server or client hub.
     /// </summary>
-    /// <typeparam name="TRmi">
-    /// The service of remote method invocation, which can only be <see cref="ReceiverBase"/>
-    /// or <see cref="SenderBase"/> type.
-    /// </typeparam>
-    /// <typeparam name="THub">
-    /// The hub of the IPC server or client, which can only be <see cref="IServerHub"/>
-    /// or <see cref="IClientHub"/> type.
-    /// </typeparam>
-    public interface IHubBuilder<in TRmi, out THub>
+    public interface IHubBuilder
     {
         /// <summary>
-        /// Use a <typeparamref name="TRmi"/> provider for the underlying communication.
+        /// Use a <see cref="SenderBase"/> provider for the underlying communication.
         /// </summary>
         /// <param name="factory">
-        /// A factory of the <typeparamref name="TRmi"/> (Remote method invocation) type,
-        /// which can only return an instance derived from <see cref="ReceiverBase"/> or <see cref="SenderBase"/>.
+        /// A factory of the <see cref="SenderBase"/> type for RMI (remote method invocation).
         /// </param>
         /// <returns>The interface instance itself.</returns>
-        IHubBuilder<TRmi, THub> Use(Func<TRmi> factory);
+        IHubBuilder Use(Func<SenderBase> factory);
+
+        /// <summary>
+        /// Use a <see cref="ReceiverBase"/> provider for the underlying communication.
+        /// </summary>
+        /// <param name="factory">
+        /// A factory of the <see cref="ReceiverBase"/> type for RMI (remote method invocation).
+        /// </param>
+        /// <returns>The interface instance itself.</returns>
+        IHubBuilder Use(Func<ReceiverBase> factory);
 
         /// <summary>
         /// Use a <see cref="ISerializer"/> provider for serialization and deserialization.
         /// </summary>
         /// <param name="factory">A factory for creating the <see cref="ISerializer"/> instance.</param>
         /// <returns>The interface instance itself.</returns>
-        IHubBuilder<TRmi, THub> Use(Func<ISerializer> factory);
+        IHubBuilder Use(Func<ISerializer> factory);
 
         /// <summary>
         /// Use a <see cref="ILogger"/> provider for logging.
         /// </summary>
         /// <param name="factory">A factory for creating the <see cref="ILogger"/> instance.</param>
         /// <returns>The interface instance itself.</returns>
-        IHubBuilder<TRmi, THub> Use(Func<ILogger> factory);
+        IHubBuilder Use(Func<ILogger> factory);
 
         /// <summary>
-        /// Builds an instance of the <typeparamref name="THub"/> type.
+        /// Builds an instance of the <see cref="IClientHub"/> type with specified factories.
         /// </summary>
-        /// <returns>An instance of the <typeparamref name="THub"/> type.</returns>
-        THub Build();
+        /// <returns>An instance of the <see cref="IClientHub"/> type.</returns>
+        IClientHub BuildClientHub();
+
+        /// <summary>
+        /// Builds an instance of the <see cref="IServerHub"/> type with specified factories.
+        /// </summary>
+        /// <returns>An instance of the <see cref="IServerHub"/> type.</returns>
+        IServerHub BuildServerHub();
     }
 }

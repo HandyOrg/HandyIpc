@@ -101,10 +101,10 @@ namespace HandyIpcTests
         public void TestInvokeWithoutAccessToken()
         {
             var @interface = HandyIpcHub
-                .CreateClientBuilder()
+                .CreateBuilder()
                 .UseJsonSerializer()
                 .UseTcp()
-                .Build()
+                .BuildClientHub()
                 .Of<IBuildInTypeTest>("error_access_token");
 
             Assert.Throws<AuthenticationException>(() => @interface.TestByte(0b01));

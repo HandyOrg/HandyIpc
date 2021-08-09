@@ -16,6 +16,7 @@ namespace HandyIpc.Core
                 interfaceType,
                 nameof(IRequestDispatcher),
                 (type, _) => CreateDispatcher(type, factory).Dispatch);
+
             return BuildBasicMiddleware(accessToken).Then(dispatcher);
         }
 
