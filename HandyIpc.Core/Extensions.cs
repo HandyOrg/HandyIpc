@@ -8,20 +8,20 @@ namespace HandyIpc
 {
     public static class Extensions
     {
-        public static IDisposable Register<TInterface, TImpl>(this IServerHub server, string? accessToken = null)
+        public static IDisposable Register<TInterface, TImpl>(this IServerHub server)
             where TInterface : class
             where TImpl : TInterface, new()
         {
-            return server.Register<TInterface>(() => new TImpl(), accessToken);
+            return server.Register<TInterface>(() => new TImpl());
         }
 
-        public static IDisposable Register<TInterface>(this IServerHub server, Func<TInterface> factory, string? accessToken = null)
+        public static IDisposable Register<TInterface>(this IServerHub server, Func<TInterface> factory)
             where TInterface : class
         {
-            return server.Register(typeof(TInterface), factory, accessToken);
+            return server.Register(typeof(TInterface), factory);
         }
 
-        public static IDisposable Register(this IServerHub server, Type interfaceType, Type classType, string? accessToken = null)
+        public static IDisposable Register(this IServerHub server, Type interfaceType, Type classType)
         {
             // TODO: Add defensive code.
 
@@ -30,8 +30,8 @@ namespace HandyIpc
                 {
                     var constructedClassType = classType.MakeGenericType(genericTypes);
                     return Activator.CreateInstance(constructedClassType);
-                }, accessToken)
-                : server.Register(interfaceType, () => Activator.CreateInstance(classType), accessToken);
+                })
+                : server.Register(interfaceType, () => Activator.CreateInstance(classType));
         }
 
         internal static Type GetClientType(this Type interfaceType)

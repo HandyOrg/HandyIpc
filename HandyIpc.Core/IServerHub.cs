@@ -13,9 +13,8 @@ namespace HandyIpc
         /// </summary>
         /// <param name="interfaceType">The non-generic contract interface.</param>
         /// <param name="factory">The factory of the non-generic concrete service class.</param>
-        /// <param name="accessToken">Allow to specify an access token for authentication.</param>
         /// <returns>A token to stop the running service instance.</returns>
-        IDisposable Register(Type interfaceType, Func<object> factory, string? accessToken = null);
+        IDisposable Register(Type interfaceType, Func<object> factory);
 
         /// <summary>
         /// Registers a mapping between the generic contract interface and the generic concrete service class,
@@ -23,8 +22,7 @@ namespace HandyIpc
         /// </summary>
         /// <param name="interfaceType">The generic contract interface.</param>
         /// <param name="factory">The factory of the generic concrete service class.</param>
-        /// <param name="accessToken">Allow to specify an access token for authentication.</param>
         /// <returns>A token to stop the running service instance.</returns>
-        IDisposable Register(Type interfaceType, Func<Type[], object> factory, string? accessToken = null);
+        IDisposable Register(Type interfaceType, Func<Type[], object> factory);
     }
 }

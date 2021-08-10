@@ -30,14 +30,12 @@ namespace {@namespace}
         private readonly SenderBase _sender;
         private readonly ISerializer _serializer;
         private readonly string _identifier;
-        private readonly string _accessToken;
 
-        public {nameof(ClientProxy)}{className}(SenderBase sender, ISerializer serializer, string identifier, string accessToken)
+        public {nameof(ClientProxy)}{className}(SenderBase sender, ISerializer serializer, string identifier)
         {{
             _sender = sender;
             _serializer = serializer;
             _identifier = identifier;
-            _accessToken = accessToken;
         }}
 {methods.For(method =>
 {
@@ -65,7 +63,6 @@ namespace {@namespace}
 {Text($@"
             var request = new Request(_serializer, ""{methodId}"")
             {{
-                AccessToken = _accessToken ?? string.Empty,
 {@interface.TypeParameters.Select(type => $"typeof({type.ToFullDeclaration()})").Join(", ").If(text => $@"
                 TypeArguments = new[] {{ {text} }},
 ", RemoveLineIfEmpty)}

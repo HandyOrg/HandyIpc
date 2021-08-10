@@ -10,17 +10,17 @@ namespace HandyIpc.Core
 
         internal void SetLogger(ILogger logger) => Logger = logger;
 
-        public virtual Middleware BuildMiddleware(Type interfaceType, Func<object> factory, string? accessToken, MiddlewareCache cache)
+        public virtual Middleware BuildMiddleware(Type interfaceType, Func<object> factory, MiddlewareCache cache)
         {
             Middleware dispatcher = cache.GetOrAdd(
                 interfaceType,
                 nameof(IRequestDispatcher),
                 (type, _) => CreateDispatcher(type, factory).Dispatch);
 
-            return BuildBasicMiddleware(accessToken).Then(dispatcher);
+            return BuildBasicMiddleware().Then(dispatcher);
         }
 
-        public virtual Middleware BuildMiddleware(Type interfaceType, Func<Type[], object> factory, string? accessToken, MiddlewareCache cache)
+        public virtual Middleware BuildMiddleware(Type interfaceType, Func<Type[], object> factory, MiddlewareCache cache)
         {
             Middleware genericDispatcher = cache.GetOrAdd(
                 interfaceType,
@@ -30,24 +30,17 @@ namespace HandyIpc.Core
                         type.MakeGenericType(genericTypes),
                         () => factory(genericTypes))));
 
-            return BuildBasicMiddleware(accessToken).Then(genericDispatcher);
+            return BuildBasicMiddleware().Then(genericDispatcher);
         }
 
         public abstract Task StartAsync(string identifier, RequestHandler handler, CancellationToken token);
 
-        private static Middleware BuildBasicMiddleware(string? accessToken)
+        private static Middleware BuildBasicMiddleware()
         {
-            Middleware middleware = Middlewares.Compose(
+            return Middlewares.Compose(
                 Middlewares.Heartbeat,
                 Middlewares.ExceptionHandler,
                 Middlewares.RequestParser);
-
-            if (!string.IsNullOrEmpty(accessToken))
-            {
-                middleware = middleware.Then(Middlewares.GetAuthenticator(accessToken!));
-            }
-
-            return middleware;
         }
 
         private static IRequestDispatcher CreateDispatcher(Type interfaceType, Func<object> factory)

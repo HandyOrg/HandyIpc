@@ -23,28 +23,17 @@ namespace HandyIpc.Core
         private readonly ISerializer _serializer;
         private readonly byte[] _bytes;
 
-        private string? _accessToken;
         private IReadOnlyList<Type>? _typeArguments;
         private string? _methodName;
         private IReadOnlyList<Type>? _methodTypeArguments;
         private IReadOnlyList<Type>? _argumentTypes;
         private IReadOnlyList<object?>? _arguments;
 
-        private (int start, int length) _accessTokenRange;
         private (int start, int length) _typeArgumentsRange;
         private (int start, int length) _methodNameRange;
         private (int start, int length) _methodTypeArgumentsRange;
         private (int start, int length) _argumentTypesRange;
         private (int start, int length) _argumentsRange;
-
-        /// <summary>
-        /// Gets the access token, which may be empty string.
-        /// </summary>
-        public string AccessToken
-        {
-            get => _accessToken ??= Deserialize<string>(_accessTokenRange);
-            set => _accessToken = value;
-        }
 
         /// <summary>
         /// Gets the generic argument that are defined on the interface.
@@ -98,7 +87,6 @@ namespace HandyIpc.Core
         {
             _serializer = serializer;
             _methodName = methodName;
-            _accessToken = string.Empty;
             _typeArguments = EmptyTypeList;
             _methodTypeArguments = EmptyTypeList;
             _argumentTypes = EmptyTypeList;
@@ -120,14 +108,12 @@ namespace HandyIpc.Core
              * | Req Token                 |
              * | Version                   |
              * < Layout Table              >
-             * | AccessTokenLength         |
              * | TypeArgumentsLength       |
              * | MethodNameLength          |
              * | MethodTypeArgumentsLength |
              * | ArgumentTypesLength       |
              * | ArgumentsLength           |
              * < Body                      >
-             * | AccessToken               |
              * | TypeArguments             |
              * | MethodName                |
              * | MethodTypeArguments       |
@@ -135,7 +121,6 @@ namespace HandyIpc.Core
              * | Arguments                 |
              */
 
-            byte[] accessTokenBytes = _serializer.Serialize(AccessToken, typeof(string));
             byte[] typeArgumentsBytes = SerializeArray(TypeArguments);
             byte[] methodNameBytes = _serializer.Serialize(MethodName, typeof(string));
             byte[] methodTypeArgumentsBytes = SerializeArray(MethodTypeArguments);
@@ -149,13 +134,11 @@ namespace HandyIpc.Core
             {
                 ReqHeaderBytes,
                 Version,
-                BitConverter.GetBytes(accessTokenBytes.Length),
                 BitConverter.GetBytes(typeArgumentsBytes.Length),
                 BitConverter.GetBytes(methodNameBytes.Length),
                 BitConverter.GetBytes(methodTypeArgumentsBytes.Length),
                 BitConverter.GetBytes(argumentTypesBytes.Length),
                 BitConverter.GetBytes(argumentsBytes.Length),
-                accessTokenBytes,
                 typeArgumentsBytes,
                 methodNameBytes,
                 methodTypeArgumentsBytes,
@@ -176,17 +159,12 @@ namespace HandyIpc.Core
 
             // Skip header and version bytes.
             int offset = ReqHeaderBytes.Length + 1;
-            // Skip layout table, 6 is six field in bytes table.
-            int start = offset + sizeof(int) * 6;
+            // Skip layout table, 5 is six field in bytes table.
+            int start = offset + sizeof(int) * 5;
 
             request = new Request(serializer, bytes);
 
             int dataLength = BitConverter.ToInt32(bytes, offset);
-            offset += sizeof(int);
-            request._accessTokenRange = (start, dataLength);
-            start += dataLength;
-
-            dataLength = BitConverter.ToInt32(bytes, offset);
             offset += sizeof(int);
             request._typeArgumentsRange = (start, dataLength);
             start += dataLength;

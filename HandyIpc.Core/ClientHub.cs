@@ -16,7 +16,7 @@ namespace HandyIpc
             _serializer = serializer;
         }
 
-        public T Resolve<T>(string? accessToken = null)
+        public T Resolve<T>()
         {
             return (T)_typeInstanceMapping.GetOrAdd(typeof(T), key =>
             {
@@ -28,7 +28,7 @@ namespace HandyIpc
                 }
 
                 string identifier = key.ResolveIdentifier();
-                return Activator.CreateInstance(type, _sender, _serializer, identifier, accessToken);
+                return Activator.CreateInstance(type, _sender, _serializer, identifier);
             });
         }
     }

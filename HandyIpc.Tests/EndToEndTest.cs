@@ -24,7 +24,7 @@ namespace HandyIpcTests
         [Fact]
         public void TestIBuildInTypeTestInterface()
         {
-            var @interface = _fixture.ClientHub.Resolve<IBuildInTypeTest>("{763EA8B3-79AB-413B-9B41-3290755EE7F0}");
+            var @interface = _fixture.ClientHub.Resolve<IBuildInTypeTest>();
 
             Assert.Throws<TestException>(() => @interface.TestVoidWithParams());
 
@@ -95,19 +95,6 @@ namespace HandyIpcTests
             {
                 Assert.Equal(value, @interface.TestByteArray(value));
             }
-        }
-
-        [Fact]
-        public void TestInvokeWithoutAccessToken()
-        {
-            var @interface = HandyIpcHub
-                .CreateBuilder()
-                .UseJsonSerializer()
-                .UseTcp()
-                .BuildClientHub()
-                .Resolve<IBuildInTypeTest>("error_access_token");
-
-            Assert.Throws<AuthenticationException>(() => @interface.TestByte(0b01));
         }
 
         [Fact]

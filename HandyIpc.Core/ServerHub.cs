@@ -31,22 +31,22 @@ namespace HandyIpc
             _logger = logger;
         }
 
-        public IDisposable Register(Type interfaceType, Func<object> factory, string? accessToken = null)
+        public IDisposable Register(Type interfaceType, Func<object> factory)
         {
             lock (_locker)
             {
-                Middleware middleware = _receiver.BuildMiddleware(interfaceType, factory, accessToken, _middlewareCache);
+                Middleware middleware = _receiver.BuildMiddleware(interfaceType, factory, _middlewareCache);
                 StartInterface(interfaceType, middleware);
 
                 return new Disposable(() => StopAndRemoveInterface(interfaceType));
             }
         }
 
-        public IDisposable Register(Type interfaceType, Func<Type[], object> factory, string? accessToken = null)
+        public IDisposable Register(Type interfaceType, Func<Type[], object> factory)
         {
             lock (_locker)
             {
-                Middleware middleware = _receiver.BuildMiddleware(interfaceType, factory, accessToken, _middlewareCache);
+                Middleware middleware = _receiver.BuildMiddleware(interfaceType, factory, _middlewareCache);
                 StartInterface(interfaceType, middleware);
 
                 return new Disposable(() => StopAndRemoveInterface(interfaceType));

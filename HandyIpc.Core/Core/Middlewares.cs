@@ -51,25 +51,6 @@ namespace HandyIpc.Core
             }
         }
 
-        public static Middleware GetAuthenticator(string accessToken)
-        {
-            return async (ctx, next) =>
-            {
-                Request request = CheckRequest(ctx);
-
-                if (string.Equals(request.AccessToken, accessToken, StringComparison.Ordinal))
-                {
-                    await next();
-                }
-                else
-                {
-                    var exception = new AuthenticationException($"Invalid accessToken: '{request.AccessToken}'.");
-                    ctx.Logger.Warning($"Failed to authenticate this request (token: {request.AccessToken}).", exception);
-                    ctx.Output = Response.Error(exception, ctx.Serializer);
-                }
-            };
-        }
-
         public static Middleware GetGenericDispatcher(Func<Type[], IRequestDispatcher> getProxy)
         {
             return async (ctx, next) =>
