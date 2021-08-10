@@ -18,14 +18,14 @@ namespace HandyIpc.NamedPipe
             _asyncClientPool = new AsyncPool<string, AsyncClientItem>(CreateAsyncClient, CheckAsyncClient);
         }
 
-        public override byte[] Send(string pipeName, byte[] requestBytes)
+        public override byte[] Invoke(string pipeName, byte[] requestBytes)
         {
             using var invokeOwner = _clientPool.Rent(pipeName);
             byte[] response = invokeOwner.Value.Invoke(requestBytes);
             return response;
         }
 
-        public override async Task<byte[]> SendAsync(string pipeName, byte[] requestBytes)
+        public override async Task<byte[]> InvokeAsync(string pipeName, byte[] requestBytes)
         {
             using var invokeOwner = await _asyncClientPool.RentAsync(pipeName);
             byte[] response = await invokeOwner.Value.InvokeAsync(requestBytes, CancellationToken.None);

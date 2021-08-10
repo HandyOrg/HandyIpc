@@ -81,9 +81,9 @@ namespace {@namespace}
             }};
 ")}
 {Text(isAwaitable ? @"
-            var responseBytes = await _sender.SendAsync(_identifier, request.ToBytes());
+            var responseBytes = await _sender.InvokeAsync(_identifier, request.ToBytes());
 " : @"
-            var responseBytes = _sender.Send(_identifier, request.ToBytes());
+            var responseBytes = _sender.Invoke(_identifier, request.ToBytes());
 "
 )}
 {Text(isAwaitable ? $@"

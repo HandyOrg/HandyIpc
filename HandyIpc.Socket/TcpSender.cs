@@ -19,14 +19,14 @@ namespace HandyIpc.Socket
             _asyncClientPool = new AsyncPool<string, AsyncClientItem>(CreateAsyncClient, CheckAsyncClient);
         }
 
-        public override byte[] Send(string identifier, byte[] requestBytes)
+        public override byte[] Invoke(string identifier, byte[] requestBytes)
         {
             using var invokeOwner = _clientPool.Rent(identifier);
             byte[] response = invokeOwner.Value.Invoke(requestBytes);
             return response;
         }
 
-        public override async Task<byte[]> SendAsync(string identifier, byte[] requestBytes)
+        public override async Task<byte[]> InvokeAsync(string identifier, byte[] requestBytes)
         {
             using var invokeOwner = await _asyncClientPool.RentAsync(identifier);
             byte[] response = await invokeOwner.Value.InvokeAsync(requestBytes, CancellationToken.None);
