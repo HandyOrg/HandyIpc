@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using HandyIpc;
 using HandyIpc.Serializer.Json;
 using HandyIpc.Socket;
@@ -16,19 +17,16 @@ namespace HandyIpcTests
 
         public EndToEndTestFixture()
         {
-            var server = HandyIpcHub
+            IHubBuilder builder = HandyIpcHub
                 .CreateBuilder()
                 .UseJsonSerializer()
-                .UseTcp()
-                .BuildServerHub();
-            _buildInTypeTestServerToken = server.Register<IBuildInTypeTest, BuildInTypeTest>();
-            _genericTestServerToken = server.Register(typeof(IGenericTest<,>), typeof(GenericTest<,>));
+                .UseTcp(IPAddress.Loopback, 10086);
 
-            ClientHub = HandyIpcHub
-                .CreateBuilder()
-                .UseJsonSerializer()
-                .UseTcp()
-                .BuildClientHub();
+            IServerHub serverHub = builder.BuildServerHub();
+            _buildInTypeTestServerToken = serverHub.Register<IBuildInTypeTest, BuildInTypeTest>();
+            _genericTestServerToken = serverHub.Register(typeof(IGenericTest<,>), typeof(GenericTest<,>));
+
+            ClientHub = builder.BuildClientHub();
         }
 
         public void Dispose()

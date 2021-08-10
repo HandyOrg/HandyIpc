@@ -2,20 +2,18 @@ using System;
 
 namespace HandyIpc.Implementation
 {
-    internal sealed class RentedValue<TKey, TValue> : IRentedValue<TValue>
+    internal sealed class RentedValue<TValue> : IRentedValue<TValue>
     {
-        private readonly TKey _key;
-        private readonly Action<TKey, TValue> _dispose;
+        private readonly Action<TValue> _dispose;
 
         public TValue Value { get; }
 
-        public RentedValue(TKey key, TValue value, Action<TKey, TValue> dispose)
+        public RentedValue(TValue value, Action<TValue> dispose)
         {
-            _key = key;
             _dispose = dispose;
             Value = value;
         }
 
-        public void Dispose() => _dispose(_key, Value);
+        public void Dispose() => _dispose(Value);
     }
 }

@@ -16,11 +16,11 @@ namespace HandyIpc.NamedPipe
         /// </summary>
         /// <param name="self">An factory instance.</param>
         /// <returns>The factory instance itself.</returns>
-        public static IHubBuilder UseNamedPipe(this IHubBuilder self)
+        public static IHubBuilder UseNamedPipe(this IHubBuilder self, string pipeName)
         {
             return self
-                .Use(() => new NamedPipeSender())
-                .Use(() => new NamedPipeReceiver());
+                .Use(() => new NamedPipeSender(pipeName))
+                .Use(() => new NamedPipeReceiver(pipeName));
         }
 
         internal static byte[] ReadAllBytes(this PipeStream self)

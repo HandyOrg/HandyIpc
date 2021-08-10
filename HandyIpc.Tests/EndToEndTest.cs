@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Authentication;
 using System.Threading.Tasks;
-using HandyIpc;
-using HandyIpc.NamedPipe;
-using HandyIpc.Serializer.Json;
-using HandyIpc.Socket;
 using HandyIpcTests.Implementations;
 using HandyIpcTests.Interfaces;
 using HandyIpcTests.Mock;

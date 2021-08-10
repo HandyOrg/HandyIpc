@@ -9,9 +9,18 @@ namespace HandyIpc.Socket
 {
     internal class TcpReceiver : ReceiverBase
     {
-        public override async Task StartAsync(string identifier, RequestHandler handler, CancellationToken token)
+        private readonly IPAddress _ip;
+        private readonly int _port;
+
+        public TcpReceiver(IPAddress ip, int port)
         {
-            TcpListener listener = CreateTcpListener(identifier);
+            _ip = ip;
+            _port = port;
+        }
+
+        public override async Task StartAsync(RequestHandler handler, CancellationToken token)
+        {
+            TcpListener listener = CreateTcpListener(_ip, _port);
             while (!token.IsCancellationRequested)
             {
                 try
@@ -34,16 +43,15 @@ namespace HandyIpc.Socket
                 }
                 catch (Exception e)
                 {
-                    Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
+                    Logger.Error($"An unexpected exception occurred in the server (IP: {_ip}, Port: {_port}).", e);
                 }
             }
 
             listener.Stop();
         }
 
-        private static TcpListener CreateTcpListener(string connectionString)
+        private static TcpListener CreateTcpListener(IPAddress ip, int port)
         {
-            (IPAddress ip, int port) = connectionString.ToIpEndPoint();
             var listener = new TcpListener(ip, port);
             listener.Start();
             return listener;

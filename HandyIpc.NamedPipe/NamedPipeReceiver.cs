@@ -8,13 +8,17 @@ namespace HandyIpc.NamedPipe
 {
     internal class NamedPipeReceiver : ReceiverBase
     {
-        public override async Task StartAsync(string identifier, RequestHandler handler, CancellationToken token)
+        private readonly string _pipeName;
+
+        public NamedPipeReceiver(string pipeName) => _pipeName = pipeName;
+
+        public override async Task StartAsync(RequestHandler handler, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    var stream = await CreateServerStreamAsync(identifier, token);
+                    var stream = await CreateServerStreamAsync(_pipeName, token);
 
                     if (token.IsCancellationRequested)
                     {
@@ -32,7 +36,7 @@ namespace HandyIpc.NamedPipe
                 }
                 catch (Exception e)
                 {
-                    Logger.Error($"An unexpected exception occurred in the server (Id: {identifier}).", e);
+                    Logger.Error($"An unexpected exception occurred in the server (Id: {_pipeName}).", e);
                 }
             }
         }

@@ -3,40 +3,36 @@ using System.Collections.Concurrent;
 
 namespace HandyIpc.Implementation
 {
-    public class Pool<TKey, TValue>
+    public class Pool<TValue>
     {
-        private readonly Func<TKey, TValue> _factory;
+        private readonly Func<TValue> _factory;
         private readonly Func<TValue, bool> _checkValue;
-        private readonly ConcurrentDictionary<TKey, ConcurrentBag<TValue>> _cache = new();
+        private readonly ConcurrentBag<TValue> _cache = new();
 
-        public Pool(Func<TKey, TValue> factory, Func<TValue, bool>? checkValue = null)
+        public Pool(Func<TValue> factory, Func<TValue, bool>? checkValue = null)
         {
             _factory = factory;
             _checkValue = checkValue ?? (_ => true);
         }
 
-        public IRentedValue<TValue> Rent(TKey key)
+        public IRentedValue<TValue> Rent()
         {
-            TValue value = TakeOrCreateValue(key);
-            return new RentedValue<TKey, TValue>(key, value, ReturnValue);
+            TValue value = TakeOrCreateValue();
+            return new RentedValue<TValue>(value, ReturnValue);
 
             // Local method
-            void ReturnValue(TKey rentedKey, TValue rentedValue) => GetBag(rentedKey).Add(rentedValue);
+            void ReturnValue(TValue rentedValue) => _cache.Add(rentedValue);
         }
 
-        private TValue TakeOrCreateValue(TKey key)
+        private TValue TakeOrCreateValue()
         {
-            ConcurrentBag<TValue> bag = GetBag(key);
-
             TValue result;
-            while (!bag.TryTake(out result) || !_checkValue(result))
+            while (!_cache.TryTake(out result) || !_checkValue(result))
             {
-                bag.Add(_factory(key));
+                _cache.Add(_factory());
             }
 
             return result;
         }
-
-        private ConcurrentBag<TValue> GetBag(TKey key) => _cache.GetOrAdd(key, _ => new ConcurrentBag<TValue>());
     }
 }

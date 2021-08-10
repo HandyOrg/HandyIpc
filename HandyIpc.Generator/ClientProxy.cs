@@ -29,13 +29,11 @@ namespace {@namespace}
     {{
         private readonly SenderBase _sender;
         private readonly ISerializer _serializer;
-        private readonly string _identifier;
 
-        public {nameof(ClientProxy)}{className}(SenderBase sender, ISerializer serializer, string identifier)
+        public {nameof(ClientProxy)}{className}(SenderBase sender, ISerializer serializer)
         {{
             _sender = sender;
             _serializer = serializer;
-            _identifier = identifier;
         }}
 {methods.For(method =>
 {
@@ -78,9 +76,9 @@ namespace {@namespace}
             }};
 ")}
 {Text(isAwaitable ? @"
-            var responseBytes = await _sender.InvokeAsync(_identifier, request.ToBytes());
+            var responseBytes = await _sender.InvokeAsync(request.ToBytes());
 " : @"
-            var responseBytes = _sender.Invoke(_identifier, request.ToBytes());
+            var responseBytes = _sender.Invoke(request.ToBytes());
 "
 )}
 {Text(isAwaitable ? $@"

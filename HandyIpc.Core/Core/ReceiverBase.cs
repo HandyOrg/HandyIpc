@@ -33,7 +33,7 @@ namespace HandyIpc.Core
             return BuildBasicMiddleware().Then(genericDispatcher);
         }
 
-        public abstract Task StartAsync(string identifier, RequestHandler handler, CancellationToken token);
+        public abstract Task StartAsync(RequestHandler handler, CancellationToken token);
 
         private static Middleware BuildBasicMiddleware()
         {

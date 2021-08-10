@@ -21,14 +21,7 @@ namespace HandyIpc
             return (T)_typeInstanceMapping.GetOrAdd(typeof(T), key =>
             {
                 Type type = key.GetClientType();
-
-                if (key.IsGenericType)
-                {
-                    key = key.GetGenericTypeDefinition();
-                }
-
-                string identifier = key.ResolveIdentifier();
-                return Activator.CreateInstance(type, _sender, _serializer, identifier);
+                return Activator.CreateInstance(type, _sender, _serializer);
             });
         }
     }

@@ -4,40 +4,36 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Implementation
 {
-    public class AsyncPool<TKey, TValue>
+    public class AsyncPool<TValue>
     {
-        private readonly Func<TKey, Task<TValue>> _factory;
+        private readonly Func<Task<TValue>> _factory;
         private readonly Func<TValue, Task<bool>> _checkValue;
-        private readonly ConcurrentDictionary<TKey, ConcurrentBag<TValue>> _cache = new();
+        private readonly ConcurrentBag<TValue> _cache = new();
 
-        public AsyncPool(Func<TKey, Task<TValue>> factory, Func<TValue, Task<bool>>? checkValue = null)
+        public AsyncPool(Func<Task<TValue>> factory, Func<TValue, Task<bool>>? checkValue = null)
         {
             _factory = factory;
             _checkValue = checkValue ?? (_ => Task.FromResult(true));
         }
 
-        public async Task<IRentedValue<TValue>> RentAsync(TKey key)
+        public async Task<IRentedValue<TValue>> RentAsync()
         {
-            TValue value = await TakeOrCreateValue(key);
-            return new RentedValue<TKey, TValue>(key, value, ReturnValue);
+            TValue value = await TakeOrCreateValue();
+            return new RentedValue<TValue>(value, ReturnValue);
 
             // Local method
-            void ReturnValue(TKey rentedKey, TValue rentedValue) => GetBag(rentedKey).Add(rentedValue);
+            void ReturnValue(TValue rentedValue) => _cache.Add(rentedValue);
         }
 
-        private async Task<TValue> TakeOrCreateValue(TKey key)
+        private async Task<TValue> TakeOrCreateValue()
         {
-            ConcurrentBag<TValue> bag = GetBag(key);
-
             TValue result;
-            while (!bag.TryTake(out result) || !await _checkValue(result))
+            while (!_cache.TryTake(out result) || !await _checkValue(result))
             {
-                bag.Add(await _factory(key));
+                _cache.Add(await _factory());
             }
 
             return result;
         }
-
-        private ConcurrentBag<TValue> GetBag(TKey key) => _cache.GetOrAdd(key, _ => new ConcurrentBag<TValue>());
     }
 }

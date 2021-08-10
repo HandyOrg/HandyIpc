@@ -14,11 +14,11 @@ namespace HandyIpc.Socket
 
         private static readonly char[] IdentifierSplitter = { ':', ' ' };
 
-        public static IHubBuilder UseTcp(this IHubBuilder self)
+        public static IHubBuilder UseTcp(this IHubBuilder self, IPAddress ip, int port)
         {
             return self
-                .Use(() => new TcpSender())
-                .Use(() => new TcpReceiver());
+                .Use(() => new TcpSender(ip, port))
+                .Use(() => new TcpReceiver(ip, port));
         }
 
         internal static (IPAddress ip, int port) ToIpEndPoint(this string connectionString)

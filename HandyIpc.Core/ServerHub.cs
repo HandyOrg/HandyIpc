@@ -69,12 +69,11 @@ namespace HandyIpc
 
         private void StartInterface(Type interfaceType, Middleware middleware)
         {
-            string identifier = interfaceType.ResolveIdentifier();
             var source = new CancellationTokenSource();
 
 #pragma warning disable 4014
             // Async run the server without waiting.
-            CatchException(_receiver.StartAsync(identifier, middleware.ToHandler(_serializer, _logger), source.Token));
+            CatchException(_receiver.StartAsync(middleware.ToHandler(_serializer, _logger), source.Token));
 #pragma warning restore 4014
 
             _runningInterfaces.Add(interfaceType, source);

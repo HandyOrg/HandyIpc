@@ -10,36 +10,39 @@ namespace HandyIpc.Socket
 {
     internal class TcpSender : SenderBase
     {
-        private readonly Pool<string, ClientItem> _clientPool;
-        private readonly AsyncPool<string, AsyncClientItem> _asyncClientPool;
+        private readonly IPAddress _ip;
+        private readonly int _port;
+        private readonly Pool<ClientItem> _clientPool;
+        private readonly AsyncPool<AsyncClientItem> _asyncClientPool;
 
-        public TcpSender()
+        public TcpSender(IPAddress ip, int port)
         {
-            _clientPool = new Pool<string, ClientItem>(CreateClient, CheckClient);
-            _asyncClientPool = new AsyncPool<string, AsyncClientItem>(CreateAsyncClient, CheckAsyncClient);
+            _ip = ip;
+            _port = port;
+            _clientPool = new Pool<ClientItem>(CreateClient, CheckClient);
+            _asyncClientPool = new AsyncPool<AsyncClientItem>(CreateAsyncClient, CheckAsyncClient);
         }
 
-        public override byte[] Invoke(string identifier, byte[] requestBytes)
+        public override byte[] Invoke(byte[] requestBytes)
         {
-            using var invokeOwner = _clientPool.Rent(identifier);
+            using IRentedValue<ClientItem> invokeOwner = _clientPool.Rent();
             byte[] response = invokeOwner.Value.Invoke(requestBytes);
             return response;
         }
 
-        public override async Task<byte[]> InvokeAsync(string identifier, byte[] requestBytes)
+        public override async Task<byte[]> InvokeAsync(byte[] requestBytes)
         {
-            using var invokeOwner = await _asyncClientPool.RentAsync(identifier);
+            using IRentedValue<AsyncClientItem> invokeOwner = await _asyncClientPool.RentAsync();
             byte[] response = await invokeOwner.Value.InvokeAsync(requestBytes, CancellationToken.None);
             return response;
         }
 
-        private ClientItem CreateClient(string connectionString)
+        private ClientItem CreateClient()
         {
             try
             {
-                (IPAddress ip, int port) = connectionString.ToIpEndPoint();
                 TcpClient client = new();
-                client.Connect(ip, port);
+                client.Connect(_ip, _port);
                 return new ClientItem(client);
             }
             catch (Exception e)
@@ -64,13 +67,12 @@ namespace HandyIpc.Socket
             }
         }
 
-        private async Task<AsyncClientItem> CreateAsyncClient(string connectionString)
+        private async Task<AsyncClientItem> CreateAsyncClient()
         {
             try
             {
-                (IPAddress ip, int port) = connectionString.ToIpEndPoint();
                 TcpClient client = new();
-                await client.ConnectAsync(ip, port);
+                await client.ConnectAsync(_ip, _port);
                 return new AsyncClientItem(client);
             }
             catch (Exception e)

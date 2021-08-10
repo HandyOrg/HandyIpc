@@ -8,8 +8,8 @@ namespace HandyIpc.Core
 
         internal void SetLogger(ILogger logger) => Logger = logger;
 
-        public abstract byte[] Invoke(string identifier, byte[] requestBytes);
+        public abstract byte[] Invoke(byte[] requestBytes);
 
-        public abstract Task<byte[]> InvokeAsync(string identifier, byte[] requestBytes);
+        public abstract Task<byte[]> InvokeAsync(byte[] requestBytes);
     }
 }
