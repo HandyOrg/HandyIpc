@@ -23,17 +23,28 @@ namespace HandyIpc.Core
         private readonly ISerializer _serializer;
         private readonly byte[] _bytes;
 
+        private string? _name;
         private IReadOnlyList<Type>? _typeArguments;
         private string? _methodName;
         private IReadOnlyList<Type>? _methodTypeArguments;
         private IReadOnlyList<Type>? _argumentTypes;
         private IReadOnlyList<object?>? _arguments;
 
+        private (int start, int length) _nameRange;
         private (int start, int length) _typeArgumentsRange;
         private (int start, int length) _methodNameRange;
         private (int start, int length) _methodTypeArgumentsRange;
         private (int start, int length) _argumentTypesRange;
         private (int start, int length) _argumentsRange;
+
+        /// <summary>
+        /// Gets and sets the name of the interface.
+        /// </summary>
+        public string Name
+        {
+            get => _name ??= Deserialize<string>(_nameRange);
+            set => _name = value;
+        }
 
         /// <summary>
         /// Gets the generic argument that are defined on the interface.
@@ -108,12 +119,14 @@ namespace HandyIpc.Core
              * | Req Token                 |
              * | Version                   |
              * < Layout Table              >
+             * | NameLength                |
              * | TypeArgumentsLength       |
              * | MethodNameLength          |
              * | MethodTypeArgumentsLength |
              * | ArgumentTypesLength       |
              * | ArgumentsLength           |
              * < Body                      >
+             * | Name                      |
              * | TypeArguments             |
              * | MethodName                |
              * | MethodTypeArguments       |
@@ -121,6 +134,7 @@ namespace HandyIpc.Core
              * | Arguments                 |
              */
 
+            byte[] nameBytes = _serializer.Serialize(Name, typeof(string));
             byte[] typeArgumentsBytes = SerializeArray(TypeArguments);
             byte[] methodNameBytes = _serializer.Serialize(MethodName, typeof(string));
             byte[] methodTypeArgumentsBytes = SerializeArray(MethodTypeArguments);
@@ -134,11 +148,13 @@ namespace HandyIpc.Core
             {
                 ReqHeaderBytes,
                 Version,
+                BitConverter.GetBytes(nameBytes.Length),
                 BitConverter.GetBytes(typeArgumentsBytes.Length),
                 BitConverter.GetBytes(methodNameBytes.Length),
                 BitConverter.GetBytes(methodTypeArgumentsBytes.Length),
                 BitConverter.GetBytes(argumentTypesBytes.Length),
                 BitConverter.GetBytes(argumentsBytes.Length),
+                nameBytes,
                 typeArgumentsBytes,
                 methodNameBytes,
                 methodTypeArgumentsBytes,
@@ -159,35 +175,30 @@ namespace HandyIpc.Core
 
             // Skip header and version bytes.
             int offset = ReqHeaderBytes.Length + 1;
-            // Skip layout table, 5 is six field in bytes table.
-            int start = offset + sizeof(int) * 5;
+            // Skip layout table, 6 is six field in bytes table.
+            int start = offset + sizeof(int) * 6;
 
-            request = new Request(serializer, bytes);
-
-            int dataLength = BitConverter.ToInt32(bytes, offset);
-            offset += sizeof(int);
-            request._typeArgumentsRange = (start, dataLength);
-            start += dataLength;
-
-            dataLength = BitConverter.ToInt32(bytes, offset);
-            offset += sizeof(int);
-            request._methodNameRange = (start, dataLength);
-            start += dataLength;
-
-            dataLength = BitConverter.ToInt32(bytes, offset);
-            offset += sizeof(int);
-            request._methodTypeArgumentsRange = (start, dataLength);
-            start += dataLength;
-
-            dataLength = BitConverter.ToInt32(bytes, offset);
-            offset += sizeof(int);
-            request._argumentTypesRange = (start, dataLength);
-            start += dataLength;
-
-            dataLength = BitConverter.ToInt32(bytes, offset);
-            request._argumentsRange = (start, dataLength);
+            request = new Request(serializer, bytes)
+            {
+                _nameRange = GetRangeAndMoveNext(bytes, ref offset, ref start),
+                _typeArgumentsRange = GetRangeAndMoveNext(bytes, ref offset, ref start),
+                _methodNameRange = GetRangeAndMoveNext(bytes, ref offset, ref start),
+                _methodTypeArgumentsRange = GetRangeAndMoveNext(bytes, ref offset, ref start),
+                _argumentTypesRange = GetRangeAndMoveNext(bytes, ref offset, ref start),
+                _argumentsRange = GetRangeAndMoveNext(bytes, ref offset, ref start)
+            };
 
             return true;
+        }
+
+        private static (int start, int end) GetRangeAndMoveNext(byte[] bytes, ref int offset, ref int start)
+        {
+            int dataLength = BitConverter.ToInt32(bytes, offset);
+            offset += sizeof(int);
+            (int start, int end) range = (start, dataLength);
+            start += dataLength;
+
+            return range;
         }
 
         private byte[] SerializeArray<T>(IReadOnlyList<T> array, Func<int, Type>? typeProvider = null)

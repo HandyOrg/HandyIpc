@@ -26,7 +26,7 @@ namespace {@namespace}
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Reflection.Obfuscation(Exclude = true)]
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    public class {nameof(Dispatcher)}{className}{typeParameters} : IRequestDispatcher
+    public class {nameof(Dispatcher)}{className}{typeParameters} : IMethodDispatcher
 {@interface.TypeParameters.For(typeParameter => $@"
         {typeParameter.ToGenericConstraint()}
 ")}

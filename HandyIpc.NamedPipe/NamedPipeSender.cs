@@ -22,14 +22,14 @@ namespace HandyIpc.NamedPipe
 
         public override byte[] Invoke(byte[] requestBytes)
         {
-            using IRentedValue<ClientItem> invokeOwner = _clientPool.Rent();
+            using RentedValue<ClientItem> invokeOwner = _clientPool.Rent();
             byte[] response = invokeOwner.Value.Invoke(requestBytes);
             return response;
         }
 
         public override async Task<byte[]> InvokeAsync(byte[] requestBytes)
         {
-            using IRentedValue<AsyncClientItem> invokeOwner = await _asyncClientPool.RentAsync();
+            using RentedValue<AsyncClientItem> invokeOwner = await _asyncClientPool.RentAsync();
             byte[] response = await invokeOwner.Value.InvokeAsync(requestBytes, CancellationToken.None);
             return response;
         }

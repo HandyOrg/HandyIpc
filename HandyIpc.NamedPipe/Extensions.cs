@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO.Pipes;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,15 +15,16 @@ namespace HandyIpc.NamedPipe
         /// Uses the Named Pipe as the underlying communication technology for building the IPC hub instance.
         /// </summary>
         /// <param name="self">An factory instance.</param>
+        /// <param name="pipeName">The name of the named pipe.</param>
         /// <returns>The factory instance itself.</returns>
-        public static IHubBuilder UseNamedPipe(this IHubBuilder self, string pipeName)
+        public static IConfiguration UseNamedPipe(this IConfiguration self, string pipeName)
         {
             return self
                 .Use(() => new NamedPipeSender(pipeName))
                 .Use(() => new NamedPipeReceiver(pipeName));
         }
 
-        internal static byte[] ReadAllBytes(this PipeStream self)
+        internal static byte[] ReadAllBytes(this Stream self)
         {
             // TODO: Refactoring by System.IO.Pipelines, ArrayPool or stackalloc and so on.
             var collector = new List<byte[]>();
@@ -41,7 +42,7 @@ namespace HandyIpc.NamedPipe
             return ConcatBytesList(collector);
         }
 
-        internal static async Task<byte[]> ReadAllBytesAsync(this PipeStream self, CancellationToken token)
+        internal static async Task<byte[]> ReadAllBytesAsync(this Stream self, CancellationToken token)
         {
             // TODO: Refactoring by System.IO.Pipelines, ArrayPool or stackalloc and so on.
             var collector = new List<byte[]>();

@@ -15,7 +15,7 @@ namespace HandyIpc.Implementation
             _checkValue = checkValue ?? (_ => true);
         }
 
-        public IRentedValue<TValue> Rent()
+        public RentedValue<TValue> Rent()
         {
             TValue value = TakeOrCreateValue();
             return new RentedValue<TValue>(value, ReturnValue);

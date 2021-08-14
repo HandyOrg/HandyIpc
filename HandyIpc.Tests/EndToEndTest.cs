@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HandyIpc;
 using HandyIpcTests.Implementations;
 using HandyIpcTests.Interfaces;
 using HandyIpcTests.Mock;
@@ -19,7 +20,7 @@ namespace HandyIpcTests
         [Fact]
         public void TestIBuildInTypeTestInterface()
         {
-            var @interface = _fixture.ClientHub.Resolve<IBuildInTypeTest>();
+            var @interface = _fixture.Client.Resolve<IBuildInTypeTest>();
 
             Assert.Throws<TestException>(() => @interface.TestVoidWithParams());
 
@@ -95,7 +96,7 @@ namespace HandyIpcTests
         [Fact]
         public async Task TestIGenericTestInterface()
         {
-            var remote = _fixture.ClientHub.Resolve<IGenericTest<ClassWithNewCtor, string>>();
+            var remote = _fixture.Client.Resolve<IGenericTest<ClassWithNewCtor, string>>();
             var local = new GenericTest<ClassWithNewCtor, string>();
 
             {

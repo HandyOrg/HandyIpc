@@ -29,11 +29,13 @@ namespace {@namespace}
     {{
         private readonly SenderBase _sender;
         private readonly ISerializer _serializer;
+        private readonly string _key;
 
-        public {nameof(ClientProxy)}{className}(SenderBase sender, ISerializer serializer)
+        public {nameof(ClientProxy)}{className}(SenderBase sender, ISerializer serializer, string key)
         {{
             _sender = sender;
             _serializer = serializer;
+            _key = key;
         }}
 {methods.For(method =>
 {
@@ -61,6 +63,7 @@ namespace {@namespace}
 {Text($@"
             var request = new Request(_serializer, ""{methodId}"")
             {{
+                Name = _key,
 {@interface.TypeParameters.Select(type => $"typeof({type.ToFullDeclaration()})").Join(", ").If(text => $@"
                 TypeArguments = new[] {{ {text} }},
 ", RemoveLineIfEmpty)}

@@ -16,7 +16,7 @@ namespace HandyIpc.Implementation
             _checkValue = checkValue ?? (_ => Task.FromResult(true));
         }
 
-        public async Task<IRentedValue<TValue>> RentAsync()
+        public async Task<RentedValue<TValue>> RentAsync()
         {
             TValue value = await TakeOrCreateValue();
             return new RentedValue<TValue>(value, ReturnValue);

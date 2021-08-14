@@ -10,29 +10,33 @@ namespace HandyIpcTests
 {
     public sealed class EndToEndTestFixture : IDisposable
     {
-        private readonly IDisposable _buildInTypeTestServerToken;
-        private readonly IDisposable _genericTestServerToken;
+        private readonly IServer _server;
 
-        public IClientHub ClientHub { get; }
+        public IClient Client { get; }
 
         public EndToEndTestFixture()
         {
-            IHubBuilder builder = HandyIpcHub
-                .CreateBuilder()
+            IClientBuilder clientBuilder = HandyIpcBuilder.CreateClientBuilder();
+            clientBuilder
                 .UseJsonSerializer()
                 .UseTcp(IPAddress.Loopback, 10086);
+            Client = clientBuilder.Build();
 
-            IServerHub serverHub = builder.BuildServerHub();
-            _buildInTypeTestServerToken = serverHub.Register<IBuildInTypeTest, BuildInTypeTest>();
-            _genericTestServerToken = serverHub.Register(typeof(IGenericTest<,>), typeof(GenericTest<,>));
-
-            ClientHub = builder.BuildClientHub();
+            IServerBuilder serverBuilder = HandyIpcBuilder.CreateServerBuilder();
+            serverBuilder
+                .UseJsonSerializer()
+                .UseTcp(IPAddress.Loopback, 10086);
+            serverBuilder
+                .Register<IBuildInTypeTest, BuildInTypeTest>()
+                .Register(typeof(IGenericTest<,>), typeof(GenericTest<,>));
+            _server = serverBuilder.Build();
+            _server.Start();
         }
 
         public void Dispose()
         {
-            _buildInTypeTestServerToken.Dispose();
-            _genericTestServerToken.Dispose();
+            Client.Dispose();
+            _server.Dispose();
         }
     }
 }
