@@ -63,7 +63,7 @@ namespace {@namespace}
         .Select(item => item.ToTypeDeclaration())
         .Select((type, i) => $"({type})args[{i}]").Join(", ");
     bool isAwaitable = method.ReturnType.IsAwaitable();
-    bool isVoid = method.ReturnsVoid;
+    bool isVoid = method.ReturnsVoid || method.ReturnType.ReturnsVoidTask();
     bool containsTypeParameter = method.ReturnType is INamedTypeSymbol namedTypeSymbol &&
                                  EnumerateTypeTree(namedTypeSymbol)
                                      .Any(returnType => method
