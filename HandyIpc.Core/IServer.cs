@@ -1,16 +1,10 @@
-﻿using System;
+using System;
+using System.Threading.Tasks;
 
 namespace HandyIpc
 {
-    /// <summary>
-    /// It represents a IPC server instances.
-    /// </summary>
     public interface IServer : IDisposable
     {
-        bool IsRunning { get; }
-
-        void Start();
-
-        void Stop();
+        Task<IConnection> WaitForConnectionAsync();
     }
 }

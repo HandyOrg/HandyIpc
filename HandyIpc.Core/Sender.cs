@@ -1,44 +1,48 @@
 using System;
-using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
 using HandyIpc.Core;
 using HandyIpc.Implementation;
 
-namespace HandyIpc.NamedPipe
+namespace HandyIpc
 {
-    internal class NamedPipeSender : SenderBase
+    public sealed class Sender : IDisposable
     {
-        private readonly string _pipeName;
+        private readonly IClient _client;
         private readonly Pool<ClientItem> _clientPool;
         private readonly AsyncPool<AsyncClientItem> _asyncClientPool;
 
-        public NamedPipeSender(string pipeName)
+        internal Sender(IClient client)
         {
-            _pipeName = pipeName;
+            _client = client;
             _clientPool = new Pool<ClientItem>(CreateClient, CheckClient);
             _asyncClientPool = new AsyncPool<AsyncClientItem>(CreateAsyncClient, CheckAsyncClient);
         }
 
-        public override byte[] Invoke(byte[] requestBytes)
+        public byte[] Invoke(byte[] bytes)
         {
             using RentedValue<ClientItem> invokeOwner = _clientPool.Rent();
-            byte[] response = invokeOwner.Value.Invoke(requestBytes);
+            byte[] response = invokeOwner.Value.Invoke(bytes);
             return response;
         }
 
-        public override async Task<byte[]> InvokeAsync(byte[] requestBytes)
+        public async Task<byte[]> InvokeAsync(byte[] bytes)
         {
             using RentedValue<AsyncClientItem> invokeOwner = await _asyncClientPool.RentAsync();
-            byte[] response = await invokeOwner.Value.InvokeAsync(requestBytes, CancellationToken.None);
+            byte[] response = await invokeOwner.Value.InvokeAsync(bytes, CancellationToken.None);
             return response;
         }
 
         private ClientItem CreateClient()
         {
-            var stream = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut);
-            stream.Connect();
-            return new ClientItem(stream);
+            IConnection connection = _client.Connect();
+            return new ClientItem(connection);
+        }
+
+        private async Task<AsyncClientItem> CreateAsyncClient()
+        {
+            IConnection connection = await _client.ConnectAsync();
+            return new AsyncClientItem(connection);
         }
 
         private static bool CheckClient(ClientItem item)
@@ -53,13 +57,6 @@ namespace HandyIpc.NamedPipe
                 item.Dispose();
                 return false;
             }
-        }
-
-        private async Task<AsyncClientItem> CreateAsyncClient()
-        {
-            var stream = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut);
-            await stream.ConnectAsync();
-            return new AsyncClientItem(stream);
         }
 
         private static async Task<bool> CheckAsyncClient(AsyncClientItem item)
@@ -78,51 +75,54 @@ namespace HandyIpc.NamedPipe
 
         private sealed class ClientItem : IDisposable
         {
-            private readonly NamedPipeClientStream _stream;
+            private readonly IConnection _connection;
 
-            public ClientItem(NamedPipeClientStream stream) => _stream = stream;
+            public ClientItem(IConnection connection) => _connection = connection;
 
             public byte[] Invoke(byte[] input)
             {
                 try
                 {
-                    _stream.Write(input, 0, input.Length);
-                    _stream.Flush();
-                    return _stream.ReadAllBytes();
+                    _connection.Write(input);
+                    return _connection.Read();
                 }
                 catch
                 {
-                    _stream.Dispose();
+                    _connection.Dispose();
                     throw;
                 }
             }
 
-            public void Dispose() => _stream.Dispose();
+            public void Dispose() => _connection.Dispose();
         }
 
         private sealed class AsyncClientItem : IDisposable
         {
-            private readonly NamedPipeClientStream _stream;
+            private readonly IConnection _connection;
 
-            public AsyncClientItem(NamedPipeClientStream stream) => _stream = stream;
+            public AsyncClientItem(IConnection connection) => _connection = connection;
 
             public async Task<byte[]> InvokeAsync(byte[] input, CancellationToken token)
             {
                 try
                 {
-                    token.ThrowIfCancellationRequested();
-                    await _stream.WriteAsync(input, 0, input.Length, token);
-                    await _stream.FlushAsync(token);
-                    return await _stream.ReadAllBytesAsync(token);
+                    await _connection.WriteAsync(input, token);
+                    return await _connection.ReadAsync(token);
                 }
                 catch
                 {
-                    _stream.Dispose();
+                    _connection.Dispose();
                     throw;
                 }
             }
 
-            public void Dispose() => _stream.Dispose();
+            public void Dispose() => _connection.Dispose();
+        }
+
+        public void Dispose()
+        {
+            _clientPool.Dispose();
+            _asyncClientPool.Dispose();
         }
     }
 }

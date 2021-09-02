@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using HandyIpc;
+using HandyIpc.NamedPipe;
 using HandyIpc.Serializer.Json;
 using HandyIpc.Socket;
 using HandyIpcTests.Implementations;
@@ -10,25 +11,29 @@ namespace HandyIpcTests
 {
     public sealed class EndToEndTestFixture : IDisposable
     {
-        private readonly IServer _server;
+        private readonly IContainerServer _server;
 
-        public IClient Client { get; }
+        public IContainerClient Client { get; }
 
         public EndToEndTestFixture()
         {
-            IClientBuilder clientBuilder = HandyIpcBuilder.CreateClientBuilder();
+            ContainerClientBuilder clientBuilder = new();
             clientBuilder
-                .UseJsonSerializer()
-                .UseTcp(IPAddress.Loopback, 10086);
+                .UseTcp(IPAddress.Loopback, 10086)
+                //.UseNamedPipe("ec57043f-465c-4766-ae49-b9b1ee9ac571")
+                .UseJsonSerializer();
             Client = clientBuilder.Build();
 
-            IServerBuilder serverBuilder = HandyIpcBuilder.CreateServerBuilder();
+            ContainerServerBuilder serverBuilder = new();
             serverBuilder
-                .UseJsonSerializer()
-                .UseTcp(IPAddress.Loopback, 10086);
+                .UseTcp(IPAddress.Loopback, 10086)
+                //.UseNamedPipe("ec57043f-465c-4766-ae49-b9b1ee9ac571")
+                .UseJsonSerializer();
+
             serverBuilder
                 .Register<IBuildInTypeTest, BuildInTypeTest>()
                 .Register(typeof(IGenericTest<,>), typeof(GenericTest<,>));
+
             _server = serverBuilder.Build();
             _server.Start();
         }
@@ -36,6 +41,8 @@ namespace HandyIpcTests
         public void Dispose()
         {
             Client.Dispose();
+
+            _server.Stop();
             _server.Dispose();
         }
     }

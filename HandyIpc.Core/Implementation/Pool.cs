@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Concurrent;
 
 namespace HandyIpc.Implementation
 {
-    public class Pool<TValue>
+    internal sealed class Pool<TValue> : PoolBase<TValue> where TValue : IDisposable
     {
         private readonly Func<TValue> _factory;
         private readonly Func<TValue, bool> _checkValue;
-        private readonly ConcurrentBag<TValue> _cache = new();
 
         public Pool(Func<TValue> factory, Func<TValue, bool>? checkValue = null)
         {
@@ -17,19 +15,21 @@ namespace HandyIpc.Implementation
 
         public RentedValue<TValue> Rent()
         {
+            CheckDisposed("Pool");
+
             TValue value = TakeOrCreateValue();
             return new RentedValue<TValue>(value, ReturnValue);
 
             // Local method
-            void ReturnValue(TValue rentedValue) => _cache.Add(rentedValue);
+            void ReturnValue(TValue rentedValue) => Cache.Add(rentedValue);
         }
 
         private TValue TakeOrCreateValue()
         {
             TValue result;
-            while (!_cache.TryTake(out result) || !_checkValue(result))
+            while (!Cache.TryTake(out result) || !_checkValue(result))
             {
-                _cache.Add(_factory());
+                Cache.Add(_factory());
             }
 
             return result;

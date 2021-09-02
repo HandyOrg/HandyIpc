@@ -16,6 +16,7 @@ namespace HandyIpc.Generator
 namespace {@namespace}
 {{
     using System;
+    using HandyIpc;
     using HandyIpc.Core;
 
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -27,11 +28,11 @@ namespace {@namespace}
         {typeParameter.ToGenericConstraint()}
 ")}
     {{
-        private readonly SenderBase _sender;
+        private readonly Sender _sender;
         private readonly ISerializer _serializer;
         private readonly string _key;
 
-        public {nameof(ClientProxy)}{className}(SenderBase sender, ISerializer serializer, string key)
+        public {nameof(ClientProxy)}{className}(Sender sender, ISerializer serializer, string key)
         {{
             _sender = sender;
             _serializer = serializer;

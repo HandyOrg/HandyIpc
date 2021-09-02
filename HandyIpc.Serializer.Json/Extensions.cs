@@ -13,7 +13,7 @@ namespace HandyIpc.Serializer.Json
             TypeNameHandling = TypeNameHandling.Auto,
         };
 
-        public static IConfiguration UseJsonSerializer(this IConfiguration self)
+        public static IConfiguration<T> UseJsonSerializer<T>(this IConfiguration<T> self) where T : IConfiguration<T>
         {
             return self.Use(() => new JsonSerializer());
         }

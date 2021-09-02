@@ -5,39 +5,8 @@ using System.Text;
 
 namespace HandyIpc
 {
-    public static class Extensions
+    internal static class Extensions
     {
-        public static IServerRegistry Register<TInterface, TImpl>(this IServerRegistry registry, string? key = null)
-            where TInterface : class
-            where TImpl : TInterface, new()
-        {
-            return registry.Register<TInterface>(() => new TImpl(), key);
-        }
-
-        public static IServerRegistry Register<TInterface>(this IServerRegistry registry, Func<TInterface> factory, string? key = null)
-            where TInterface : class
-        {
-            key ??= typeof(TInterface).GetDefaultKey();
-            return registry.Register(typeof(TInterface), factory, key);
-        }
-
-        public static IServerRegistry Register(this IServerRegistry registry, Type interfaceType, Type classType, string? key = null)
-        {
-            key ??= interfaceType.GetDefaultKey();
-            return classType.ContainsGenericParameters
-                ? registry.Register(interfaceType, GenericFactory, key)
-                : registry.Register(interfaceType, () => Activator.CreateInstance(classType), key);
-
-            // Local Method
-            object GenericFactory(Type[] genericTypes)
-            {
-                var constructedClassType = classType.MakeGenericType(genericTypes);
-                return Activator.CreateInstance(constructedClassType);
-            }
-        }
-
-        public static T Resolve<T>(this IClient client) => client.Resolve<T>(typeof(T).GetDefaultKey());
-
         internal static string GetDefaultKey(this Type interfaceType)
         {
             if (interfaceType.IsGenericType)

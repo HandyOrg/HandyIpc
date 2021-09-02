@@ -4,24 +4,50 @@ using HandyIpc.Core;
 
 namespace HandyIpc
 {
-    internal class ServerBuilder : Configuration, IServerBuilder
+    public class ContainerServerBuilder : IServerConfiguration, IContainerRegistry
     {
         private readonly List<(string key, Type type, Func<object> factory)> _interfaceMap = new();
         private readonly List<(string key, Type type, Func<Type[], object> factory)> _genericInterfaceMap = new();
 
-        public IServerRegistry Register(Type interfaceType, Func<object> factory, string key)
+        private Func<IServer> _serverFactory = () => throw new InvalidOperationException(
+           $"Must invoke the {nameof(IServerConfiguration)}.Use(Func<{nameof(IServer)}> factory) method " +
+           "to register a factory before invoking the Build method.");
+        private Func<ISerializer> _serializerFactory = () => throw new InvalidOperationException(
+           $"Must invoke the {nameof(IServerConfiguration)}.Use(Func<{nameof(ISerializer)}> factory) method " +
+           "to register a factory before invoking the Build method.");
+        private Func<ILogger> _loggerFactory = () => new DebugLogger();
+
+        public IServerConfiguration Use(Func<ISerializer> factory)
+        {
+            _serializerFactory = factory;
+            return this;
+        }
+
+        public IServerConfiguration Use(Func<ILogger> factory)
+        {
+            _loggerFactory = factory;
+            return this;
+        }
+
+        public IServerConfiguration Use(Func<IServer> factory)
+        {
+            _serverFactory = factory;
+            return this;
+        }
+
+        public IContainerRegistry Register(Type interfaceType, Func<object> factory, string key)
         {
             _interfaceMap.Add((key, interfaceType, factory));
             return this;
         }
 
-        public IServerRegistry Register(Type interfaceType, Func<Type[], object> factory, string key)
+        public IContainerRegistry Register(Type interfaceType, Func<Type[], object> factory, string key)
         {
             _genericInterfaceMap.Add((key, interfaceType, factory));
             return this;
         }
 
-        public IServer Build()
+        public IContainerServer Build()
         {
             Dictionary<string, Middleware> map = new();
             foreach (var (key, type, factory) in _interfaceMap)
@@ -39,20 +65,13 @@ namespace HandyIpc
                 map.Add(key, methodDispatcher);
             }
 
-            Middleware middleware = BuildBasicMiddleware().Then(Middlewares.GetInterfaceMiddleware(map));
-
-            ReceiverBase receiver = ReceiverFactory();
-            ILogger logger = LoggerFactory();
-            receiver.SetLogger(logger);
-            return new Server(receiver, middleware, SerializerFactory(), logger);
-        }
-
-        private static Middleware BuildBasicMiddleware()
-        {
-            return Middlewares.Compose(
+            Middleware middleware = Middlewares.Compose(
                 Middlewares.Heartbeat,
                 Middlewares.ExceptionHandler,
-                Middlewares.RequestParser);
+                Middlewares.RequestParser,
+                Middlewares.GetInterfaceMiddleware(map));
+
+            return new ContainerServer(_serverFactory(), middleware, _serializerFactory(), _loggerFactory());
         }
 
         private static IMethodDispatcher CreateDispatcher(Type interfaceType, Func<object> factory)
