@@ -73,6 +73,12 @@ namespace HandyIpc
             }
         }
 
+        public void Dispose()
+        {
+            _clientPool.Dispose();
+            _asyncClientPool.Dispose();
+        }
+
         private sealed class ClientItem : IDisposable
         {
             private readonly IConnection _connection;
@@ -117,12 +123,6 @@ namespace HandyIpc
             }
 
             public void Dispose() => _connection.Dispose();
-        }
-
-        public void Dispose()
-        {
-            _clientPool.Dispose();
-            _asyncClientPool.Dispose();
         }
     }
 }

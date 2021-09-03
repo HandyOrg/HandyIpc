@@ -9,7 +9,8 @@ namespace HandyIpc
 {
     internal static class StreamExtensions
     {
-        private const int BatchBufferSize = 8 * 1024;
+        // From the initial test results, it is faster than 8 * 1024.
+        private const int BatchBufferSize = 4 * 1024;
 
         internal static byte[] ReadAllBytes(this Stream self)
         {

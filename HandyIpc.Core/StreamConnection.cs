@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,11 +13,13 @@ namespace HandyIpc
         public void Write(byte[] bytes)
         {
             _stream.Write(bytes, 0, bytes.Length);
+            _stream.Flush();
         }
 
-        public Task WriteAsync(byte[] bytes, CancellationToken token)
+        public async Task WriteAsync(byte[] bytes, CancellationToken token)
         {
-            return _stream.WriteAsync(bytes, 0, bytes.Length, token);
+            await _stream.WriteAsync(bytes, 0, bytes.Length, token);
+            await _stream.FlushAsync(token);
         }
 
         public byte[] Read()
