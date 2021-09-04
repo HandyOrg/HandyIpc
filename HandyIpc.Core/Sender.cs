@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using HandyIpc.Core;
-using HandyIpc.Implementation;
 
 namespace HandyIpc
 {

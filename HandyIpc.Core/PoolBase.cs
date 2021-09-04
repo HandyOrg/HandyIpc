@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace HandyIpc.Implementation
+namespace HandyIpc
 {
     internal abstract class PoolBase<TValue> : IDisposable where TValue : IDisposable
     {

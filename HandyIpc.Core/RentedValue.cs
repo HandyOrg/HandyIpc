@@ -1,6 +1,6 @@
 using System;
 
-namespace HandyIpc.Implementation
+namespace HandyIpc
 {
     internal readonly struct RentedValue<TValue> : IDisposable
     {
