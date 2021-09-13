@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandyIpc.NamedPipe", "Handy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandyIpc.Serializer.Json", "HandyIpc.Serializer.Json\HandyIpc.Serializer.Json.csproj", "{2EC2B922-E104-4215-9D09-D6644A210078}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandyIpc.Core", "HandyIpc.Core\HandyIpc.Core.csproj", "{A4337D88-29BA-46E6-8154-022A727F03C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandyIpc", "HandyIpc\HandyIpc.csproj", "{A4337D88-29BA-46E6-8154-022A727F03C7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandyIpc.Tests", "HandyIpc.Tests\HandyIpc.Tests.csproj", "{B0742748-4E2A-4E76-A190-191BA6F2759B}"
 EndProject
@@ -25,7 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6D670D55
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandyIpc.Generator", "HandyIpc.Generator\HandyIpc.Generator.csproj", "{0A3DCD76-B5BC-4159-8C52-BD6D26619E39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandyIpc.Socket", "HandyIpc.Socket\HandyIpc.Socket.csproj", "{30E8CA5E-E065-4B2A-8BE2-9967CD7E93FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandyIpc.Socket", "HandyIpc.Socket\HandyIpc.Socket.csproj", "{30E8CA5E-E065-4B2A-8BE2-9967CD7E93FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

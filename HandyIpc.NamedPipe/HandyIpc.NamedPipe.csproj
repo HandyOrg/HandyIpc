@@ -3,16 +3,16 @@
   <PropertyGroup>
     <AssemblyName>HandyIpc.NamedPipe</AssemblyName>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.1.1</Version>
+    <Version>0.5.0</Version>
     <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Condition="'$(Configuration)'=='Release'" Include="HandyIpc.Core" Version="0.3.*" />
+    <PackageReference Condition="'$(Configuration)'=='Release'" Include="HandyIpc" Version="0.5.*" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Condition="'$(Configuration)'=='Debug'" Include="..\HandyIpc.Core\HandyIpc.Core.csproj" />
+    <ProjectReference Condition="'$(Configuration)'=='Debug'" Include="..\HandyIpc\HandyIpc.csproj" />
   </ItemGroup>
 
 </Project>
