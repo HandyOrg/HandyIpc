@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     public interface IClient
     {

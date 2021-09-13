@@ -1,6 +1,7 @@
-﻿using System.IO.Pipes;
+using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
+using HandyIpc.Core;
 
 namespace HandyIpc.NamedPipe
 {

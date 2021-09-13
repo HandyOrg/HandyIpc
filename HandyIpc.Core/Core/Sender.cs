@@ -1,9 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using HandyIpc.Core;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     public sealed class Sender : IDisposable
     {

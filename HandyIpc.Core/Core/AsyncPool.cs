@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     internal sealed class AsyncPool<TValue> : PoolBase<TValue> where TValue : IDisposable
     {

@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     public interface IConnection : IDisposable
     {

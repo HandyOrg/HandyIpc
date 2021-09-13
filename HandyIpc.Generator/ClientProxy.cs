@@ -16,7 +16,6 @@ namespace HandyIpc.Generator
 namespace {@namespace}
 {{
     using System;
-    using HandyIpc;
     using HandyIpc.Core;
 
     [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

@@ -2,7 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     public sealed class StreamConnection : IConnection
     {

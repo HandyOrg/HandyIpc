@@ -1,6 +1,6 @@
 using System;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     internal sealed class Pool<TValue> : PoolBase<TValue> where TValue : IDisposable
     {

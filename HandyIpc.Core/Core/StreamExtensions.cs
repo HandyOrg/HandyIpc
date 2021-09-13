@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HandyIpc
+namespace HandyIpc.Core
 {
     internal static class StreamExtensions
     {

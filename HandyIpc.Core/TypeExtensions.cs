@@ -5,7 +5,7 @@ using System.Text;
 
 namespace HandyIpc
 {
-    internal static class Extensions
+    internal static class TypeExtensions
     {
         internal static string GetDefaultKey(this Type interfaceType)
         {
