@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -13,7 +13,7 @@ namespace HandyIpc.Serializer.Json
             TypeNameHandling = TypeNameHandling.Auto,
         };
 
-        public static IHubBuilder<TRmi, THub> UseJsonSerializer<TRmi, THub>(this IHubBuilder<TRmi, THub> self)
+        public static IConfiguration<T> UseJsonSerializer<T>(this IConfiguration<T> self) where T : IConfiguration<T>
         {
             return self.Use(() => new JsonSerializer());
         }

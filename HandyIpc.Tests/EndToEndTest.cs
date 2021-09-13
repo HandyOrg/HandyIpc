@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using HandyIpc;
-using HandyIpc.NamedPipe;
-using HandyIpc.Serializer.Json;
-using HandyIpc.Socket;
 using HandyIpcTests.Implementations;
 using HandyIpcTests.Interfaces;
 using HandyIpcTests.Mock;
@@ -24,7 +20,7 @@ namespace HandyIpcTests
         [Fact]
         public void TestIBuildInTypeTestInterface()
         {
-            var @interface = _fixture.ClientHub.Of<IBuildInTypeTest>("{763EA8B3-79AB-413B-9B41-3290755EE7F0}");
+            var @interface = _fixture.Client.Resolve<IBuildInTypeTest>();
 
             Assert.Throws<TestException>(() => @interface.TestVoidWithParams());
 
@@ -98,22 +94,9 @@ namespace HandyIpcTests
         }
 
         [Fact]
-        public void TestInvokeWithoutAccessToken()
-        {
-            var @interface = HandyIpcHub
-                .CreateClientBuilder()
-                .UseJsonSerializer()
-                .UseTcp()
-                .Build()
-                .Of<IBuildInTypeTest>("error_access_token");
-
-            Assert.Throws<AuthenticationException>(() => @interface.TestByte(0b01));
-        }
-
-        [Fact]
         public async Task TestIGenericTestInterface()
         {
-            var remote = _fixture.ClientHub.Of<IGenericTest<ClassWithNewCtor, string>>();
+            var remote = _fixture.Client.Resolve<IGenericTest<ClassWithNewCtor, string>>();
             var local = new GenericTest<ClassWithNewCtor, string>();
 
             {

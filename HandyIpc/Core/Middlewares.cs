@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 
 namespace HandyIpc.Core
@@ -51,26 +50,24 @@ namespace HandyIpc.Core
             }
         }
 
-        public static Middleware GetAuthenticator(string accessToken)
+        public static Middleware GetInterfaceMiddleware(IReadOnlyDictionary<string, Middleware> map)
         {
             return async (ctx, next) =>
             {
                 Request request = CheckRequest(ctx);
 
-                if (string.Equals(request.AccessToken, accessToken, StringComparison.Ordinal))
+                if (map.TryGetValue(request.Name, out Middleware middleware))
                 {
-                    await next();
+                    await middleware(ctx, next);
                 }
                 else
                 {
-                    var exception = new AuthenticationException($"Invalid accessToken: '{request.AccessToken}'.");
-                    ctx.Logger.Warning($"Failed to authenticate this request (token: {request.AccessToken}).", exception);
-                    ctx.Output = Response.Error(exception, ctx.Serializer);
+                    throw new NotSupportedException("Unknown interface invoked.");
                 }
             };
         }
 
-        public static Middleware GetGenericDispatcher(Func<Type[], IRequestDispatcher> getProxy)
+        public static Middleware GetMethodDispatcher(Func<Type[], IMethodDispatcher> getProxy)
         {
             return async (ctx, next) =>
             {
@@ -78,7 +75,7 @@ namespace HandyIpc.Core
 
                 if (request.TypeArguments.Any())
                 {
-                    IRequestDispatcher proxy = getProxy(request.TypeArguments.ToArray());
+                    IMethodDispatcher proxy = getProxy(request.TypeArguments.ToArray());
                     await proxy.Dispatch(ctx, next);
                 }
                 else

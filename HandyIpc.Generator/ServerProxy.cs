@@ -39,7 +39,7 @@ namespace {@namespace}
         .Zip(parameterNames, (type, parameter) => $"{type} {parameter}")
         .Join(", ");
     bool isAwaitable = method.ReturnType.IsAwaitable();
-    bool isVoid = method.ReturnType.IsVoid();
+    bool isVoid = method.ReturnsVoid || method.ReturnType.ReturnsVoidTask();
 
     return $@"
 

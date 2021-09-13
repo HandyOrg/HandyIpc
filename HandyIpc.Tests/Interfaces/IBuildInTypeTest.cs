@@ -2,7 +2,7 @@ using HandyIpc;
 
 namespace HandyIpcTests.Interfaces
 {
-    [IpcContract(Identifier = "127.0.0.1:10086")]
+    [IpcContract]
     public interface IBuildInTypeTest
     {
         void TestVoidWithParams();

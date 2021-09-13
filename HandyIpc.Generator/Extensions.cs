@@ -86,10 +86,9 @@ namespace HandyIpc.Generator
             return self.EnumerateSelfAndBaseType().Any(item => item.Equals(other, SymbolEqualityComparer.Default));
         }
 
-        public static bool IsVoid(this ITypeSymbol symbol)
+        public static bool ReturnsVoidTask(this ITypeSymbol symbol)
         {
-            return string.Equals(symbol.Name, "Void", StringComparison.OrdinalIgnoreCase) ||
-                   symbol.Equals(TaskTypeSymbol, SymbolEqualityComparer.Default);
+            return symbol.Equals(TaskTypeSymbol, SymbolEqualityComparer.Default);
         }
 
         public static bool IsAwaitable(this ITypeSymbol type)

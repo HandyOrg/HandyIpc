@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using HandyIpc;
 using HandyIpc.NamedPipe;
 using HandyIpc.Serializer.Json;
@@ -10,32 +11,39 @@ namespace HandyIpcTests
 {
     public sealed class EndToEndTestFixture : IDisposable
     {
-        private readonly IDisposable _buildInTypeTestServerToken;
-        private readonly IDisposable _genericTestServerToken;
+        private readonly IContainerServer _server;
 
-        public IClientHub ClientHub { get; }
+        public IContainerClient Client { get; }
 
         public EndToEndTestFixture()
         {
-            var server = HandyIpcHub
-                .CreateServerBuilder()
-                .UseJsonSerializer()
-                .UseTcp()
-                .Build();
-            _buildInTypeTestServerToken = server.Start<IBuildInTypeTest, BuildInTypeTest>("{763EA8B3-79AB-413B-9B41-3290755EE7F0}");
-            _genericTestServerToken = server.Start(typeof(IGenericTest<,>), typeof(GenericTest<,>));
+            ContainerClientBuilder clientBuilder = new();
+            clientBuilder
+                //.UseTcp(IPAddress.Loopback, 10086)
+                .UseNamedPipe("ec57043f-465c-4766-ae49-b9b1ee9ac571")
+                .UseJsonSerializer();
+            Client = clientBuilder.Build();
 
-            ClientHub = HandyIpcHub
-                .CreateClientBuilder()
-                .UseJsonSerializer()
-                .UseTcp()
-                .Build();
+            ContainerServerBuilder serverBuilder = new();
+            serverBuilder
+                //.UseTcp(IPAddress.Loopback, 10086)
+                .UseNamedPipe("ec57043f-465c-4766-ae49-b9b1ee9ac571")
+                .UseJsonSerializer();
+
+            serverBuilder
+                .Register<IBuildInTypeTest, BuildInTypeTest>()
+                .Register(typeof(IGenericTest<,>), typeof(GenericTest<,>));
+
+            _server = serverBuilder.Build();
+            _server.Start();
         }
 
         public void Dispose()
         {
-            _buildInTypeTestServerToken.Dispose();
-            _genericTestServerToken.Dispose();
+            Client.Dispose();
+
+            _server.Stop();
+            _server.Dispose();
         }
     }
 }

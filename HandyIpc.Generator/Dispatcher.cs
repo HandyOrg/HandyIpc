@@ -26,7 +26,7 @@ namespace {@namespace}
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Reflection.Obfuscation(Exclude = true)]
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    public class {nameof(Dispatcher)}{className}{typeParameters} : IRequestDispatcher
+    public class {nameof(Dispatcher)}{className}{typeParameters} : IMethodDispatcher
 {@interface.TypeParameters.For(typeParameter => $@"
         {typeParameter.ToGenericConstraint()}
 ")}
@@ -63,7 +63,7 @@ namespace {@namespace}
         .Select(item => item.ToTypeDeclaration())
         .Select((type, i) => $"({type})args[{i}]").Join(", ");
     bool isAwaitable = method.ReturnType.IsAwaitable();
-    bool isVoid = method.ReturnType.IsVoid();
+    bool isVoid = method.ReturnsVoid || method.ReturnType.ReturnsVoidTask();
     bool containsTypeParameter = method.ReturnType is INamedTypeSymbol namedTypeSymbol &&
                                  EnumerateTypeTree(namedTypeSymbol)
                                      .Any(returnType => method

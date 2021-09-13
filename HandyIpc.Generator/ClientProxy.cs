@@ -27,17 +27,15 @@ namespace {@namespace}
         {typeParameter.ToGenericConstraint()}
 ")}
     {{
-        private readonly RmiClientBase _client;
+        private readonly Sender _sender;
         private readonly ISerializer _serializer;
-        private readonly string _identifier;
-        private readonly string _accessToken;
+        private readonly string _key;
 
-        public {nameof(ClientProxy)}{className}(RmiClientBase client, ISerializer serializer, string identifier, string accessToken)
+        public {nameof(ClientProxy)}{className}(Sender sender, ISerializer serializer, string key)
         {{
-            _client = client;
+            _sender = sender;
             _serializer = serializer;
-            _identifier = identifier;
-            _accessToken = accessToken;
+            _key = key;
         }}
 {methods.For(method =>
 {
@@ -55,7 +53,7 @@ namespace {@namespace}
         .Zip(parameterNames, (type, parameter) => $"{type} {parameter}")
         .Join(", ");
     bool isAwaitable = method.ReturnType.IsAwaitable();
-    bool isVoid = method.ReturnType.IsVoid();
+    bool isVoid = method.ReturnsVoid || method.ReturnType.ReturnsVoidTask();
 
     return $@"
 
@@ -65,7 +63,7 @@ namespace {@namespace}
 {Text($@"
             var request = new Request(_serializer, ""{methodId}"")
             {{
-                AccessToken = _accessToken ?? string.Empty,
+                Name = _key,
 {@interface.TypeParameters.Select(type => $"typeof({type.ToFullDeclaration()})").Join(", ").If(text => $@"
                 TypeArguments = new[] {{ {text} }},
 ", RemoveLineIfEmpty)}
@@ -81,9 +79,9 @@ namespace {@namespace}
             }};
 ")}
 {Text(isAwaitable ? @"
-            var responseBytes = await _client.InvokeAsync(_identifier, request.ToBytes());
+            var responseBytes = await _sender.InvokeAsync(request.ToBytes());
 " : @"
-            var responseBytes = _client.Invoke(_identifier, request.ToBytes());
+            var responseBytes = _sender.Invoke(request.ToBytes());
 "
 )}
 {Text(isAwaitable ? $@"
