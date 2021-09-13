@@ -19,15 +19,15 @@ namespace HandyIpcTests
         {
             ContainerClientBuilder clientBuilder = new();
             clientBuilder
-                .UseTcp(IPAddress.Loopback, 10086)
-                //.UseNamedPipe("ec57043f-465c-4766-ae49-b9b1ee9ac571")
+                //.UseTcp(IPAddress.Loopback, 10086)
+                .UseNamedPipe("ec57043f-465c-4766-ae49-b9b1ee9ac571")
                 .UseJsonSerializer();
             Client = clientBuilder.Build();
 
             ContainerServerBuilder serverBuilder = new();
             serverBuilder
-                .UseTcp(IPAddress.Loopback, 10086)
-                //.UseNamedPipe("ec57043f-465c-4766-ae49-b9b1ee9ac571")
+                //.UseTcp(IPAddress.Loopback, 10086)
+                .UseNamedPipe("ec57043f-465c-4766-ae49-b9b1ee9ac571")
                 .UseJsonSerializer();
 
             serverBuilder
