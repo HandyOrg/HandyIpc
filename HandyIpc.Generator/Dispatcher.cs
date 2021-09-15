@@ -83,7 +83,7 @@ namespace {@namespace}
                     var obj = constructedMethodInfo.Invoke(_instance, {(method.Parameters.Any() ? "args" : "new object[0]")});
 {Text(isVoid ? $@"
                     {(isAwaitable ? "await (Task)obj;" : null)}
-                    ctx.Output = Signals.Unit;
+                    ctx.Output = Response.Unit;
 " : $@"
 {Text(containsTypeParameter ? @"
                     var result = await GeneratorHelper.UnpackTask(constructedMethodInfo.ReturnType, obj);
@@ -106,7 +106,7 @@ namespace {@namespace}
 ", RemoveLineIfEmpty)}
 {Text(isVoid ? $@"
                     {(isAwaitable ? "await " : null)}_instance.{method.Name}({arguments});
-                    ctx.Output = Signals.Unit;
+                    ctx.Output = Response.Unit;
 " : $@"
                     var result = {(isAwaitable ? "await " : null)}_instance.{method.Name}({arguments});
                     ctx.Output = Response.Value(result, typeof({method.ReturnType.ToFullDeclaration()}), ctx.Serializer);

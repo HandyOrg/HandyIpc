@@ -6,6 +6,8 @@ namespace HandyIpcTests.Implementations
     {
         public void TestVoidWithParams() => throw new TestException();
 
+        public void TestDoNothing() { }
+
         public string TestVoidWithBasicTypeParams(
             float @float,
             double @double,

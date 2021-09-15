@@ -7,6 +7,8 @@ namespace HandyIpcTests.Interfaces
     {
         void TestVoidWithParams();
 
+        void TestDoNothing();
+
         string TestVoidWithBasicTypeParams(
             float @float,
             double @double,

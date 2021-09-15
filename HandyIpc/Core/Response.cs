@@ -14,6 +14,15 @@ namespace HandyIpc.Core
         private static readonly byte[] ResponseValueFlag = { 1 };
         private static readonly byte[] ResponseErrorFlag = { 0 };
 
+        public static byte[] Unit { get; } = new[]
+        {
+            ResHeaderBytes,
+            Version,
+            ResponseValueFlag,
+            BitConverter.GetBytes(Signals.Unit.Length),
+            Signals.Unit,
+        }.ConcatBytes();
+
         public static byte[] Value(object? value, Type? type, ISerializer serializer)
         {
             List<byte[]> result = new()

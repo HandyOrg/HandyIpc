@@ -24,6 +24,8 @@ namespace HandyIpcTests
 
             Assert.Throws<TestException>(() => @interface.TestVoidWithParams());
 
+            @interface.TestDoNothing();
+
             foreach (var item in BuildInType.Generate())
             {
                 string result = @interface.TestVoidWithBasicTypeParams(
