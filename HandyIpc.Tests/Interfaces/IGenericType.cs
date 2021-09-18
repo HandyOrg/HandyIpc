@@ -5,7 +5,7 @@ using HandyIpc;
 namespace HandyIpcTests.Interfaces
 {
     [IpcContract]
-    public interface IGenericTest<T1, in T2>
+    public interface IGenericType<T1, in T2>
         where T1 : class, new()
     {
         T1 ReturnOriginalValue(T1 value);

@@ -3,7 +3,7 @@ using HandyIpc;
 namespace HandyIpcTests.Interfaces
 {
     [IpcContract]
-    public interface IBuildInTypeTest
+    public interface IBuildInType
     {
         void TestVoidWithParams();
 

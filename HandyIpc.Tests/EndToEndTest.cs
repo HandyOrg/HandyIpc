@@ -8,6 +8,7 @@ using HandyIpcTests.Interfaces;
 using HandyIpcTests.Mock;
 using Xunit;
 using static HandyIpcTests.Mock.MockDataGenerator;
+using BuildInType = HandyIpcTests.Mock.BuildInType;
 
 namespace HandyIpcTests
 {
@@ -20,7 +21,7 @@ namespace HandyIpcTests
         [Fact]
         public void TestIBuildInTypeTestInterface()
         {
-            var @interface = _fixture.Client.Resolve<IBuildInTypeTest>();
+            var @interface = _fixture.Client.Resolve<IBuildInType>();
 
             Assert.Throws<TestException>(() => @interface.TestVoidWithParams());
 
@@ -98,8 +99,8 @@ namespace HandyIpcTests
         [Fact]
         public async Task TestIGenericTestInterface()
         {
-            var remote = _fixture.Client.Resolve<IGenericTest<ClassWithNewCtor, string>>();
-            var local = new GenericTest<ClassWithNewCtor, string>();
+            var remote = _fixture.Client.Resolve<IGenericType<ClassWithNewCtor, string>>();
+            var local = new Implementations.GenericType<ClassWithNewCtor, string>();
 
             {
                 const string expected = "first";

@@ -31,8 +31,8 @@ namespace HandyIpcTests
                 .UseJsonSerializer();
 
             serverBuilder
-                .Register<IBuildInTypeTest, BuildInTypeTest>()
-                .Register(typeof(IGenericTest<,>), typeof(GenericTest<,>));
+                .Register<IBuildInType, BuildInType>()
+                .Register(typeof(IGenericType<,>), typeof(GenericType<,>));
 
             _server = serverBuilder.Build();
             _server.Start();

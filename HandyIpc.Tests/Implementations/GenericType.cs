@@ -5,7 +5,7 @@ using HandyIpcTests.Interfaces;
 
 namespace HandyIpcTests.Implementations
 {
-    public class GenericTest<T1, T2> : IGenericTest<T1, T2>
+    public class GenericType<T1, T2> : IGenericType<T1, T2>
         where T1 : class, new()
     {
         public T1 ReturnOriginalValue(T1 value) => value;
@@ -14,7 +14,7 @@ namespace HandyIpcTests.Implementations
 
         public TM TestGenericConstraint<TM>(TM value) where TM : class, new() => value;
 
-        TM IGenericTest<T1, T2>.TestGenericConstraint<TM>(TM value) where TM : class => value;
+        TM IGenericType<T1, T2>.TestGenericConstraint<TM>(TM value) where TM : class => value;
 
         public List<TM> SendList<TM>(List<TM> value) => value;
 

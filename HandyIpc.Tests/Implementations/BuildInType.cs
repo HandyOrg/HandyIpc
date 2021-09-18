@@ -2,7 +2,7 @@ using HandyIpcTests.Interfaces;
 
 namespace HandyIpcTests.Implementations
 {
-    public class BuildInTypeTest : IBuildInTypeTest
+    public class BuildInType : IBuildInType
     {
         public void TestVoidWithParams() => throw new TestException();
 
