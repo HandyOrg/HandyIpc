@@ -5,7 +5,7 @@ namespace HandyIpcTests.Interfaces
     [IpcContract]
     public interface IBuildInType
     {
-        void TestVoidWithParams();
+        void TestVoidWithoutParams();
 
         void TestDoNothing();
 

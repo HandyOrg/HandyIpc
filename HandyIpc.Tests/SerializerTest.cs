@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HandyIpc.Core;
+using HandyIpcTests.Fixtures;
 using Xunit;
 using static HandyIpcTests.Mock.MockDataGenerator;
 
@@ -15,7 +16,7 @@ namespace HandyIpcTests
         }
 
         [Fact]
-        public void TestCSharpBuildInTypes()
+        public void TestBuildInTypes()
         {
             ISerializer serializer = _fixture.Serializer;
 

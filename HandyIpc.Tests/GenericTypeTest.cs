@@ -3,104 +3,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HandyIpc;
+using HandyIpcTests.Fixtures;
 using HandyIpcTests.Implementations;
 using HandyIpcTests.Interfaces;
 using HandyIpcTests.Mock;
 using Xunit;
-using static HandyIpcTests.Mock.MockDataGenerator;
-using BuildInType = HandyIpcTests.Mock.BuildInType;
 
 namespace HandyIpcTests
 {
-    public class EndToEndTest : IClassFixture<EndToEndTestFixture>
+    [Collection(nameof(CollectionFixture))]
+    public class GenericTypeTest
     {
-        private readonly EndToEndTestFixture _fixture;
+        private readonly NamedPipeFixture _namedPipeFixture;
+        private readonly SocketFixture _socketFixture;
 
-        public EndToEndTest(EndToEndTestFixture fixture) => _fixture = fixture;
-
-        [Fact]
-        public void TestIBuildInTypeTestInterface()
+        public GenericTypeTest(NamedPipeFixture namedPipeFixture, SocketFixture socketFixture)
         {
-            var @interface = _fixture.Client.Resolve<IBuildInType>();
-
-            Assert.Throws<TestException>(() => @interface.TestVoidWithParams());
-
-            @interface.TestDoNothing();
-
-            foreach (var item in BuildInType.Generate())
-            {
-                string result = @interface.TestVoidWithBasicTypeParams(
-                    item.Float, item.Double, item.Long, item.Int, item.Short, item.Ulong, item.Uint, item.Ushort, item.Char, item.Byte);
-                string expected = $"{item.Float}{item.Double}{item.Long}{item.Int}{item.Short}{item.Ulong}{item.Uint}{item.Ushort}{item.Char}{item.Byte}";
-                Assert.Equal(expected, result);
-            }
-
-            foreach (byte value in Bytes())
-            {
-                Assert.Equal(value, @interface.TestByte(value));
-            }
-
-            foreach (short value in Shorts())
-            {
-                Assert.Equal(value, @interface.TestShort(value));
-            }
-
-            foreach (int value in Ints())
-            {
-                Assert.Equal(value, @interface.TestInt(value));
-            }
-
-            foreach (long value in Longs())
-            {
-                Assert.Equal(value, @interface.TestLong(value));
-            }
-
-            foreach (ushort value in Ushorts())
-            {
-                Assert.Equal(value, @interface.TestUshort(value));
-            }
-
-            foreach (uint value in Uints())
-            {
-                Assert.Equal(value, @interface.TestUint(value));
-            }
-
-            foreach (ulong value in Ulongs())
-            {
-                Assert.Equal(value, @interface.TestUlong(value));
-            }
-
-            foreach (float value in Floats())
-            {
-                Assert.Equal(value, @interface.TestFloat(value));
-            }
-
-            foreach (double value in Doubles())
-            {
-                Assert.Equal(value, @interface.TestDouble(value));
-            }
-
-            foreach (char value in Chars())
-            {
-                Assert.Equal(value, @interface.TestChar(value));
-            }
-
-            foreach (object? value in Null())
-            {
-                Assert.Equal(value, @interface.TestNull(value));
-            }
-
-            foreach (byte[] value in ByteArrays())
-            {
-                Assert.Equal(value, @interface.TestByteArray(value));
-            }
+            _namedPipeFixture = namedPipeFixture;
+            _socketFixture = socketFixture;
         }
 
         [Fact]
-        public async Task TestIGenericTestInterface()
+        public Task TestBuildInTypesWithNamedPipe()
         {
-            var remote = _fixture.Client.Resolve<IGenericType<ClassWithNewCtor, string>>();
-            var local = new Implementations.GenericType<ClassWithNewCtor, string>();
+            var instance = _socketFixture.Client.Resolve<IGenericType<ClassWithNewCtor, string>>();
+            return TestCases(instance);
+        }
+
+        [Fact]
+        public Task TestBuildInTypesWithSocket()
+        {
+            var instance = _namedPipeFixture.Client.Resolve<IGenericType<ClassWithNewCtor, string>>();
+            return TestCases(instance);
+        }
+
+        public async Task TestCases(IGenericType<ClassWithNewCtor, string> remote)
+        {
+            var local = new GenericTypeImpl<ClassWithNewCtor, string>();
 
             {
                 const string expected = "first";
@@ -179,7 +118,7 @@ namespace HandyIpcTests
                     Id = Guid.NewGuid().ToString(),
                     Name = Guid.NewGuid().ToString()
                 };
-                var arg2 = Guid.NewGuid().ToString();
+                string arg2 = Guid.NewGuid().ToString();
 
                 string expected = local.PrintGenericArguments(arg1, arg2);
                 string actual = remote.PrintGenericArguments(arg1, arg2);

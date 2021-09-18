@@ -85,7 +85,7 @@ namespace {@namespace}
 "
 )}
 {Text(isAwaitable ? $@"
-            var response = GeneratorHelper.UnpackResponse<{(isVoid ? "byte[]" : ExtractTypeFromTask(method.ReturnType))}>(responseBytes, _serializer);
+            var response = GeneratorHelper.UnpackResponse<{(isVoid ? "byte[]" : method.ReturnType.ExtractTypeFromTask())}>(responseBytes, _serializer);
 " : $@"
             var response = GeneratorHelper.UnpackResponse<{(isVoid ? "byte[]" : method.ReturnType.ToTypeDeclaration())}>(responseBytes, _serializer);
 ")}
@@ -104,12 +104,6 @@ namespace {@namespace}
     }}
 }}
 ".FormatCode();
-        }
-
-        private static string ExtractTypeFromTask(ITypeSymbol symbol)
-        {
-            INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
-            return namedTypeSymbol.TypeArguments.Single().ToFullDeclaration();
         }
     }
 }

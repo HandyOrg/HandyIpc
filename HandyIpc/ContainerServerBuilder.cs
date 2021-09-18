@@ -78,7 +78,7 @@ namespace HandyIpc
         {
             object instance = factory();
 
-            Guards.ThrowIfNot(interfaceType.IsInstanceOfType(instance),
+            Guards.ThrowArgument(interfaceType.IsInstanceOfType(instance),
                 $"The instance created by the factory corresponding to the {interfaceType} interface " +
                 $"does not implement the {interfaceType} interface.", nameof(factory));
 

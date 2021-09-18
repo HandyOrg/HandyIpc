@@ -20,6 +20,17 @@ namespace HandyIpc.Generator
             return $"{symbol.ToFullDeclaration()}{(nullable ? '?' : null)}";
         }
 
+        public static string ExtractTypeFromTask(this ITypeSymbol symbol)
+        {
+            if (symbol.IsOrInheritsFrom(TaskTypeSymbol))
+            {
+                INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
+                symbol = namedTypeSymbol.TypeArguments.Single();
+            }
+
+            return symbol.ToFullDeclaration();
+        }
+
         public static (string @namespace, string className, string typeParameters) GenerateNameFromInterface(this INamedTypeSymbol interfaceSymbol)
         {
             const string globalNamespace = "HandyIpc.Implementation";

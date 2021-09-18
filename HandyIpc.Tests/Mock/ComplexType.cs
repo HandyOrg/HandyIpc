@@ -1,9 +1,20 @@
-﻿namespace HandyIpcTests.Mock
+namespace HandyIpcTests.Mock
 {
-    public class ComplexType
+    public enum Gender
     {
-        public BuildInType Custom { get; init; }
+        Unknown,
+        Female,
+        Male,
+    }
 
-        public ComplexType Complex { get; init; }
+    public record ComplexType
+    {
+        public string Name => nameof(Name);
+
+        public string Id => nameof(Id);
+
+        public int Age => 10000;
+
+        public Gender Gender = Gender.Unknown;
     }
 }

@@ -1,7 +1,7 @@
 using HandyIpc.Core;
 using HandyIpc.Serializer.Json;
 
-namespace HandyIpcTests
+namespace HandyIpcTests.Fixtures
 {
     public class SerializerTestFixture
     {

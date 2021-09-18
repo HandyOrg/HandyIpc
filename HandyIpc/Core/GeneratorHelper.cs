@@ -15,17 +15,25 @@ namespace HandyIpc.Core
         /// It is used to get the result from a invoked async generic method on server side.
         /// </remarks>
         /// <param name="taskType">The the <see cref="Task"/> or <see cref="Task{T}"/> type.</param>
-        /// <param name="task">The instance of the task type.</param>
-        /// <returns>The result from the task instance.</returns>
-        public static async Task<object?> UnpackTask(Type taskType, object task)
+        /// <param name="value">The instance of the value type.</param>
+        /// <returns>The result from the value instance.</returns>
+        public static async Task<object?> UnpackTask(Type taskType, object value)
         {
-            if (task is not Task taskInstance)
+            if (value is not Task task)
             {
                 return null;
             }
 
-            await taskInstance;
-            return taskType.GetProperty("Result")?.GetMethod.Invoke(task, null);
+            await task;
+            return taskType.GetProperty("Result")?.GetMethod.Invoke(value, null);
+        }
+
+        public static Type ExtractTaskValueType(Type taskType)
+        {
+            return typeof(Task).IsAssignableFrom(taskType) &&
+                   typeof(Task) != taskType
+                ? taskType.GenericTypeArguments.Single()
+                : taskType;
         }
 
         public static T UnpackResponse<T>(byte[] bytes, ISerializer serializer)

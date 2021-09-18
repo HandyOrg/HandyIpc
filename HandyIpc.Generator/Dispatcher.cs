@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using static HandyIpc.Generator.TemplateExtensions;
@@ -85,12 +86,12 @@ namespace {@namespace}
                     {(isAwaitable ? "await (Task)obj;" : null)}
                     ctx.Output = Response.Unit;
 " : $@"
-{Text(containsTypeParameter ? @"
+{Text(containsTypeParameter && isAwaitable ? @"
                     var result = await GeneratorHelper.UnpackTask(constructedMethodInfo.ReturnType, obj);
 " : $@"
                     var result = {(isAwaitable ? $"await ({method.ReturnType.ToTypeDeclaration()})" : null)}obj;
 ")}
-                    ctx.Output = Response.Value(result, constructedMethodInfo.ReturnType, ctx.Serializer);
+                    ctx.Output = Response.Value(result, GeneratorHelper.ExtractTaskValueType(constructedMethodInfo.ReturnType), ctx.Serializer);
 ")}
                     break;
                 }}
@@ -109,7 +110,7 @@ namespace {@namespace}
                     ctx.Output = Response.Unit;
 " : $@"
                     var result = {(isAwaitable ? "await " : null)}_instance.{method.Name}({arguments});
-                    ctx.Output = Response.Value(result, typeof({method.ReturnType.ToFullDeclaration()}), ctx.Serializer);
+                    ctx.Output = Response.Value(result, typeof({method.ReturnType.ExtractTypeFromTask()}), ctx.Serializer);
 ")}
                     break;
                 }}
@@ -134,7 +135,8 @@ namespace {@namespace}
             {
                 if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
                 {
-                    continue;
+                    yield return typeSymbol;
+                    yield break;
                 }
 
                 foreach (ITypeSymbol child in EnumerateTypeTree(namedTypeSymbol))

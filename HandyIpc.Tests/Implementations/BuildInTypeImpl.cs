@@ -2,9 +2,9 @@ using HandyIpcTests.Interfaces;
 
 namespace HandyIpcTests.Implementations
 {
-    public class BuildInType : IBuildInType
+    public class BuildInTypeImpl : IBuildInType
     {
-        public void TestVoidWithParams() => throw new TestException();
+        public void TestVoidWithoutParams() => throw new TestException();
 
         public void TestDoNothing() { }
 
