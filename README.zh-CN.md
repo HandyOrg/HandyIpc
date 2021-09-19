@@ -2,18 +2,20 @@
 
 [English](./README.md) | 中文
 
+HandyIpc 是一个开箱即用的进程间通讯（IPC）库，对远程方法的调用类似 [WCF](https://docs.microsoft.com/en-us/dotnet/framework/wcf/whats-wcf)，但相比之下更为轻量，免去了一切繁琐的配置，从入门到精通只需读完此 README。
+
 本仓库提供了一组 High-Level 的 API 用于远程方法调用。它的底层通讯协议可以任意选择，如：Named Pipe、MMF（内存映射文件）或 Socket 等，框架本身并不关心具体的实现。
 
-一句话阐述本仓库的 API 的设计思路：一个远程的 Ioc 容器。熟悉 Ioc 容器的朋友应该了解：Ioc 容器大致分为注册对象（`Register<T, U>()`）和取用对象（`Resolve<T>()`）两个操作，而一个 IPC 库无非就是将这两个操作拆分到了两个进程中，即：在服务端注册对象，在客户端取用对象。（当然，Ioc 容器还有一个很重要的功能：自动根据依赖关系对接口类型进行赋值，本库当然没有这个功能，也完全不需要实现这一功能。）
+一句话概括本仓库的 API 的设计理念：一个远程的 Ioc 容器。熟悉 Ioc 容器的朋友应该了解：Ioc 容器大致分为注册对象（`Register<T, U>()`）和取用对象（`Resolve<T>()`）两个操作，而一个 IPC 库无非就是将这两个操作拆分到了两个进程中，即：在服务端注册对象，在客户端取用对象。（当然，Ioc 容器还有一个很重要的功能：自动根据依赖关系对接口类型进行赋值，本库当然没有这个功能，也完全不需要实现这一功能。）
 
 ## NuGet
 
-| 包名                       | 描述                                                   | NuGet                                                                                                                    |
-| -------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `HandyIpc`                 | 核心库，提供 IPC 所需的 High-Level API.                | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc)                 |
-| `HandyIpc.NamedPipe`       | 提供基于 NamedPipe 技术的 IPC 功能。                   | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.NamedPipe)       |
-| `HandyIpc.Socket`          | 提供基于 Socket 技术的 IPC 功能，当前仅支持 Tcp 协议。 | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.Socket)          |
-| `HandyIpc.Serializer.Json` | 为 IPC 通讯提供 Json 序列化的支持。                    | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.Serializer.Json) |
+| 包名                       | 描述                                                   | Code Coverage                                                   | NuGet                                                                                                                    |
+| -------------------------- | ------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `HandyIpc`                 | 核心库，提供 IPC 所需的 High-Level API.                | ![coverage](https://img.shields.io/badge/coverage-89.72%-green) | [![version](https://img.shields.io/badge/version-0.5.2-orange)](https://www.nuget.org/packages/HandyIpc)                 |
+| `HandyIpc.NamedPipe`       | 提供基于 NamedPipe 技术的 IPC 功能。                   | ![coverage](https://img.shields.io/badge/coverage-100%-green)   | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.NamedPipe)       |
+| `HandyIpc.Socket`          | 提供基于 Socket 技术的 IPC 功能，当前仅支持 Tcp 协议。 | ![coverage](https://img.shields.io/badge/coverage-100%-green)   | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.Socket)          |
+| `HandyIpc.Serializer.Json` | 为 IPC 通讯提供 Json 序列化的支持。                    | ![coverage](https://img.shields.io/badge/coverage-100%-green)   | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.Serializer.Json) |
 
 ## 安装
 
@@ -22,7 +24,7 @@
 注意: `HandyIpc.NamedPipe` 和 `HandyIpc.Socket` 仅需要安装一个即可, 如无必要，推荐使用 `HandyIpc.NamedPipe`，它会稍微比 `HandyIpc.Socket` 要快一些。
 
 ```
-<PackageReference Include="HandyIpc" Version="0.5.0" />
+<PackageReference Include="HandyIpc" Version="0.5.2" />
 <PackageReference Include="HandyIpc.NamedPipe" Version="0.5.0" />
 <PackageReference Include="HandyIpc.Serializer.Json" Version="0.5.0" />
 ```
