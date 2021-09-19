@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using HandyIpc;
+using HandyIpcTests.Implementations;
 using HandyIpcTests.Mock;
 
 namespace HandyIpcTests.Interfaces
@@ -28,5 +29,9 @@ namespace HandyIpcTests.Interfaces
         int Add(int x, int y);
 
         Task<T> TestGenericType<T>(T value);
+
+        Task<GenericType<TK, TV>> TestGenericType<TK, TV>(TK key, TV value);
+
+        Task TestGenericException<T>(T value);
     }
 }

@@ -27,5 +27,16 @@ namespace HandyIpcTests.Implementations
         public int Add(int x, int y) => x + y;
 
         public Task<T> TestGenericType<T>(T value) => Task.FromResult(value);
+
+        public Task<GenericType<TK, TV>> TestGenericType<TK, TV>(TK key, TV value)
+        {
+            return Task.FromResult(new GenericType<TK, TV>
+            {
+                Key = key,
+                Value = value,
+            });
+        }
+
+        public Task TestGenericException<T>(T value) => Task.FromException(new TestException());
     }
 }

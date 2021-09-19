@@ -68,6 +68,11 @@ namespace HandyIpcTests
             Assert.Equal(int.MaxValue, await instance.TestGenericType(int.MaxValue));
             Assert.Equal(new ComplexType(), await instance.TestGenericType(new ComplexType()));
 
+            var input = new GenericType<string, double>();
+            var output = await instance.TestGenericType(input);
+            Assert.NotSame(input, output);
+            Assert.Equal(input, output);
+
             instance.SyncMethod();
 
             Assert.Throws<TestException>(instance.SyncMethodWithException);
@@ -75,6 +80,8 @@ namespace HandyIpcTests
             await instance.TestDoNothing();
 
             await Assert.ThrowsAsync<TestException>(instance.TestException);
+
+            await Assert.ThrowsAsync<TestException>(() => instance.TestGenericException(string.Empty));
 
             Assert.Equal(await local.TestReturnDouble(), await instance.TestReturnDouble());
 

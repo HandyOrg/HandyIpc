@@ -21,7 +21,7 @@ namespace HandyIpc.Core
         {
             if (value is not Task task)
             {
-                return null;
+                throw new ArgumentException("This method accept Task type argument only.");
             }
 
             await task;
