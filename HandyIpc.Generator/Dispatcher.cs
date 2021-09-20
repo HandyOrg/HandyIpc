@@ -76,10 +76,11 @@ namespace {@namespace}
                 case ""{methodId}""
                 when (_genericMethodMapping.Value.TryGetValue(""{methodId}"", out var methodInfo)):
                 {{
+                    var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodTypeArguments.ToArray());
 {Text(method.Parameters.Any() ? @"
+                    request.SetArgumentTypes(constructedMethodInfo.GetParameters().Select(item => item.ParameterType).ToArray());
                     var args = request.Arguments.ToArray();
 " : RemoveLineIfEmpty)}
-                    var constructedMethodInfo = methodInfo.MakeGenericMethod(request.MethodTypeArguments.ToArray());
                     var obj = constructedMethodInfo.Invoke(_instance, {(method.Parameters.Any() ? "args" : "new object[0]")});
 {Text(isVoid ? $@"
                     {(isAwaitable ? "await (Task)obj;" : null)}
@@ -101,7 +102,7 @@ namespace {@namespace}
     .Select(item => item.Type)
     .Select(item => item.ToFullDeclaration())
     .Select(type => $"typeof({type})").Join(", ").If(text => $@"
-                    request.ArgumentTypes = new Type[] {{ {text} }};
+                    request.SetArgumentTypes(new Type[] {{ {text} }});
                     var args = request.Arguments;
 ", RemoveLineIfEmpty)}
 {Text(isVoid ? $@"

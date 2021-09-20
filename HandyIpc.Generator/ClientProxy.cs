@@ -70,14 +70,14 @@ namespace {@namespace}
 {method.TypeParameters.Select(type => $"typeof({type.ToFullDeclaration()})").Join(", ").If(text => $@"
                 MethodTypeArguments = new[] {{ {text} }},
 ", RemoveLineIfEmpty)}
-{parameterTypes.Select(type => $"typeof({type})").Join(", ").If(text => $@"
-                ArgumentTypes = new[] {{ {text} }},
-", RemoveLineIfEmpty)}
 {parameterNames.Join(", ").If(text => $@"
                 Arguments = new object[] {{ {text} }},
 ", RemoveLineIfEmpty)}
             }};
 ")}
+{parameterTypes.Select(type => $"typeof({type})").Join(", ").If(text => $@"
+            request.SetArgumentTypes(new[] {{ {text} }});
+", RemoveLineIfEmpty)}
 {Text(isAwaitable ? @"
             var responseBytes = await _sender.InvokeAsync(request.ToBytes());
 " : @"

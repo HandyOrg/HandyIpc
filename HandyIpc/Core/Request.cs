@@ -27,14 +27,13 @@ namespace HandyIpc.Core
         private IReadOnlyList<Type>? _typeArguments;
         private string? _methodName;
         private IReadOnlyList<Type>? _methodTypeArguments;
-        private IReadOnlyList<Type>? _argumentTypes;
         private IReadOnlyList<object?>? _arguments;
+        private IReadOnlyList<Type> _argumentTypes = null!;
 
         private (int start, int length) _nameRange;
         private (int start, int length) _typeArgumentsRange;
         private (int start, int length) _methodNameRange;
         private (int start, int length) _methodTypeArgumentsRange;
-        private (int start, int length) _argumentTypesRange;
         private (int start, int length) _argumentsRange;
 
         /// <summary>
@@ -74,23 +73,11 @@ namespace HandyIpc.Core
         }
 
         /// <summary>
-        /// Gets types of arguments on the method.
-        /// </summary>
-        /// <remarks>
-        /// The property has been filled only if the method is a generic method.
-        /// </remarks>
-        public IReadOnlyList<Type> ArgumentTypes
-        {
-            get => _argumentTypes ??= DeserializeArray<Type>(_argumentTypesRange);
-            set => _argumentTypes = value;
-        }
-
-        /// <summary>
         /// Gets arguments of the method.
         /// </summary>
         public IReadOnlyList<object?> Arguments
         {
-            get => _arguments ??= DeserializeArray<object?>(_argumentsRange, index => ArgumentTypes[index]);
+            get => _arguments ??= DeserializeArray<object?>(_argumentsRange, index => _argumentTypes[index]);
             set => _arguments = value;
         }
 
@@ -100,7 +87,6 @@ namespace HandyIpc.Core
             _methodName = methodName;
             _typeArguments = EmptyTypeList;
             _methodTypeArguments = EmptyTypeList;
-            _argumentTypes = EmptyTypeList;
             _arguments = EmptyObjectList;
 
             _bytes = null!;
@@ -111,6 +97,8 @@ namespace HandyIpc.Core
             _serializer = serializer;
             _bytes = bytes;
         }
+
+        public void SetArgumentTypes(IReadOnlyList<Type> argumentTypes) => _argumentTypes = argumentTypes;
 
         public byte[] ToBytes()
         {
@@ -123,14 +111,12 @@ namespace HandyIpc.Core
              * | TypeArgumentsLength       |
              * | MethodNameLength          |
              * | MethodTypeArgumentsLength |
-             * | ArgumentTypesLength       |
              * | ArgumentsLength           |
              * < Body                      >
              * | Name                      |
              * | TypeArguments             |
              * | MethodName                |
              * | MethodTypeArguments       |
-             * | ArgumentTypes             |
              * | Arguments                 |
              */
 
@@ -138,11 +124,7 @@ namespace HandyIpc.Core
             byte[] typeArgumentsBytes = SerializeArray(TypeArguments);
             byte[] methodNameBytes = _serializer.Serialize(MethodName, typeof(string));
             byte[] methodTypeArgumentsBytes = SerializeArray(MethodTypeArguments);
-            // Send parameter types only if the method is a generic method,
-            // because the parameter types may contain generic types that cannot be determined at compile time
-            // and they need to be monomorphism at runtime.
-            byte[] argumentTypesBytes = MethodTypeArguments.Any() ? SerializeArray(ArgumentTypes) : EmptyArray;
-            byte[] argumentsBytes = SerializeArray(Arguments, index => ArgumentTypes[index]);
+            byte[] argumentsBytes = SerializeArray(Arguments, index => _argumentTypes[index]);
 
             byte[][] bytesList =
             {
@@ -152,13 +134,11 @@ namespace HandyIpc.Core
                 BitConverter.GetBytes(typeArgumentsBytes.Length),
                 BitConverter.GetBytes(methodNameBytes.Length),
                 BitConverter.GetBytes(methodTypeArgumentsBytes.Length),
-                BitConverter.GetBytes(argumentTypesBytes.Length),
                 BitConverter.GetBytes(argumentsBytes.Length),
                 nameBytes,
                 typeArgumentsBytes,
                 methodNameBytes,
                 methodTypeArgumentsBytes,
-                argumentTypesBytes,
                 argumentsBytes,
             };
 
@@ -175,8 +155,8 @@ namespace HandyIpc.Core
 
             // Skip header and version bytes.
             int offset = ReqHeaderBytes.Length + 1;
-            // Skip layout table, 6 is six field in bytes table.
-            int start = offset + sizeof(int) * 6;
+            // Skip layout table, 5 is six field in bytes table.
+            int start = offset + sizeof(int) * 5;
 
             request = new Request(serializer, bytes)
             {
@@ -184,7 +164,6 @@ namespace HandyIpc.Core
                 _typeArgumentsRange = GetRangeAndMoveNext(bytes, ref offset, ref start),
                 _methodNameRange = GetRangeAndMoveNext(bytes, ref offset, ref start),
                 _methodTypeArgumentsRange = GetRangeAndMoveNext(bytes, ref offset, ref start),
-                _argumentTypesRange = GetRangeAndMoveNext(bytes, ref offset, ref start),
                 _argumentsRange = GetRangeAndMoveNext(bytes, ref offset, ref start)
             };
 
