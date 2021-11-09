@@ -8,7 +8,7 @@ namespace HandyIpc.Core
 
         public TValue Value { get; }
 
-        internal RentedValue(TValue value, Action<TValue> dispose)
+        public RentedValue(TValue value, Action<TValue> dispose)
         {
             _dispose = dispose;
             Value = value;
