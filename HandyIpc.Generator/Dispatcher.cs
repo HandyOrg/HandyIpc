@@ -120,8 +120,6 @@ namespace {@namespace}
                 default:
                     throw new ArgumentOutOfRangeException(""No matching remote method was found."");
             }}
-
-            await next();
         }}
     }}
 }}

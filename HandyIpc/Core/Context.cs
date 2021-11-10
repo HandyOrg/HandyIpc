@@ -15,15 +15,15 @@ namespace HandyIpc.Core
 
         public Request? Request { get; set; }
 
-        public ISerializer Serializer { get; }
+        public ISerializer Serializer { get; set; } = null!;
 
-        public ILogger Logger { get; }
+        public ILogger Logger { get; set; } = null!;
 
-        public Context(byte[] input, ISerializer serializer, ILogger logger)
+        public IConnection Connection { get; set; } = null!;
+
+        public Context(byte[] input)
         {
             Input = input;
-            Serializer = serializer;
-            Logger = logger;
         }
     }
 }
