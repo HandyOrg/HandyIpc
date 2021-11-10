@@ -56,7 +56,13 @@ namespace HandyIpc
             while (!token.IsCancellationRequested)
             {
                 IConnection connection = await _server.WaitForConnectionAsync();
-                RequestHandler handler = _middleware.ToHandler(_serializer, _logger);
+                RequestHandler handler = _middleware.ToHandler(
+                    ctx =>
+                    {
+                        ctx.Logger = _logger;
+                        ctx.Serializer = _serializer;
+                        ctx.Connection = connection;
+                    });
 
                 if (token.IsCancellationRequested)
                 {

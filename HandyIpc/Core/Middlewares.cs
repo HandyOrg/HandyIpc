@@ -37,33 +37,21 @@ namespace HandyIpc.Core
             }
         }
 
-        public static async Task RequestParser(Context ctx, Func<Task> next)
-        {
-            if (Request.TryParse(ctx.Input, ctx.Serializer, out Request request))
-            {
-                ctx.Request = request;
-                await next();
-            }
-            else
-            {
-                throw new ArgumentException("Invalid request bytes.");
-            }
-        }
-
-        public static Middleware GetInterfaceMiddleware(IReadOnlyDictionary<string, Middleware> map)
+        public static Middleware GetHandleRequest(IReadOnlyDictionary<string, Middleware> map)
         {
             return async (ctx, next) =>
             {
-                Request request = CheckRequest(ctx);
+                if (Request.TryParse(ctx.Input, ctx.Serializer, out Request request))
+                {
+                    ctx.Request = request;
+                    if (map.TryGetValue(request.Name, out Middleware middleware))
+                    {
+                        await middleware(ctx, next);
+                        return;
+                    }
+                }
 
-                if (map.TryGetValue(request.Name, out Middleware middleware))
-                {
-                    await middleware(ctx, next);
-                }
-                else
-                {
-                    throw new NotSupportedException("Unknown interface invoked.");
-                }
+                await next();
             };
         }
 
@@ -71,7 +59,7 @@ namespace HandyIpc.Core
         {
             return async (ctx, next) =>
             {
-                Request request = CheckRequest(ctx);
+                Request request = EnsureRequest(ctx);
 
                 if (request.TypeArguments.Any())
                 {
@@ -85,13 +73,25 @@ namespace HandyIpc.Core
             };
         }
 
-        private static Request CheckRequest(Context ctx)
+        public static Task NotFound(Context ctx, Func<Task> next)
+        {
+            if (ctx.Request is { } request)
+            {
+                throw new NotSupportedException($"Unknown interface method ({request.Name}.{request.MethodName}) invoked.");
+            }
+            else
+            {
+                throw new NotSupportedException($"Unknown interface method invoked.");
+            }
+        }
+
+        private static Request EnsureRequest(Context ctx)
         {
             Request? request = ctx.Request;
 
             if (request is null)
             {
-                throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
+                throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it be used.");
             }
 
             return request;
@@ -114,11 +114,12 @@ namespace HandyIpc.Core
             return middlewareArray.Compose();
         }
 
-        public static RequestHandler ToHandler(this Middleware middleware, ISerializer serializer, ILogger logger)
+        public static RequestHandler ToHandler(this Middleware middleware, Action<Context> configure)
         {
             return async input =>
             {
-                var ctx = new Context(input, serializer, logger);
+                var ctx = new Context(input);
+                configure(ctx);
                 await middleware(ctx, () => Task.CompletedTask);
                 return ctx.Output;
             };

@@ -68,8 +68,8 @@ namespace HandyIpc
             Middleware middleware = Middlewares.Compose(
                 Middlewares.Heartbeat,
                 Middlewares.ExceptionHandler,
-                Middlewares.RequestParser,
-                Middlewares.GetInterfaceMiddleware(map));
+                Middlewares.GetHandleRequest(map),
+                Middlewares.NotFound);
 
             return new ContainerServer(_serverFactory(), middleware, _serializerFactory(), _loggerFactory());
         }
