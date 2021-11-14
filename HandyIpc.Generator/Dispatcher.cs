@@ -7,7 +7,7 @@ namespace HandyIpc.Generator
 {
     public static class Dispatcher
     {
-        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods)
+        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods, List<IEventSymbol> events)
         {
             var (@namespace, className, typeParameters) = @interface.GenerateNameFromInterface();
             string interfaceType = @interface.ToFullDeclaration();
@@ -36,6 +36,8 @@ namespace {@namespace}
         private readonly Lazy<IReadOnlyDictionary<string, MethodInfo>> _genericMethodMapping;
 " : RemoveLineIfEmpty)}
 
+        public NotifierManager NotifierManager {{ get; set; }}
+
         public {nameof(Dispatcher)}{className}({interfaceType} instance)
         {{
             _instance = instance;
@@ -43,6 +45,10 @@ namespace {@namespace}
             _genericMethodMapping = new Lazy<IReadOnlyDictionary<string, MethodInfo>>(
                 () => GeneratorHelper.GetGenericMethodMapping(typeof({interfaceType}), _instance));
 " : RemoveLineIfEmpty)}
+
+{events.For(item => $@"
+            instance.{item.Name} += (_, e) => NotifierManager.Publish(""{item.Name}"", e);
+", RemoveLineIfEmpty)}
         }}
 
         public async Task Dispatch(Context ctx, Func<Task> next)

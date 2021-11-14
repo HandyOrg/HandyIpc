@@ -7,7 +7,7 @@ namespace HandyIpc.Generator
 {
     public static class ServerProxy
     {
-        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods)
+        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods, List<IEventSymbol> events)
         {
             var (@namespace, className, typeParameters) = @interface.GenerateNameFromInterface();
             string interfaceType = @interface.ToFullDeclaration();
@@ -26,9 +26,17 @@ namespace {@namespace}
     {{
         private readonly {interfaceType} _instance;
 
+{events.For(item => $@"
+        public event {item.Type.ToTypeDeclaration()} {item.Name};
+", RemoveLineIfEmpty)}
+
         public {nameof(ServerProxy)}{className}({interfaceType} instance)
         {{
             _instance = instance;
+
+{events.For(item => $@"
+            instance.{item.Name} += (sender, e) => {item.Name}?.Invoke(sender, e);
+", RemoveLineIfEmpty)}
         }}
 {methods.For(method =>
 {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using HandyIpc.Core;
 
@@ -50,18 +51,26 @@ namespace HandyIpc
         public IContainerServer Build()
         {
             Dictionary<string, Middleware> map = new();
+            ConcurrentDictionary<string, NotifierManager> notifiers = new();
             foreach (var (key, type, factory) in _interfaceMap)
             {
-                Middleware methodDispatcher = CreateDispatcher(type, factory).Dispatch;
+                IMethodDispatcher dispatcher = CreateDispatcher(type, factory);
+                dispatcher.NotifierManager = notifiers.GetOrAdd(key, _ => new NotifierManager(_serializerFactory()));
+                Middleware methodDispatcher = dispatcher.Dispatch;
                 map.Add(key, methodDispatcher);
             }
 
             foreach (var (key, type, factory) in _genericInterfaceMap)
             {
                 Middleware methodDispatcher = Middlewares.GetMethodDispatcher(
-                    genericTypes => CreateDispatcher(
-                        type.MakeGenericType(genericTypes),
-                        () => factory(genericTypes)));
+                    genericTypes =>
+                    {
+                        IMethodDispatcher dispatcher = CreateDispatcher(
+                            type.MakeGenericType(genericTypes),
+                            () => factory(genericTypes));
+                        dispatcher.NotifierManager = notifiers.GetOrAdd(key, _ => new NotifierManager(_serializerFactory()));
+                        return dispatcher;
+                    });
                 map.Add(key, methodDispatcher);
             }
 
@@ -69,6 +78,7 @@ namespace HandyIpc
                 Middlewares.Heartbeat,
                 Middlewares.ExceptionHandler,
                 Middlewares.GetHandleRequest(map),
+                Middlewares.GetHandleEvent(notifiers),
                 Middlewares.NotFound);
 
             return new ContainerServer(_serverFactory(), middleware, _serializerFactory(), _loggerFactory());

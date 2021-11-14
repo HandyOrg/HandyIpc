@@ -2,7 +2,7 @@ using System;
 
 namespace HandyIpc.Core
 {
-    internal readonly struct RentedValue<TValue> : IDisposable
+    public readonly struct RentedValue<TValue> : IDisposable
     {
         private readonly Action<TValue> _dispose;
 
