@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,6 +56,40 @@ namespace HandyIpc.Core
             };
         }
 
+        public static Middleware GetHandleEvent(ConcurrentDictionary<string, NotifierManager> notifiers)
+        {
+            return async (ctx, next) =>
+            {
+                if (Subscription.TryParse(ctx.Input, ctx.Serializer, out Subscription subscription))
+                {
+                    switch (subscription.Type)
+                    {
+                        case SubscriptionType.Add:
+                            {
+                                var manager = notifiers.GetOrAdd(subscription.Name, _ => new NotifierManager(ctx.Serializer));
+                                manager.Subscribe(subscription.CallbackName, subscription.ProcessId, ctx.Connection);
+                                ctx.Output = Signals.Unit;
+                            }
+                            break;
+                        case SubscriptionType.Remove:
+                            {
+                                if (notifiers.TryGetValue(subscription.Name, out NotifierManager manager))
+                                {
+                                    manager.Unsubscribe(subscription.CallbackName, subscription.ProcessId);
+                                }
+
+                                ctx.Output = Signals.Unit;
+                            }
+                            break;
+                    }
+
+                    return;
+                }
+
+                await next();
+            };
+        }
+
         public static Middleware GetMethodDispatcher(Func<Type[], IMethodDispatcher> getProxy)
         {
             return async (ctx, next) =>
@@ -75,14 +110,14 @@ namespace HandyIpc.Core
 
         public static Task NotFound(Context ctx, Func<Task> next)
         {
-            if (ctx.Request is { } request)
-            {
-                throw new NotSupportedException($"Unknown interface method ({request.Name}.{request.MethodName}) invoked.");
-            }
-            else
-            {
-                throw new NotSupportedException($"Unknown interface method invoked.");
-            }
+            string message = ctx.Request is { } request
+                ? $"Unknown interface method ({request.Name}.{request.MethodName}) invoked."
+                : "Unknown interface method invoked.";
+
+            ctx.Logger.Warning(message);
+            ctx.Output = Response.Error(new NotSupportedException(message), ctx.Serializer);
+
+            return Task.CompletedTask;
         }
 
         private static Request EnsureRequest(Context ctx)

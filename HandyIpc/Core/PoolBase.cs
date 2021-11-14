@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace HandyIpc.Core
 {
-    internal abstract class PoolBase<TValue> : IDisposable where TValue : IDisposable
+    public abstract class PoolBase<TValue> : IDisposable where TValue : IDisposable
     {
         protected readonly ConcurrentBag<TValue> Cache = new();
 

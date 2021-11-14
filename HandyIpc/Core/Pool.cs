@@ -2,7 +2,7 @@ using System;
 
 namespace HandyIpc.Core
 {
-    internal sealed class Pool<TValue> : PoolBase<TValue> where TValue : IDisposable
+    public sealed class Pool<TValue> : PoolBase<TValue> where TValue : IDisposable
     {
         private readonly Func<TValue> _factory;
         private readonly Func<TValue, bool> _checkValue;

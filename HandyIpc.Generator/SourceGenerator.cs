@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using static HandyIpc.Generator.DiagnosticDescriptors;
+using System.Diagnostics;
 
 namespace HandyIpc.Generator
 {
@@ -43,12 +44,23 @@ namespace HandyIpc.Generator
                         .Select(@interface => @interface!)
                         .Where(@interface => ContainsAttribute(@interface, ipcContractAttributeSymbol));
                 })
-                .Select(@interface => (
-                    @interface,
-                    methods: @interface.GetMembers().OfType<IMethodSymbol>().ToList().AsReadOnly()));
+                .Select(@interface =>
+                {
+                    var members = @interface.GetMembers().ToArray();
+                    return (
+                        @interface,
+                        methods: members
+                            .OfType<IMethodSymbol>()
+                            .Where(item => item.MethodKind
+                                is not MethodKind.EventAdd
+                                and not MethodKind.EventRemove
+                                and not MethodKind.EventRaise)
+                            .ToList(),
+                        events: members.OfType<IEventSymbol>().ToList());
+                });
 
             var fileNameCounter = new Dictionary<string, int>();
-            foreach (var (@interface, methods) in contractInterfaces)
+            foreach (var (@interface, methods, events) in contractInterfaces)
             {
                 if (@interface.Interfaces.Length > 0)
                 {
@@ -60,7 +72,7 @@ namespace HandyIpc.Generator
                     continue;
                 }
 
-                if (!methods.Any())
+                if (!methods.Any() && !events.Any())
                 {
                     foreach (Location location in @interface.Locations)
                     {
@@ -70,9 +82,9 @@ namespace HandyIpc.Generator
                     continue;
                 }
 
-                string clientProxySource = ClientProxy.Generate(@interface, methods);
-                string serverProxySource = ServerProxy.Generate(@interface, methods);
-                string dispatcherSource = Dispatcher.Generate(@interface, methods);
+                string clientProxySource = ClientProxy.Generate(@interface, methods, events);
+                string serverProxySource = ServerProxy.Generate(@interface, methods, events);
+                string dispatcherSource = Dispatcher.Generate(@interface, methods, events);
 
                 string fileName = GetUniqueString(@interface.Name, fileNameCounter);
 
