@@ -20,7 +20,7 @@ namespace HandyIpcTests
         }
 
         [Fact]
-        public async Task TestEventHandler()
+        public void TestEventHandler()
         {
             int count = 0;
             var instance = _socketFixture.Client.Resolve<IEventType>();
@@ -32,8 +32,7 @@ namespace HandyIpcTests
             instance.RaiseChanged(EventArgs.Empty);
             instance.RaiseChanged(EventArgs.Empty);
 
-            await Task.Delay(2000);
-            Assert.Equal(3, count);
+            Assert.Equal(4, count);
         }
 
         private void Instance_Changed(object? sender, EventArgs e)

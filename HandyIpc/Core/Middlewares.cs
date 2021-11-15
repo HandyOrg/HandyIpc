@@ -8,8 +8,6 @@ namespace HandyIpc.Core
 {
     public delegate Task Middleware(Context context, Func<Task> next);
 
-    public delegate Task<byte[]> RequestHandler(byte[] input);
-
     public static class Middlewares
     {
         #region Build-in middlewares
@@ -81,8 +79,12 @@ namespace HandyIpc.Core
                                 ctx.Output = Signals.Unit;
                             }
                             break;
+                        case SubscriptionType.Promise:
+                            // ignored
+                            break;
                     }
 
+                    ctx.KeepAlive = false;
                     return;
                 }
 
@@ -147,17 +149,6 @@ namespace HandyIpc.Core
         public static Middleware Compose(params Middleware[] middlewareArray)
         {
             return middlewareArray.Compose();
-        }
-
-        public static RequestHandler ToHandler(this Middleware middleware, Action<Context> configure)
-        {
-            return async input =>
-            {
-                var ctx = new Context(input);
-                configure(ctx);
-                await middleware(ctx, () => Task.CompletedTask);
-                return ctx.Output;
-            };
         }
     }
 }

@@ -30,31 +30,31 @@ namespace {@namespace}
         private readonly Sender _sender;
         private readonly ISerializer _serializer;
         private readonly string _key;
-        private readonly AwaitorManager _awaitorManager;
+        private readonly AwaiterManager _awaiterManager;
 
 {events.For(item =>
             {
-                var eSymbol = ((INamedTypeSymbol)item.Type).DelegateInvokeMethod.Parameters[1];
-                var eType = eSymbol.Type.ToTypeDeclaration();
+                var eSymbol = ((INamedTypeSymbol)item.Type).DelegateInvokeMethod!.Parameters[1];
+                string eType = eSymbol.Type.ToTypeDeclaration();
                 return $@"
         public event {item.Type.ToTypeDeclaration()} {item.Name}
         {{
-            add => _awaitorManager.Subscribe(""{item.Name}"", value.GetHashCode(), args =>
+            add => _awaiterManager.Subscribe(""{item.Name}"", value.GetHashCode(), args =>
             {{
                 var e = ({eType})_serializer.Deserialize(args, typeof({eType}));
                 value(this, e);
             }});
-            remove => _awaitorManager.Unsubscribe(""{item.Name}"", value.GetHashCode());
+            remove => _awaiterManager.Unsubscribe(""{item.Name}"", value.GetHashCode());
         }}
 ";
-            }, RemoveLineIfEmpty)}
+            })}
 
         public {nameof(ClientProxy)}{className}(Sender sender, ISerializer serializer, string key)
         {{
             _sender = sender;
             _serializer = serializer;
             _key = key;
-            _awaitorManager = new AwaitorManager(key, sender, serializer);
+            _awaiterManager = new AwaiterManager(key, sender, serializer);
         }}
 {methods.For(method =>
 {

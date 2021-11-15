@@ -7,11 +7,10 @@ namespace HandyIpc.Core
     {
         private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
-        public byte[] Input { get; }
+        // FIXME: Replace 'set;' with 'init;'
+        public byte[] Input { get; set; } = null!;
 
         public byte[] Output { get; set; } = EmptyBytes;
-
-        public IDictionary<object, object> Items { get; } = new Dictionary<object, object>();
 
         public Request? Request { get; set; }
 
@@ -21,9 +20,6 @@ namespace HandyIpc.Core
 
         public IConnection Connection { get; set; } = null!;
 
-        public Context(byte[] input)
-        {
-            Input = input;
-        }
+        public bool KeepAlive { get; set; } = true;
     }
 }
