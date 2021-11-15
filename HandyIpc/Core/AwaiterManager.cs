@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace HandyIpc.Core
@@ -20,77 +18,27 @@ namespace HandyIpc.Core
             _serializer = serializer;
         }
 
-        public void Subscribe(string name, int handlerId, Action<byte[]> callback)
+        public void Subscribe(string name, Action<byte[]> callback)
         {
-            Awaiter awaiter = _pool.GetOrAdd(name, _ => new Awaiter());
-            lock (awaiter.Locker)
+            IConnection connection = _sender.ConnectionPool.Rent().Value;
+            Awaiter awaiter = _pool.GetOrAdd(name, _ => new Awaiter(callback, connection));
+
+            byte[] addResult = connection.Invoke(Subscription.Add(_key, name, _serializer));
+            if (!addResult.IsUnit())
             {
-                if (awaiter.Handlers.Count == 0)
-                {
-                    RentedValue<IConnection> rented = _sender.ConnectionPool.Rent();
-                    IConnection connection = rented.Value;
-                    connection.Write(Subscription.Add(_key, name, _serializer));
-                    byte[] addResult = connection.Read();
-                    if (!addResult.IsUnit())
-                    {
-                        // TODO: Use exact exception.
-                        throw new InvalidOperationException();
-                    }
-
-                    Task.Run(() => LoopWait(rented, name, awaiter, awaiter.Source.Token));
-                }
-
-                awaiter.Handlers[handlerId] = callback;
+                // TODO: Use exact exception.
+                throw new InvalidOperationException();
             }
+
+            Task.Run(() => LoopWait(awaiter));
         }
 
-        public void Unsubscribe(string name, int handlerId)
+        public void Unsubscribe(string name)
         {
-            if (!_pool.TryGetValue(name, out Awaiter awaiter))
+            if (_pool.TryRemove(name, out _))
             {
-                return;
-            }
-
-            lock (awaiter.Locker)
-            {
-                awaiter.Handlers.Remove(handlerId);
-                if (awaiter.Handlers.Count == 0)
-                {
-                    _pool.TryRemove(name, out _);
-                    awaiter.Source.Cancel();
-                }
-            }
-        }
-
-        private async Task LoopWait(RentedValue<IConnection> rented, string name, Awaiter awaiter, CancellationToken token)
-        {
-            using (rented)
-            {
-                IConnection connection = rented.Value;
-                while (!token.IsCancellationRequested)
-                {
-                    // Will blocked until accepted a notification.
-                    byte[] input = await connection.ReadAsync(token);
-                    lock (awaiter.Locker)
-                    {
-                        foreach (var handler in awaiter.Handlers.Values)
-                        {
-                            try
-                            {
-                                handler(input);
-                            }
-                            catch
-                            {
-                                // ignored
-                            }
-                        }
-                    }
-
-                    await connection.WriteAsync(Signals.Unit, token);
-                }
-
-                await connection.WriteAsync(Subscription.Remove(_key, name, _serializer), token);
-                byte[] removeResult = await connection.ReadAsync(token);
+                using var rented = _sender.ConnectionPool.Rent();
+                byte[] removeResult = rented.Value.Invoke(Subscription.Remove(_key, name, _serializer));
                 if (!removeResult.IsUnit())
                 {
                     // TODO: Logging.
@@ -98,13 +46,34 @@ namespace HandyIpc.Core
             }
         }
 
+        private static void LoopWait(Awaiter awaiter)
+        {
+            using IConnection connection = awaiter.Connection;
+            while (true)
+            {
+                // Will blocked until accepted a notification.
+                byte[] input = connection.Read();
+                if (input.IsEmpty())
+                {
+                    break;
+                }
+
+                connection.Write(Signals.Unit);
+                awaiter.Handler(input);
+            }
+        }
+
         private class Awaiter
         {
-            public readonly object Locker = new();
+            public Action<byte[]> Handler { get; }
 
-            public Dictionary<int, Action<byte[]>> Handlers { get; } = new();
+            public IConnection Connection { get; }
 
-            public CancellationTokenSource Source { get; } = new();
+            public Awaiter(Action<byte[]> handler, IConnection connection)
+            {
+                Handler = handler;
+                Connection = connection;
+            }
         }
     }
 }

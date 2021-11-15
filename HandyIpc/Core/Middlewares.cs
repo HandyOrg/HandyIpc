@@ -67,6 +67,7 @@ namespace HandyIpc.Core
                                 var manager = notifiers.GetOrAdd(subscription.Name, _ => new NotifierManager(ctx.Serializer));
                                 manager.Subscribe(subscription.CallbackName, subscription.ProcessId, ctx.Connection);
                                 ctx.Output = Signals.Unit;
+                                ctx.KeepAlive = false;
                             }
                             break;
                         case SubscriptionType.Remove:
@@ -79,12 +80,8 @@ namespace HandyIpc.Core
                                 ctx.Output = Signals.Unit;
                             }
                             break;
-                        case SubscriptionType.Promise:
-                            // ignored
-                            break;
                     }
 
-                    ctx.KeepAlive = false;
                     return;
                 }
 

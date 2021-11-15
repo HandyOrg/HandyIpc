@@ -20,24 +20,72 @@ namespace HandyIpcTests
         }
 
         [Fact]
-        public void TestEventHandler()
+        public void TestEventHandlerWithSocket()
         {
-            int count = 0;
             var instance = _socketFixture.Client.Resolve<IEventType>();
-            instance.Changed += Instance_Changed;
-            instance.Changed += (sender, e) => count++;
-
-            instance.RaiseChanged(EventArgs.Empty);
-            instance.RaiseChanged(EventArgs.Empty);
-            instance.RaiseChanged(EventArgs.Empty);
-            instance.RaiseChanged(EventArgs.Empty);
-
-            Assert.Equal(4, count);
+            TestEventHandlerSubscribeAndUnsubscribe(instance);
         }
 
-        private void Instance_Changed(object? sender, EventArgs e)
+        [Fact]
+        public void TestEventHandlerWithNamedPipe()
         {
+            var instance = _namedPipeFixture.Client.Resolve<IEventType>();
+            TestEventHandlerSubscribeAndUnsubscribe(instance);
+        }
 
+        private void TestEventHandlerSubscribeAndUnsubscribe(IEventType instance)
+        {
+            int count1 = 0;
+            int count2 = 0;
+            int count3 = 0;
+
+            // ReSharper disable AccessToModifiedClosure
+            void Handler1(object? _, EventArgs e) => count1++;
+            EventHandler handler2 = (_, _) => count2++;
+            EventHandler handler3 = (_, _) => count3++;
+            // ReSharper restore AccessToModifiedClosure
+
+            instance.Changed += Handler1;
+            instance.Changed += handler2;
+            instance.Changed += handler3;
+
+            for (int i = 0; i < 10; i++)
+            {
+                instance.RaiseChanged(EventArgs.Empty);
+                Assert.Equal(i + 1, count1);
+                Assert.Equal(i + 1, count2);
+                Assert.Equal(i + 1, count3);
+            }
+
+            count1 = 0;
+            count2 = 0;
+            count3 = 0;
+
+            instance.Changed -= Handler1;
+            instance.Changed -= handler2;
+            instance.Changed -= handler3;
+
+            for (int i = 0; i < 10; i++)
+            {
+                instance.RaiseChanged(EventArgs.Empty);
+                Assert.Equal(0, count1);
+                Assert.Equal(0, count2);
+                Assert.Equal(0, count3);
+            }
+
+            instance.Changed += Handler1;
+            instance.Changed += Handler1;
+            instance.Changed += handler2;
+            instance.Changed += handler2;
+            instance.Changed += handler3;
+
+            for (int i = 0; i < 10; i++)
+            {
+                instance.RaiseChanged(EventArgs.Empty);
+                Assert.Equal(2 * (i + 1), count1);
+                Assert.Equal(2 * (i + 1), count2);
+                Assert.Equal(i + 1, count3);
+            }
         }
     }
 }
