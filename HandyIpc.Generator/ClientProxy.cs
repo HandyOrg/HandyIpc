@@ -32,6 +32,8 @@ namespace {@namespace}
         private readonly string _key;
         private readonly AwaiterManager _awaiterManager;
 
+{events.For(item => $@"private event {item.Type.ToTypeDeclaration()} _{item.Name};")}
+
 {events.For(item =>
             {
                 var eSymbol = ((INamedTypeSymbol)item.Type).DelegateInvokeMethod!.Parameters[1];
@@ -39,12 +41,27 @@ namespace {@namespace}
                 return $@"
         public event {item.Type.ToTypeDeclaration()} {item.Name}
         {{
-            add => _awaiterManager.Subscribe(""{item.Name}"", value.GetHashCode(), args =>
+            add
             {{
-                var e = ({eType})_serializer.Deserialize(args, typeof({eType}));
-                value(this, e);
-            }});
-            remove => _awaiterManager.Unsubscribe(""{item.Name}"", value.GetHashCode());
+                if (_{item.Name} == null)
+                {{
+                    _awaiterManager.Subscribe(""{item.Name}"", args =>
+                    {{
+                        var e = ({eType})_serializer.Deserialize(args, typeof({eType}));
+                        _{item.Name}?.Invoke(this, e);
+                    }});
+                }}
+
+                _{item.Name} += value;
+            }}
+            remove
+            {{
+                _{item.Name} -= value;
+                if (_{item.Name} == null)
+                {{
+                    _awaiterManager.Unsubscribe(""{item.Name}"");
+                }}
+            }}
         }}
 ";
             })}

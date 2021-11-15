@@ -44,7 +44,7 @@ namespace HandyIpc.Core
         {
             lock (_locker)
             {
-                if (_notifiers.TryGetValue(_key, out Notifier notifier))
+                if (_notifiers.TryGetValue(name, out Notifier notifier))
                 {
                     notifier.Unsubscribe(processId);
                 }
@@ -67,8 +67,7 @@ namespace HandyIpc.Core
 
                         try
                         {
-                            connection.Write(e);
-                            byte[] result = connection.Read();
+                            byte[] result = connection.Invoke(e);
                             if (!result.IsUnit())
                             {
                                 // TODO: Handle exception.
@@ -94,7 +93,12 @@ namespace HandyIpc.Core
             {
                 lock (_locker)
                 {
-                    _connections.Remove(processId);
+                    if (_connections.TryGetValue(processId, out IConnection connection))
+                    {
+                        _connections.Remove(processId);
+                        // Send a signal to notify end this connection.
+                        connection.Write(Signals.Empty);
+                    }
                 }
             }
         }
