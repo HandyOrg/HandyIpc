@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
@@ -24,7 +21,7 @@ namespace HandyIpc.Core
             {
                 if (_notifiers.TryGetValue(name, out Notifier notifier))
                 {
-                    notifier.Push(_serializer.Serialize(e, typeof(T)));
+                    notifier.Publish(_serializer.Serialize(e, typeof(T)));
                 }
             }
         }
@@ -56,70 +53,48 @@ namespace HandyIpc.Core
 
         private class Notifier
         {
-            private readonly BlockingCollection<byte[]> _queue = new();
-            private readonly ConcurrentDictionary<int, IConnection> _connections = new();
+            private readonly object _locker = new();
+            private readonly Dictionary<int, IConnection> _connections = new();
 
-            private CancellationTokenSource? _source;
-
-            public void Push(byte[] e)
+            public void Publish(byte[] e)
             {
-                _queue.Add(e);
+                lock (_locker)
+                {
+                    foreach (var item in _connections)
+                    {
+                        int processId = item.Key;
+                        IConnection connection = item.Value;
+
+                        try
+                        {
+                            connection.Write(e);
+                            byte[] result = connection.Read();
+                            if (!result.IsUnit())
+                            {
+                                // TODO: Handle exception.
+                            }
+                        }
+                        catch
+                        {
+                            Unsubscribe(processId);
+                        }
+                    }
+                }
             }
 
-            public void Subscribe(int porcessId, IConnection connection)
+            public void Subscribe(int processId, IConnection connection)
             {
-                if (_connections.Count == 0)
+                lock (_locker)
                 {
-                    _source?.Cancel();
-                    _source = new CancellationTokenSource();
-                    Task.Run(() => Consume(_source.Token));
+                    _connections[processId] = connection;
                 }
-
-                _connections.TryAdd(porcessId, connection);
             }
 
             public void Unsubscribe(int processId)
             {
-                _connections.TryRemove(processId, out _);
-
-                if (_connections.Count == 0)
+                lock (_locker)
                 {
-                    _source?.Cancel();
-                    _source = null;
-                }
-            }
-
-            private async Task Consume(CancellationToken token)
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    try
-                    {
-                        byte[] e = _queue.Take(token);
-                        foreach (var item in _connections)
-                        {
-                            int processId = item.Key;
-                            IConnection connection = item.Value;
-
-                            try
-                            {
-                                await connection.WriteAsync(e, token);
-                                byte[] result = await connection.ReadAsync(token);
-                                if (!result.IsUnit())
-                                {
-                                    // TODO: Handle exception.
-                                }
-                            }
-                            catch
-                            {
-                                Unsubscribe(processId);
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // ignored
-                    }
+                    _connections.Remove(processId);
                 }
             }
         }

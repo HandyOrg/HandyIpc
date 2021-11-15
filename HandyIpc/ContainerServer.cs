@@ -56,14 +56,6 @@ namespace HandyIpc
             while (!token.IsCancellationRequested)
             {
                 IConnection connection = await _server.WaitForConnectionAsync();
-                RequestHandler handler = _middleware.ToHandler(
-                    ctx =>
-                    {
-                        ctx.Logger = _logger;
-                        ctx.Serializer = _serializer;
-                        ctx.Connection = connection;
-                    });
-
                 if (token.IsCancellationRequested)
                 {
                     break;
@@ -71,13 +63,16 @@ namespace HandyIpc
 
                 // Do not await the request handler, and go to await next stream connection directly.
 #pragma warning disable 4014
-                HandleRequestAsync(connection, handler, token);
+                HandleRequestAsync(connection, token);
 #pragma warning restore 4014
             }
         }
 
-        private async Task HandleRequestAsync(IConnection connection, RequestHandler handler, CancellationToken token)
+        private async Task HandleRequestAsync(IConnection connection, CancellationToken token)
         {
+            Task Handler(Context context) => _middleware(context, () => Task.CompletedTask);
+
+            bool disposeConnection = true;
             try
             {
                 while (true)
@@ -94,8 +89,21 @@ namespace HandyIpc
                         break;
                     }
 
-                    byte[] output = await handler(buffer);
-                    await connection.WriteAsync(output, token);
+                    Context ctx = new()
+                    {
+                        Input = input,
+                        Connection = connection,
+                        Logger = _logger,
+                        Serializer = _serializer,
+                    };
+                    await Handler(ctx);
+                    await connection.WriteAsync(ctx.Output, token);
+
+                    if (!ctx.KeepAlive)
+                    {
+                        disposeConnection = false;
+                        break;
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -108,7 +116,10 @@ namespace HandyIpc
             }
             finally
             {
-                connection.Dispose();
+                if (disposeConnection)
+                {
+                    connection.Dispose();
+                }
             }
         }
     }

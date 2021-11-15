@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
-    public class AwaitorManager
+    public class AwaiterManager
     {
-        private readonly ConcurrentDictionary<string, Awaitor> _pool = new();
+        private readonly ConcurrentDictionary<string, Awaiter> _pool = new();
         private readonly string _key;
         private readonly ISerializer _serializer;
         private readonly Sender _sender;
 
-        public AwaitorManager(string key, Sender sender, ISerializer serializer)
+        public AwaiterManager(string key, Sender sender, ISerializer serializer)
         {
             _key = key;
             _sender = sender;
@@ -22,57 +22,58 @@ namespace HandyIpc.Core
 
         public void Subscribe(string name, int handlerId, Action<byte[]> callback)
         {
-            Awaitor awaitor = _pool.GetOrAdd(name, _ => new Awaitor());
-            lock (awaitor.Locker)
+            Awaiter awaiter = _pool.GetOrAdd(name, _ => new Awaiter());
+            lock (awaiter.Locker)
             {
-                if (awaitor.Handlers.Count == 0)
+                if (awaiter.Handlers.Count == 0)
                 {
-                    RentedValue<IConnection> connection = _sender.ConnectionPool.Rent();
-                    Task.Run(() => LoopWait(connection, name, awaitor, awaitor.Source.Token));
+                    RentedValue<IConnection> rented = _sender.ConnectionPool.Rent();
+                    IConnection connection = rented.Value;
+                    connection.Write(Subscription.Add(_key, name, _serializer));
+                    byte[] addResult = connection.Read();
+                    if (!addResult.IsUnit())
+                    {
+                        // TODO: Use exact exception.
+                        throw new InvalidOperationException();
+                    }
+
+                    Task.Run(() => LoopWait(rented, name, awaiter, awaiter.Source.Token));
                 }
 
-                awaitor.Handlers[handlerId] = callback;
+                awaiter.Handlers[handlerId] = callback;
             }
         }
 
         public void Unsubscribe(string name, int handlerId)
         {
-            if (!_pool.TryGetValue(name, out Awaitor awaitor))
+            if (!_pool.TryGetValue(name, out Awaiter awaiter))
             {
                 return;
             }
 
-            lock (awaitor.Locker)
+            lock (awaiter.Locker)
             {
-                awaitor.Handlers.Remove(handlerId);
-                if (awaitor.Handlers.Count == 0)
+                awaiter.Handlers.Remove(handlerId);
+                if (awaiter.Handlers.Count == 0)
                 {
                     _pool.TryRemove(name, out _);
-                    awaitor.Source.Cancel();
+                    awaiter.Source.Cancel();
                 }
             }
         }
 
-        private async Task LoopWait(RentedValue<IConnection> rented, string name, Awaitor awaitor, CancellationToken token)
+        private async Task LoopWait(RentedValue<IConnection> rented, string name, Awaiter awaiter, CancellationToken token)
         {
             using (rented)
             {
                 IConnection connection = rented.Value;
-                await connection.WriteAsync(Subscription.Add(_key, name, _serializer), token);
-                byte[] addResult = await connection.ReadAsync(token);
-                if (!addResult.IsUnit())
-                {
-                    // TODO: Use exact exception.
-                    throw new InvalidOperationException();
-                }
-
                 while (!token.IsCancellationRequested)
                 {
                     // Will blocked until accepted a notification.
                     byte[] input = await connection.ReadAsync(token);
-                    lock (awaitor.Locker)
+                    lock (awaiter.Locker)
                     {
-                        foreach (var handler in awaitor.Handlers.Values)
+                        foreach (var handler in awaiter.Handlers.Values)
                         {
                             try
                             {
@@ -97,7 +98,7 @@ namespace HandyIpc.Core
             }
         }
 
-        private class Awaitor
+        private class Awaiter
         {
             public readonly object Locker = new();
 
