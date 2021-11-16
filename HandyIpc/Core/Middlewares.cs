@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -54,7 +53,7 @@ namespace HandyIpc.Core
             };
         }
 
-        public static Middleware GetHandleEvent(ConcurrentDictionary<string, NotifierManager> notifiers)
+        public static Middleware GetHandleSubscription(IReadOnlyDictionary<string, NotifierManager> notifiers)
         {
             return async (ctx, next) =>
             {
@@ -64,12 +63,14 @@ namespace HandyIpc.Core
                     {
                         case SubscriptionType.Add:
                             {
-                                var manager = notifiers.GetOrAdd(subscription.Name, _ => new NotifierManager(ctx.Serializer));
-                                manager.Subscribe(subscription.CallbackName, subscription.ProcessId, ctx.Connection);
-                                ctx.Output = Signals.Unit;
-                                ctx.KeepAlive = false;
+                                if (notifiers.TryGetValue(subscription.Name, out NotifierManager manager))
+                                {
+                                    manager.Subscribe(subscription.CallbackName, subscription.ProcessId, ctx.Connection);
+                                    ctx.Output = Signals.Unit;
+                                    ctx.KeepAlive = false;
+                                }
                             }
-                            break;
+                            return;
                         case SubscriptionType.Remove:
                             {
                                 if (notifiers.TryGetValue(subscription.Name, out NotifierManager manager))
@@ -79,10 +80,8 @@ namespace HandyIpc.Core
 
                                 ctx.Output = Signals.Unit;
                             }
-                            break;
+                            return;
                     }
-
-                    return;
                 }
 
                 await next();

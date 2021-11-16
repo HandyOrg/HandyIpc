@@ -54,9 +54,13 @@ namespace HandyIpc
             ConcurrentDictionary<string, NotifierManager> notifiers = new();
             foreach (var (key, type, factory) in _interfaceMap)
             {
-                IMethodDispatcher dispatcher = CreateDispatcher(type, factory);
-                dispatcher.NotifierManager = notifiers.GetOrAdd(key, _ => new NotifierManager(_serializerFactory()));
-                Middleware methodDispatcher = dispatcher.Dispatch;
+                object dispatcher = CreateDispatcher(type, factory);
+                if (dispatcher is INotifiable notifiable)
+                {
+                    notifiable.NotifierManager = notifiers.GetOrAdd(key, _ => new NotifierManager(_serializerFactory()));
+                }
+
+                Middleware methodDispatcher = ((IMethodDispatcher)dispatcher).Dispatch;
                 map.Add(key, methodDispatcher);
             }
 
@@ -65,11 +69,15 @@ namespace HandyIpc
                 Middleware methodDispatcher = Middlewares.GetMethodDispatcher(
                     genericTypes =>
                     {
-                        IMethodDispatcher dispatcher = CreateDispatcher(
+                        object dispatcher = CreateDispatcher(
                             type.MakeGenericType(genericTypes),
                             () => factory(genericTypes));
-                        dispatcher.NotifierManager = notifiers.GetOrAdd(key, _ => new NotifierManager(_serializerFactory()));
-                        return dispatcher;
+                        if (dispatcher is INotifiable notifiable)
+                        {
+                            notifiable.NotifierManager = notifiers.GetOrAdd(key, _ => new NotifierManager(_serializerFactory()));
+                        }
+
+                        return (IMethodDispatcher)dispatcher;
                     });
                 map.Add(key, methodDispatcher);
             }
@@ -78,13 +86,13 @@ namespace HandyIpc
                 Middlewares.Heartbeat,
                 Middlewares.ExceptionHandler,
                 Middlewares.GetHandleRequest(map),
-                Middlewares.GetHandleEvent(notifiers),
+                Middlewares.GetHandleSubscription(notifiers),
                 Middlewares.NotFound);
 
             return new ContainerServer(_serverFactory(), middleware, _serializerFactory(), _loggerFactory());
         }
 
-        private static IMethodDispatcher CreateDispatcher(Type interfaceType, Func<object> factory)
+        private static object CreateDispatcher(Type interfaceType, Func<object> factory)
         {
             object instance = factory();
 
@@ -105,9 +113,7 @@ namespace HandyIpc
             // this does not lead to naming conflicts even if the user also declares a Dispatch method
             // with the same signature in the IContract interface.
             object proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
-            var dispatcher = (IMethodDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
-
-            return dispatcher;
+            return Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
         }
     }
 }

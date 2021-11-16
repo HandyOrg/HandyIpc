@@ -11,7 +11,7 @@ namespace HandyIpc.Core
         public AsyncPool(Func<Task<T>> factory, Func<T, Task<bool>>? checkValue = null)
         {
             _factory = factory;
-            _checkValue = checkValue ?? (_ => Task.FromResult(true));
+            _checkValue = checkValue;
         }
 
         public async Task<RentedValue<T>> RentAsync()
