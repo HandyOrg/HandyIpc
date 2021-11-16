@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace HandyIpc.Core
@@ -6,7 +5,6 @@ namespace HandyIpc.Core
     public class NotifierManager
     {
         private readonly object _locker = new();
-        private readonly string _key = Guid.NewGuid().ToString();
         private readonly ISerializer _serializer;
         private readonly Dictionary<string, Notifier> _notifiers = new();
 

@@ -37,8 +37,7 @@ namespace HandyIpc.Core
         {
             if (_pool.TryRemove(name, out _))
             {
-                using var rented = _sender.ConnectionPool.Rent();
-                byte[] removeResult = rented.Value.Invoke(Subscription.Remove(_key, name, _serializer));
+                byte[] removeResult = _sender.Invoke(Subscription.Remove(_key, name, _serializer));
                 if (!removeResult.IsUnit())
                 {
                     // TODO: Logging.
@@ -58,8 +57,16 @@ namespace HandyIpc.Core
                     break;
                 }
 
-                connection.Write(Signals.Unit);
-                awaiter.Handler(input);
+                try
+                {
+                    // The Read() and Write() are used to ensure that calls are synchronized (blocked)
+                    // and that the Write() must be called after the execution of the Handler() is completed.
+                    awaiter.Handler(input);
+                }
+                finally
+                {
+                    connection.Write(Signals.Unit);
+                }
             }
         }
 
