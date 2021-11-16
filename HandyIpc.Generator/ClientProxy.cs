@@ -30,17 +30,19 @@ namespace {@namespace}
         private readonly Sender _sender;
         private readonly ISerializer _serializer;
         private readonly string _key;
+{Text(events.Any() ? @"
         private readonly AwaiterManager _awaiterManager;
+" : RemoveLineIfEmpty)}
 
 {events.For(item => $@"
         private event {item.Type.ToTypeDeclaration()} _{item.Name};
 ")}
-
 {events.For(item =>
             {
-                var eSymbol = ((INamedTypeSymbol)item.Type).DelegateInvokeMethod!.Parameters[1];
+                IParameterSymbol eSymbol = ((INamedTypeSymbol)item.Type).DelegateInvokeMethod!.Parameters[1];
                 string eType = eSymbol.Type.ToTypeDeclaration();
                 return $@"
+
         public event {item.Type.ToTypeDeclaration()} {item.Name}
         {{
             add
@@ -65,7 +67,6 @@ namespace {@namespace}
                 }}
             }}
         }}
-
 ";
             })}
 
@@ -74,7 +75,9 @@ namespace {@namespace}
             _sender = sender;
             _serializer = serializer;
             _key = key;
+{Text(events.Any() ? @"
             _awaiterManager = new AwaiterManager(key, sender, serializer);
+" : RemoveLineIfEmpty)}
         }}
 {methods.For(method =>
 {

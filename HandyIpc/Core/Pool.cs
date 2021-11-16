@@ -7,10 +7,10 @@ namespace HandyIpc.Core
         private readonly Func<TValue> _factory;
         private readonly Func<TValue, bool> _checkValue;
 
-        public Pool(Func<TValue> factory, Func<TValue, bool>? checkValue = null)
+        public Pool(Func<TValue> factory, Func<TValue, bool> checkValue)
         {
             _factory = factory;
-            _checkValue = checkValue ?? (_ => true);
+            _checkValue = checkValue;
         }
 
         public RentedValue<TValue> Rent()
