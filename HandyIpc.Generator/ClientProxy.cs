@@ -32,7 +32,9 @@ namespace {@namespace}
         private readonly string _key;
         private readonly AwaiterManager _awaiterManager;
 
-{events.For(item => $@"private event {item.Type.ToTypeDeclaration()} _{item.Name};")}
+{events.For(item => $@"
+        private event {item.Type.ToTypeDeclaration()} _{item.Name};
+")}
 
 {events.For(item =>
             {
@@ -63,6 +65,7 @@ namespace {@namespace}
                 }}
             }}
         }}
+
 ";
             })}
 

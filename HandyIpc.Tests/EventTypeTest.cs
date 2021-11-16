@@ -33,8 +33,12 @@ namespace HandyIpcTests
             TestEventHandlerSubscribeAndUnsubscribe(instance);
         }
 
-        private void TestEventHandlerSubscribeAndUnsubscribe(IEventType instance)
+        private static void TestEventHandlerSubscribeAndUnsubscribe(IEventType instance)
         {
+            // Some issues will occur only when the number of tests is high.
+            // In particular, it tests whether the event calls are synchronized.
+            const int testCount = 10000;
+
             int count1 = 0;
             int count2 = 0;
             int count3 = 0;
@@ -49,7 +53,7 @@ namespace HandyIpcTests
             instance.Changed += handler2;
             instance.Changed += handler3;
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < testCount; i++)
             {
                 instance.RaiseChanged(EventArgs.Empty);
                 Assert.Equal(i + 1, count1);
@@ -65,7 +69,7 @@ namespace HandyIpcTests
             instance.Changed -= handler2;
             instance.Changed -= handler3;
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < testCount; i++)
             {
                 instance.RaiseChanged(EventArgs.Empty);
                 Assert.Equal(0, count1);
@@ -79,7 +83,7 @@ namespace HandyIpcTests
             instance.Changed += handler2;
             instance.Changed += handler3;
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < testCount; i++)
             {
                 instance.RaiseChanged(EventArgs.Empty);
                 Assert.Equal(2 * (i + 1), count1);
