@@ -28,15 +28,14 @@ namespace {@namespace}
 
 {events.For(item => $@"
         public event {item.Type.ToTypeDeclaration()} {item.Name};
-", RemoveLineIfEmpty)}
+")}
 
         public {nameof(ServerProxy)}{className}({interfaceType} instance)
         {{
             _instance = instance;
-
 {events.For(item => $@"
             instance.{item.Name} += (sender, e) => {item.Name}?.Invoke(sender, e);
-", RemoveLineIfEmpty)}
+")}
         }}
 {methods.For(method =>
 {

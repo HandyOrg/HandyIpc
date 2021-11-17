@@ -13,13 +13,13 @@ namespace HandyIpc.Core
             _serializer = serializer;
         }
 
-        public void Publish<T>(string name, T e)
+        public void Publish<T>(string name, T args)
         {
             lock (_locker)
             {
                 if (_notifiers.TryGetValue(name, out Notifier notifier))
                 {
-                    notifier.Publish(_serializer.Serialize(e, typeof(T)));
+                    notifier.Publish(_serializer.Serialize(args));
                 }
             }
         }
@@ -51,52 +51,42 @@ namespace HandyIpc.Core
 
         private class Notifier
         {
-            private readonly object _locker = new();
             private readonly Dictionary<int, IConnection> _connections = new();
 
-            public void Publish(byte[] e)
+            public void Publish(byte[] bytes)
             {
-                lock (_locker)
+                foreach (var item in _connections)
                 {
-                    foreach (var item in _connections)
-                    {
-                        int processId = item.Key;
-                        IConnection connection = item.Value;
+                    int processId = item.Key;
+                    IConnection connection = item.Value;
 
-                        try
+                    try
+                    {
+                        byte[] result = connection.Invoke(bytes);
+                        if (!result.IsUnit())
                         {
-                            byte[] result = connection.Invoke(e);
-                            if (!result.IsUnit())
-                            {
-                                // TODO: Handle exception.
-                            }
+                            // TODO: Handle exception.
                         }
-                        catch
-                        {
-                            Unsubscribe(processId);
-                        }
+                    }
+                    catch
+                    {
+                        Unsubscribe(processId);
                     }
                 }
             }
 
             public void Subscribe(int processId, IConnection connection)
             {
-                lock (_locker)
-                {
-                    _connections[processId] = connection;
-                }
+                _connections[processId] = connection;
             }
 
             public void Unsubscribe(int processId)
             {
-                lock (_locker)
+                if (_connections.TryGetValue(processId, out IConnection connection))
                 {
-                    if (_connections.TryGetValue(processId, out IConnection connection))
-                    {
-                        _connections.Remove(processId);
-                        // Send a signal to notify end this connection.
-                        connection.Write(Signals.Empty);
-                    }
+                    _connections.Remove(processId);
+                    // Send a signal to notify end this connection.
+                    connection.Write(Signals.Empty);
                 }
             }
         }

@@ -122,5 +122,10 @@ namespace HandyIpc.Generator
                 current = current.BaseType;
             }
         }
+
+        public static bool IsStdEventHandler(this IEventSymbol symbol)
+        {
+            return true;
+        }
     }
 }
