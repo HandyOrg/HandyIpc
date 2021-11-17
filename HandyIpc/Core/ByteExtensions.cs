@@ -5,6 +5,11 @@ namespace HandyIpc.Core
 {
     internal static class ByteExtensions
     {
+        internal static byte[] Slice(this byte[] bytes, (int start, int length) range)
+        {
+            return bytes.Slice(range.start, range.length);
+        }
+
         internal static byte[] Slice(this byte[] bytes, int start, int length)
         {
             byte[] result = new byte[length];
