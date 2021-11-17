@@ -2,11 +2,20 @@
 
 [English](./README.md) | 中文
 
-HandyIpc 是一个开箱即用的进程间通讯（IPC）库，对远程方法的调用类似 [WCF](https://docs.microsoft.com/en-us/dotnet/framework/wcf/whats-wcf)，但相比之下更为轻量，免去了一切繁琐的配置，从入门到精通只需读完此 README。
+HandyIpc 是一个开箱即用的进程间通讯（IPC）库，对远程方法的调用类似 [WCF](https://docs.microsoft.com/en-us/dotnet/framework/wcf/whats-wcf)，但相比之下更为轻量，免去了繁琐的配置，从入门到精通只需读完此 README。
 
 本仓库提供了一组 High-Level 的 API 用于远程方法调用。它的底层通讯协议可以任意选择，如：Named Pipe、MMF（内存映射文件）或 Socket 等，框架本身并不关心具体的实现。
 
 一句话概括本仓库的 API 的设计理念：一个远程的 Ioc 容器。熟悉 Ioc 容器的朋友应该了解：Ioc 容器大致分为注册对象（`Register<T, U>()`）和取用对象（`Resolve<T>()`）两个操作，而一个 IPC 库无非就是将这两个操作拆分到了两个进程中，即：在服务端注册对象，在客户端取用对象。（当然，Ioc 容器还有一个很重要的功能：自动根据依赖关系对接口类型进行赋值，本库当然没有这个功能，也完全不需要实现这一功能。）
+
+# 功能
+
+1. [x] 支持基础的方法和事件。
+2. [x] 支持泛型接口。
+3. [x] 支持泛型方法。（允许任意嵌套的泛型参数）。
+4. [x] 支持以 `Task/Task<T>` 作为返回值的异步方法。
+5. [x] 支持使用 NamedPipe 或 Socket 进行通讯。
+6. [x] 对于不支持的情况，提供了丰富的编译时检查，详情见[这里](https://github.com/HandyOrg/HandyIpc/wiki/Diagnostic-Messages)。
 
 ## NuGet
 
@@ -106,10 +115,3 @@ var result2 = demo1.GetTypeName<string>(); // "String"
 var result3 = await demo1.GetDefaultAsync(); // null
 var result3 = await demo2.GetDefaultAsync(); // 0
 ```
-
-## TODO List
-
-1. [x] Support for generic interface.
-2. [x] Support for `Task/Task<T>` return value in interface method.
-3. [x] Support for generic methods (parameter type allow contains nested generic types).
-4. [x] NOT support for interface inheritance.
