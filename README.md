@@ -2,9 +2,18 @@
 
 English | [中文](./README.zh-CN.md)
 
-HandyIpc is an out-of-the-box inter-process communication (IPC) library, similar to WCF for remote method calls, but lighter in comparison, eliminating all the tedious configuration. You only need to read this README from the beginning to the master.
+HandyIpc is an out-of-the-box inter-process communication (IPC) library, similar to WCF for remote method calls, but lighter in comparison, eliminating all the tedious configuration. You only need to read this README from a beginner to a master.
 
 This library provides a high-level RMI (remote method invocation) API. Its underlying communication can be implemented by whatever you like, such as Named Pipe, MMF (memory mapping file) or Socket, and this framework does not care about the specific implementation.
+
+# Features
+
+1. [x] Support for basic method and event.
+2. [x] Support for generic interface.
+3. [x] Support for generic method (parameter type allow contains nested generic types).
+4. [x] Support for async methods with `Task or Task<T>` as return value.
+5. [x] Support communication using NamedPipe or Socket (tcp).
+6. [x] Compile-time checks are provided for unsupported cases, see [here](https://github.com/HandyOrg/HandyIpc/wiki/Diagnostic-Messages) for details.
 
 ## NuGet
 
@@ -105,10 +114,3 @@ var result2 = demo1.GetTypeName<string>(); // "String"
 var result3 = await demo1.GetDefaultAsync(); // null
 var result3 = await demo2.GetDefaultAsync(); // 0
 ```
-
-## TODO List
-
-1. [x] Support for generic interface.
-2. [x] Support for `Task/Task<T>` return value in interface method.
-3. [x] Support for generic methods (parameter type allow contains nested generic types).
-4. [x] NOT support for interface inheritance.
