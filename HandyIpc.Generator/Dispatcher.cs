@@ -7,7 +7,7 @@ namespace HandyIpc.Generator
 {
     public static class Dispatcher
     {
-        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods, List<IEventSymbol> events)
+        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods, IReadOnlyCollection<IEventSymbol> events)
         {
             var (@namespace, className, typeParameters) = @interface.GenerateNameFromInterface();
             string interfaceType = @interface.ToFullDeclaration();

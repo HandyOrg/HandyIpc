@@ -6,7 +6,14 @@ namespace HandyIpc.Generator
 {
     internal static class Extensions
     {
-        public static INamedTypeSymbol TaskTypeSymbol { get; set; } = null!;
+        private static INamedTypeSymbol TaskTypeSymbol = null!;
+        private static INamedTypeSymbol ObjectTypeSymbol = null!;
+
+        public static void Initialize(Compilation compilation)
+        {
+            TaskTypeSymbol = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task")!;
+            ObjectTypeSymbol = compilation.GetTypeByMetadataName("System.Object")!;
+        }
 
         public static string ToFullDeclaration(this ISymbol symbol)
         {
@@ -125,7 +132,11 @@ namespace HandyIpc.Generator
 
         public static bool IsStdEventHandler(this IEventSymbol symbol)
         {
-            return true;
+            IMethodSymbol methodSymbol = ((INamedTypeSymbol)symbol.Type).DelegateInvokeMethod!;
+
+            return methodSymbol.ReturnsVoid &&
+                   methodSymbol.Parameters.Length == 2 &&
+                   methodSymbol.Parameters[0].Type.Equals(ObjectTypeSymbol, SymbolEqualityComparer.Default);
         }
     }
 }

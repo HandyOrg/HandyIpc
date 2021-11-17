@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using static HandyIpc.Generator.DiagnosticDescriptors;
-using System.Diagnostics;
 
 namespace HandyIpc.Generator
 {
@@ -15,7 +14,7 @@ namespace HandyIpc.Generator
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            //Debugger.Launch();
+            //System.Diagnostics.Debugger.Launch();
 
             if (context.SyntaxReceiver is not SyntaxReceiver receiver)
             {
@@ -23,9 +22,9 @@ namespace HandyIpc.Generator
             }
 
             Compilation compilation = context.Compilation;
+            Extensions.Initialize(compilation);
 
             INamedTypeSymbol? ipcContractAttributeSymbol = compilation.GetTypeByMetadataName("HandyIpc.IpcContractAttribute");
-            Extensions.TaskTypeSymbol = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task")!;
             if (ipcContractAttributeSymbol is null)
             {
                 context.ReportDiagnostic(Diagnostic.Create(HandyIpcNotReferenced, Location.None));
@@ -43,25 +42,30 @@ namespace HandyIpc.Generator
                         // WORKAROUND: The @interface must not be null here.
                         .Select(@interface => @interface!)
                         .Where(@interface => ContainsAttribute(@interface, ipcContractAttributeSymbol));
-                })
-                .Select(@interface =>
-                {
-                    var members = @interface.GetMembers().ToArray();
-                    return (
-                        @interface,
-                        methods: members
-                            .OfType<IMethodSymbol>()
-                            .Where(item => item.MethodKind
-                                is not MethodKind.EventAdd
-                                and not MethodKind.EventRemove
-                                and not MethodKind.EventRaise)
-                            .ToList(),
-                        events: members.OfType<IEventSymbol>().ToList());
                 });
 
             var fileNameCounter = new Dictionary<string, int>();
-            foreach (var (@interface, methods, events) in contractInterfaces)
+            foreach (var @interface in contractInterfaces)
             {
+                ISymbol[] members = @interface.GetMembers().ToArray();
+                IMethodSymbol[] methods = members.OfType<IMethodSymbol>()
+                    .Where(item => item.MethodKind
+                        is not MethodKind.EventAdd
+                        and not MethodKind.EventRemove
+                        and not MethodKind.EventRaise)
+                    .ToArray();
+                IEventSymbol[] events = members.OfType<IEventSymbol>().ToArray();
+
+                if (members.Length != methods.Length + events.Length * 3)
+                {
+                    foreach (Location location in @interface.Locations)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(ContainsNotSupportedMembers, location, @interface.Name));
+                    }
+
+                    continue;
+                }
+
                 if (@interface.Interfaces.Length > 0)
                 {
                     foreach (Location location in @interface.Locations)
@@ -79,6 +83,18 @@ namespace HandyIpc.Generator
                         context.ReportDiagnostic(Diagnostic.Create(MustContainsMethod, location, @interface.Name));
                     }
 
+                    continue;
+                }
+
+                bool hasInvalidEvent = false;
+                foreach (var location in events.Where(@event => !@event.IsStdEventHandler()).SelectMany(@event => @event.Locations))
+                {
+                    hasInvalidEvent = true;
+                    context.ReportDiagnostic(Diagnostic.Create(UseStandardEventHandler, location, @interface.Name));
+                }
+
+                if (hasInvalidEvent)
+                {
                     continue;
                 }
 
