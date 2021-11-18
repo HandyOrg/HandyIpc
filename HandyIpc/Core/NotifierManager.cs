@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HandyIpc.Core
 {
@@ -55,7 +56,8 @@ namespace HandyIpc.Core
 
             public void Publish(byte[] bytes)
             {
-                foreach (var item in _connections)
+                var connections = _connections.ToArray();
+                foreach (var item in connections)
                 {
                     int processId = item.Key;
                     IConnection connection = item.Value;
@@ -86,7 +88,7 @@ namespace HandyIpc.Core
                 {
                     _connections.Remove(processId);
                     // Send a signal to notify end this connection.
-                    connection.Write(Signals.Empty);
+                    connection.Dispose();
                 }
             }
         }
