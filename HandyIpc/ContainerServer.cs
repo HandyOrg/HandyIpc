@@ -85,7 +85,13 @@ namespace HandyIpc
                     byte[] input = await connection.ReadAsync(token);
                     if (input.Length == 0)
                     {
-                        continue;
+                        // When the remote side closes the link, the read does NOT throw any exception,
+                        // only returns 0 bytes data, and does NOT BLOCK, causing a high frequency dead loop.
+                        // Differences in behavior:
+                        // - NamedPipe: After multiple non-blocking loops, an ArgumentException is thrown and the loop is terminated,
+                        // so for the most part it behaves normally.
+                        // - Socket(Tcp): Always in the unblock loop.
+                        break;
                     }
 
                     Context ctx = new()
