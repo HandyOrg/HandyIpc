@@ -52,7 +52,7 @@ namespace HandyIpc.Core
             {
                 // Will blocked until accepted a notification.
                 byte[] input = connection.Read();
-                if (input.IsEmpty())
+                if (input.Length == 0 || input.IsEmpty())
                 {
                     break;
                 }
