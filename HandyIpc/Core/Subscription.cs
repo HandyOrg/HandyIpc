@@ -9,8 +9,8 @@ namespace HandyIpc.Core
     {
         private const string CallbackHeader = "handyipc/cb";
 
-        private static readonly int InnerProcessId = Process.GetCurrentProcess().Id;
         private static readonly byte[] CallbackHeaderBytes = Encoding.ASCII.GetBytes(CallbackHeader);
+        private static readonly int ProcessIdSelf = Process.GetCurrentProcess().Id;
 
         public SubscriptionType Type { get; set; }
 
@@ -18,7 +18,7 @@ namespace HandyIpc.Core
 
         public string CallbackName { get; set; } = string.Empty;
 
-        public int ProcessId => InnerProcessId;
+        public int ProcessId { get; set; }
 
         internal static bool TryParse(byte[] bytes, ISerializer serializer, out Subscription subscription)
         {
@@ -55,6 +55,7 @@ namespace HandyIpc.Core
             {
                 Type = type,
                 Name = key,
+                ProcessId = ProcessIdSelf,
                 CallbackName = name,
             }, typeof(Subscription));
 
