@@ -8,7 +8,7 @@ namespace HandyIpc.Logger
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEnabled(this ILogger logger, LogLevel level)
         {
-            return level <= logger.EnabledLevel;
+            return level >= logger.EnabledLevel;
         }
 
         public static void Fatal(this ILogger logger, string message, Exception? exception = null, [CallerMemberName] string? scopeName = null, int? threadId = null)

@@ -3,9 +3,9 @@ using System.Diagnostics;
 
 namespace HandyIpc.Logger
 {
-    public sealed class DebugLogger : ILogger
+    public sealed class DefaultLogger : ILogger
     {
-        public LogLevel EnabledLevel { get; set; }
+        public LogLevel EnabledLevel { get; set; } = LogLevel.Info;
 
         public void Log(LogLevel level, LogInfo info)
         {

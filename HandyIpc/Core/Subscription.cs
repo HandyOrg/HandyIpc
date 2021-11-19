@@ -7,7 +7,7 @@ namespace HandyIpc.Core
 
     public class Subscription
     {
-        private const string CallbackHeader = "handyipc/cb";
+        private const string CallbackHeader = "hi/cb";
 
         private static readonly byte[] CallbackHeaderBytes = Encoding.ASCII.GetBytes(CallbackHeader);
         private static readonly int ProcessIdSelf = Process.GetCurrentProcess().Id;

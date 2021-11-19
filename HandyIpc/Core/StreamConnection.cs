@@ -20,8 +20,8 @@ namespace HandyIpc.Core
 
         public virtual async Task WriteAsync(byte[] bytes, CancellationToken token)
         {
-            await _stream.WriteAsync(bytes, 0, bytes.Length, token);
-            await _stream.FlushAsync(token);
+            await _stream.WriteAsync(bytes, 0, bytes.Length, token).ConfigureAwait(false);
+            await _stream.FlushAsync(token).ConfigureAwait(false);
         }
 
         public virtual byte[] Read()

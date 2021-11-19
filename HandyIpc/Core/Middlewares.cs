@@ -48,14 +48,14 @@ namespace HandyIpc.Core
                         if (ctx.Logger.IsEnabled(LogLevel.Debug))
                         {
                             ctx.Logger.Debug("Before processing an ipc request. " +
-                                             $"(connection: {ctx.Connection.GetHashCode()}, name: {request.Name}, methodName: {request.MethodName}, arguments: [{string.Join(", ", request.Arguments)}])");
+                                             $"(connection: {ctx.Connection.GetHashCode()}, name: {request.Name}, methodName: {request.MethodName})");
                         }
 
                         await middleware(ctx, next);
                         if (ctx.Logger.IsEnabled(LogLevel.Debug))
                         {
                             ctx.Logger.Debug("After processing an ipc request. " +
-                                             $"(connection: {ctx.Connection.GetHashCode()}, name: {request.Name}, methodName: {request.MethodName}, arguments: [{string.Join(", ", request.Arguments)}])");
+                                             $"(connection: {ctx.Connection.GetHashCode()}, name: {request.Name}, methodName: {request.MethodName})");
                         }
 
                         return;
