@@ -1,5 +1,6 @@
 using System;
 using HandyIpc.Core;
+using HandyIpc.Logger;
 
 namespace HandyIpc
 {
