@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AssemblyName>HandyIpc.NamedPipe</AssemblyName>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
     <Version>0.6.0</Version>
     <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
   </PropertyGroup>
