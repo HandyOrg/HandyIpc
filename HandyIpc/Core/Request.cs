@@ -12,9 +12,8 @@ namespace HandyIpc.Core
     [Obfuscation(Exclude = true)]
     public class Request
     {
-        private const string ReqHeader = "handyipc/req";
+        private const string ReqHeader = "hi/req";
 
-        private static readonly byte[] Version = { 1 };
         private static readonly byte[] ReqHeaderBytes = Encoding.ASCII.GetBytes(ReqHeader);
         private static readonly IReadOnlyList<Type> EmptyTypeList = Enumerable.Empty<Type>().ToList().AsReadOnly();
         private static readonly IReadOnlyList<object?> EmptyObjectList = Enumerable.Empty<object?>().ToList().AsReadOnly();
@@ -104,7 +103,6 @@ namespace HandyIpc.Core
             /*
              * < Header                    >
              * | Req Token                 |
-             * | Version                   |
              * < Layout Table              >
              * | NameLength                |
              * | TypeArgumentsLength       |
@@ -128,7 +126,6 @@ namespace HandyIpc.Core
             byte[][] bytesList =
             {
                 ReqHeaderBytes,
-                Version,
                 BitConverter.GetBytes(nameBytes.Length),
                 BitConverter.GetBytes(typeArgumentsBytes.Length),
                 BitConverter.GetBytes(methodNameBytes.Length),
@@ -152,8 +149,7 @@ namespace HandyIpc.Core
                 return false;
             }
 
-            // Skip header and version bytes.
-            int offset = ReqHeaderBytes.Length + 1;
+            int offset = ReqHeaderBytes.Length;
             // Skip layout table, 5 is six field in bytes table.
             int start = offset + sizeof(int) * 5;
 

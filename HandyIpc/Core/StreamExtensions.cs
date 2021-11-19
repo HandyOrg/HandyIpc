@@ -41,7 +41,7 @@ namespace HandyIpc.Core
                 }
 
                 byte[] bytes = new byte[BatchBufferSize];
-                int actualCount = await self.ReadAsync(bytes, 0, BatchBufferSize, token);
+                int actualCount = await self.ReadAsync(bytes, 0, BatchBufferSize, token).ConfigureAwait(false);
 
                 if (CollectBytes(collector, bytes, actualCount))
                 {

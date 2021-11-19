@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using HandyIpc.Exceptions;
 
 namespace HandyIpc.Core
 {
@@ -67,7 +68,7 @@ namespace HandyIpc.Core
                         byte[] result = connection.Invoke(bytes);
                         if (!result.IsUnit())
                         {
-                            // TODO: Handle exception.
+                            throw new IpcException();
                         }
                     }
                     catch

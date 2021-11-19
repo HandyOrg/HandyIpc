@@ -105,8 +105,8 @@ namespace HandyIpc
                         Logger = _logger,
                         Serializer = _serializer,
                     };
-                    await Handler(ctx);
-                    await connection.WriteAsync(ctx.Output, token);
+                    await Handler(ctx).ConfigureAwait(false);
+                    await connection.WriteAsync(ctx.Output, token).ConfigureAwait(false);
 
                     if (!ctx.KeepAlive)
                     {

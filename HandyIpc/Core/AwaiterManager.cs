@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using HandyIpc.Exceptions;
 
 namespace HandyIpc.Core
 {
     public class AwaiterManager
     {
-        private readonly ConcurrentDictionary<string, Awaiter> _pool = new();
+        private readonly ConcurrentDictionary<string, Awaiter> _awaiters = new();
         private readonly string _key;
         private readonly ISerializer _serializer;
         private readonly Sender _sender;
@@ -21,38 +22,41 @@ namespace HandyIpc.Core
         public void Subscribe(string name, Action<byte[]> callback)
         {
             IConnection connection = _sender.ConnectionPool.Rent().Value;
-            Awaiter awaiter = _pool.GetOrAdd(name, _ => new Awaiter(callback, connection));
+            Awaiter awaiter = _awaiters.GetOrAdd(name, _ => new Awaiter(callback, connection));
 
             byte[] addResult = connection.Invoke(Subscription.Add(_key, name, _serializer));
             if (!addResult.IsUnit())
             {
-                // TODO: Use exact exception.
-                throw new InvalidOperationException();
+                throw new IpcException();
             }
 
-            Task.Run(() => LoopWait(awaiter));
+            Task.Run(() => LoopWait(name, awaiter));
         }
 
         public void Unsubscribe(string name)
         {
-            if (_pool.TryRemove(name, out _))
+            if (_awaiters.TryRemove(name, out _))
             {
-                byte[] removeResult = _sender.Invoke(Subscription.Remove(_key, name, _serializer));
-                if (!removeResult.IsUnit())
-                {
-                    // TODO: Logging.
-                }
+                _sender.Invoke(Subscription.Remove(_key, name, _serializer));
             }
         }
 
-        private static void LoopWait(Awaiter awaiter)
+        private void LoopWait(string name, Awaiter awaiter)
         {
             using IConnection connection = awaiter.Connection;
             while (true)
             {
                 // Will blocked until accepted a notification.
                 byte[] input = connection.Read();
-                if (input.Length == 0 || input.IsEmpty())
+                if (input.Length == 0)
+                {
+                    // The server unexpectedly closes the connection and the client should automatically retry.
+                    _awaiters.TryRemove(name, out _);
+                    Subscribe(name, awaiter.Handler);
+                    break;
+                }
+
+                if (input.IsEmpty())
                 {
                     break;
                 }
