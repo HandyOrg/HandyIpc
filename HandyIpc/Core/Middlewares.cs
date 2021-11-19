@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HandyIpc.Logger;
 
 namespace HandyIpc.Core
 {
@@ -44,7 +45,19 @@ namespace HandyIpc.Core
                     ctx.Request = request;
                     if (map.TryGetValue(request.Name, out Middleware middleware))
                     {
+                        if (ctx.Logger.IsEnabled(LogLevel.Debug))
+                        {
+                            ctx.Logger.Debug("Before processing an ipc request. " +
+                                             $"(connection: {ctx.Connection.GetHashCode()}, name: {request.Name}, methodName: {request.MethodName}, arguments: [{string.Join(", ", request.Arguments)}])");
+                        }
+
                         await middleware(ctx, next);
+                        if (ctx.Logger.IsEnabled(LogLevel.Debug))
+                        {
+                            ctx.Logger.Debug("After processing an ipc request. " +
+                                             $"(connection: {ctx.Connection.GetHashCode()}, name: {request.Name}, methodName: {request.MethodName}, arguments: [{string.Join(", ", request.Arguments)}])");
+                        }
+
                         return;
                     }
                 }
@@ -69,6 +82,12 @@ namespace HandyIpc.Core
                                     ctx.Output = Signals.Unit;
                                     ctx.KeepAlive = false;
                                 }
+
+                                if (ctx.Logger.IsEnabled(LogLevel.Debug))
+                                {
+                                    ctx.Logger.Debug("Add an event subscription. " +
+                                                     $"(connection: {ctx.Connection.GetHashCode()}, name: {subscription.Name}, eventName: {subscription.CallbackName}, pid: {subscription.ProcessId})");
+                                }
                             }
                             return;
                         case SubscriptionType.Remove:
@@ -79,6 +98,11 @@ namespace HandyIpc.Core
                                 }
 
                                 ctx.Output = Signals.Unit;
+                                if (ctx.Logger.IsEnabled(LogLevel.Debug))
+                                {
+                                    ctx.Logger.Debug("Remove an event subscription. " +
+                                                     $"(connection: {ctx.Connection.GetHashCode()}, name: {subscription.Name}, eventName: {subscription.CallbackName}, pid: {subscription.ProcessId})");
+                                }
                             }
                             return;
                     }

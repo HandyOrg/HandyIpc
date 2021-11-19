@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using HandyIpc.Core;
+using HandyIpc.Logger;
 
 namespace HandyIpc
 {
@@ -37,28 +38,36 @@ namespace HandyIpc
 #pragma warning restore 4014
 
             IsRunning = true;
+            _logger.Info("IPC service has been started...");
         }
 
         public void Stop()
         {
             _cancellationTokenSource?.Cancel();
             IsRunning = false;
+            _logger.Info("IPC service has been stopped.");
         }
 
         public void Dispose()
         {
             Stop();
             _server.Dispose();
+            _logger.Info("IPC service has been disposed.");
         }
 
         private async Task StartAsync(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
-                IConnection connection = await _server.WaitForConnectionAsync();
+                IConnection connection = await _server.WaitForConnectionAsync().ConfigureAwait(false);
                 if (token.IsCancellationRequested)
                 {
                     break;
+                }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.Debug($"A new connection is established. (hashCode: {connection.GetHashCode()})");
                 }
 
                 // Do not await the request handler, and go to await next stream connection directly.
@@ -75,14 +84,9 @@ namespace HandyIpc
             bool disposeConnection = true;
             try
             {
-                while (true)
+                while (!token.IsCancellationRequested)
                 {
-                    if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    byte[] input = await connection.ReadAsync(token);
+                    byte[] input = await connection.ReadAsync(token).ConfigureAwait(false);
                     if (input.Length == 0)
                     {
                         // When the remote side closes the link, the read does NOT throw any exception,
@@ -124,6 +128,11 @@ namespace HandyIpc
                 if (disposeConnection)
                 {
                     connection.Dispose();
+                }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.Debug($"A connection is released. (hashCode: {connection.GetHashCode()}, disposed: {disposeConnection})");
                 }
             }
         }
