@@ -20,6 +20,6 @@ namespace HandyIpc.Core
 
         public IConnection Connection { get; set; } = null!;
 
-        public bool KeepAlive { get; set; } = true;
+        public bool ReleaseConnection { get; set; }
     }
 }

@@ -108,7 +108,7 @@ namespace HandyIpc
                     await Handler(ctx).ConfigureAwait(false);
                     await connection.WriteAsync(ctx.Output, token).ConfigureAwait(false);
 
-                    if (!ctx.KeepAlive)
+                    if (ctx.ReleaseConnection)
                     {
                         disposeConnection = false;
                         break;

@@ -80,7 +80,7 @@ namespace HandyIpc.Core
                                 {
                                     manager.Subscribe(subscription.CallbackName, subscription.ProcessId, ctx.Connection);
                                     ctx.Output = Signals.Unit;
-                                    ctx.KeepAlive = false;
+                                    ctx.ReleaseConnection = true;
                                 }
 
                                 if (ctx.Logger.IsEnabled(LogLevel.Debug))

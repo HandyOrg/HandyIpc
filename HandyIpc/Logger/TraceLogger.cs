@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace HandyIpc.Logger
 {
-    public sealed class DefaultLogger : ILogger
+    public sealed class TraceLogger : ILogger
     {
         public LogLevel EnabledLevel { get; set; } = LogLevel.Info;
 
