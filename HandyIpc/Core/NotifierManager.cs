@@ -1,6 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
-using HandyIpc.Exceptions;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
@@ -8,7 +8,7 @@ namespace HandyIpc.Core
     {
         private readonly object _locker = new();
         private readonly ISerializer _serializer;
-        private readonly Dictionary<string, Notifier> _notifiers = new();
+        private readonly ConcurrentDictionary<string, Notifier> _notifiers = new();
 
         public NotifierManager(ISerializer serializer)
         {
@@ -17,65 +17,50 @@ namespace HandyIpc.Core
 
         public void Publish<T>(string name, T args)
         {
-            lock (_locker)
+            if (_notifiers.TryGetValue(name, out Notifier notifier))
             {
-                if (_notifiers.TryGetValue(name, out Notifier notifier))
-                {
-                    notifier.Publish(_serializer.Serialize(args));
-                }
+                notifier.Push(_serializer.Serialize(args));
             }
         }
 
         public void Subscribe(string name, int processId, IConnection connection)
         {
-            lock (_locker)
-            {
-                if (!_notifiers.ContainsKey(name))
-                {
-                    _notifiers.Add(name, new Notifier());
-                }
-
-                var notifier = _notifiers[name];
-                notifier.Subscribe(processId, connection);
-            }
+            Notifier notifier = _notifiers.GetOrAdd(name, _ => new Notifier());
+            notifier.Subscribe(processId, connection);
         }
 
         public void Unsubscribe(string name, int processId)
         {
-            lock (_locker)
+            if (_notifiers.TryGetValue(name, out Notifier notifier))
             {
-                if (_notifiers.TryGetValue(name, out Notifier notifier))
-                {
-                    notifier.Unsubscribe(processId);
-                }
+                notifier.Unsubscribe(processId);
             }
         }
 
         private class Notifier
         {
-            private readonly Dictionary<int, IConnection> _connections = new();
+            private readonly ConcurrentDictionary<int, IConnection> _connections = new();
+            private readonly BlockingCollection<byte[]> _queue = new();
 
-            public void Publish(byte[] bytes)
+            private CancellationTokenSource? _source;
+
+            public Notifier() => Start();
+
+            public void Push(byte[] bytes)
             {
-                var connections = _connections.ToArray();
-                foreach (var item in connections)
+                if (_connections.IsEmpty)
                 {
-                    int processId = item.Key;
-                    IConnection connection = item.Value;
-
-                    try
-                    {
-                        byte[] result = connection.Invoke(bytes);
-                        if (!result.IsUnit())
-                        {
-                            throw new IpcException();
-                        }
-                    }
-                    catch
-                    {
-                        Unsubscribe(processId);
-                    }
+                    _source?.Cancel();
+                    _source = null;
+                    return;
                 }
+
+                if (_source is null or { IsCancellationRequested: true })
+                {
+                    Start();
+                }
+
+                _queue.Add(bytes);
             }
 
             public void Subscribe(int processId, IConnection connection)
@@ -85,11 +70,48 @@ namespace HandyIpc.Core
 
             public void Unsubscribe(int processId)
             {
-                if (_connections.TryGetValue(processId, out IConnection connection))
+                if (_connections.TryRemove(processId, out IConnection connection))
                 {
-                    _connections.Remove(processId);
                     // Send a signal to notify end this connection.
                     connection.Dispose();
+                }
+            }
+
+            private void Start()
+            {
+                while (_queue.TryTake(out _))
+                {
+                    // Clear history queue.
+                }
+
+                _source = new CancellationTokenSource();
+                Task.Run(() => Publish(_source.Token));
+            }
+
+            private void Publish(CancellationToken token)
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    byte[] bytes = _queue.Take(token);
+                    var connections = _connections.ToArray();
+                    foreach (var item in connections)
+                    {
+                        int processId = item.Key;
+                        IConnection connection = item.Value;
+
+                        try
+                        {
+                            byte[] result = connection.Invoke(bytes);
+                            if (!result.IsUnit())
+                            {
+                                Unsubscribe(processId);
+                            }
+                        }
+                        catch
+                        {
+                            Unsubscribe(processId);
+                        }
+                    }
                 }
             }
         }
