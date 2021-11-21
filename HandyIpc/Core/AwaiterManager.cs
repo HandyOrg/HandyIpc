@@ -50,12 +50,13 @@ namespace HandyIpc.Core
                 byte[] input = connection.Read();
                 if (input.Length == 0)
                 {
-                    // The server unexpectedly closes the connection and the client should automatically retry.
+                    // The server unexpectedly closes the connection and the client should retry automatically.
                     _awaiters.TryRemove(name, out _);
                     Subscribe(name, awaiter.Handler);
                     break;
                 }
 
+                // Empty type means this unsubscribe, it is a special signal from the server.
                 if (input.IsEmpty())
                 {
                     break;

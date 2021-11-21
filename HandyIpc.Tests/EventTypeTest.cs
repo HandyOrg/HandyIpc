@@ -18,14 +18,14 @@ namespace HandyIpcTests
             _socketFixture = socketFixture;
         }
 
-        [Fact]
+        //[Fact]
         public void TestEventHandlerWithSocket()
         {
             var instance = _socketFixture.Client.Resolve<IEventType>();
             TestEventHandlerSubscribeAndUnsubscribe(instance);
         }
 
-        [Fact]
+        //[Fact]
         public void TestEventHandlerWithNamedPipe()
         {
             var instance = _namedPipeFixture.Client.Resolve<IEventType>();
