@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using HandyIpc.Exceptions;
 
@@ -35,8 +36,10 @@ namespace HandyIpc.Core
 
         public void Unsubscribe(string name)
         {
-            if (_awaiters.TryRemove(name, out _))
+            if (_awaiters.TryRemove(name, out Awaiter awaiter))
             {
+                awaiter.Cancellation.Cancel();
+                // Send a signal to dispose the remote connection.
                 _sender.Invoke(Subscription.Remove(_key, name, _serializer));
             }
         }
@@ -44,21 +47,23 @@ namespace HandyIpc.Core
         private void LoopWait(string name, Awaiter awaiter)
         {
             using IConnection connection = awaiter.Connection;
-            while (true)
+            using CancellationTokenSource cancellation = awaiter.Cancellation;
+            CancellationToken token = cancellation.Token;
+
+            while (!token.IsCancellationRequested)
             {
                 // Will blocked until accepted a notification.
                 byte[] input = connection.Read();
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 if (input.Length == 0)
                 {
                     // The server unexpectedly closes the connection and the client should retry automatically.
                     _awaiters.TryRemove(name, out _);
                     Subscribe(name, awaiter.Handler);
-                    break;
-                }
-
-                // Empty type means this unsubscribe, it is a special signal from the server.
-                if (input.IsEmpty())
-                {
                     break;
                 }
 
@@ -80,6 +85,8 @@ namespace HandyIpc.Core
             public Action<byte[]> Handler { get; }
 
             public IConnection Connection { get; }
+
+            public CancellationTokenSource Cancellation { get; } = new();
 
             public Awaiter(Action<byte[]> handler, IConnection connection)
             {

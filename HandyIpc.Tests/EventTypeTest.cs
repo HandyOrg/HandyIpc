@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using HandyIpc;
 using HandyIpcTests.Fixtures;
 using HandyIpcTests.Interfaces;
@@ -18,76 +19,46 @@ namespace HandyIpcTests
             _socketFixture = socketFixture;
         }
 
-        //[Fact]
-        public void TestEventHandlerWithSocket()
+        [Fact]
+        public async Task TestEventHandlerWithSocket()
         {
             var instance = _socketFixture.Client.Resolve<IEventType>();
-            TestEventHandlerSubscribeAndUnsubscribe(instance);
+            await TestEventHandlerSubscribeAndUnsubscribe(instance);
         }
 
-        //[Fact]
-        public void TestEventHandlerWithNamedPipe()
+        [Fact]
+        public async Task TestEventHandlerWithNamedPipe()
         {
             var instance = _namedPipeFixture.Client.Resolve<IEventType>();
-            TestEventHandlerSubscribeAndUnsubscribe(instance);
+            await TestEventHandlerSubscribeAndUnsubscribe(instance);
         }
 
-        private static void TestEventHandlerSubscribeAndUnsubscribe(IEventType instance)
+        private static async Task TestEventHandlerSubscribeAndUnsubscribe(IEventType instance)
         {
             // Some issues will occur only when the number of tests is high.
             // In particular, it tests whether the event calls are synchronized.
             const int testCount = 10000;
 
-            int count1 = 0;
-            int count2 = 0;
-            int count3 = 0;
-
-            // ReSharper disable AccessToModifiedClosure
-            void Handler1(object? _, EventArgs e) => count1++;
-            EventHandler handler2 = (_, _) => count2++;
-            EventHandler handler3 = (_, _) => count3++;
-            // ReSharper restore AccessToModifiedClosure
-
-            instance.Changed += Handler1;
-            instance.Changed += handler2;
-            instance.Changed += handler3;
-
-            for (int i = 0; i < testCount; i++)
+            int count = 0;
+            Task WrapAsAsync(IEventType source)
             {
-                instance.RaiseChanged(EventArgs.Empty);
-                Assert.Equal(i + 1, count1);
-                Assert.Equal(i + 1, count2);
-                Assert.Equal(i + 1, count3);
+                TaskCompletionSource tcs = new();
+                source.Changed += OnChanged;
+                source.RaiseChanged(EventArgs.Empty);
+                return tcs.Task;
+
+                void OnChanged(object? sender, EventArgs e)
+                {
+                    source.Changed -= OnChanged;
+                    count++;
+                    tcs.SetResult();
+                }
             }
 
-            count1 = 0;
-            count2 = 0;
-            count3 = 0;
-
-            instance.Changed -= Handler1;
-            instance.Changed -= handler2;
-            instance.Changed -= handler3;
-
             for (int i = 0; i < testCount; i++)
             {
-                instance.RaiseChanged(EventArgs.Empty);
-                Assert.Equal(0, count1);
-                Assert.Equal(0, count2);
-                Assert.Equal(0, count3);
-            }
-
-            instance.Changed += Handler1;
-            instance.Changed += Handler1;
-            instance.Changed += handler2;
-            instance.Changed += handler2;
-            instance.Changed += handler3;
-
-            for (int i = 0; i < testCount; i++)
-            {
-                instance.RaiseChanged(EventArgs.Empty);
-                Assert.Equal(2 * (i + 1), count1);
-                Assert.Equal(2 * (i + 1), count2);
-                Assert.Equal(i + 1, count3);
+                await WrapAsAsync(instance);
+                Assert.Equal(i + 1, count);
             }
         }
     }

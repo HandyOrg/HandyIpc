@@ -75,13 +75,13 @@ namespace HandyIpcTests
 
             instance.SyncMethod();
 
-            Assert.Throws<TestException>(instance.SyncMethodWithException);
+            Helper.AssertInnerException<TestException>(instance.SyncMethodWithException);
 
             await instance.TestDoNothing();
 
-            await Assert.ThrowsAsync<TestException>(instance.TestException);
+            await Helper.AssertInnerException<TestException>(instance.TestException);
 
-            await Assert.ThrowsAsync<TestException>(() => instance.TestGenericException(string.Empty));
+            await Helper.AssertInnerException<TestException>(() => instance.TestGenericException(string.Empty));
 
             Assert.Equal(await local.TestReturnDouble(), await instance.TestReturnDouble());
 

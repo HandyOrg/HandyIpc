@@ -47,7 +47,7 @@ namespace HandyIpcTests
                 Assert.Equal(expected, actual);
             }
 
-            await Assert.ThrowsAsync<TestException>(async () => await remote.TestAsync());
+            await Helper.AssertInnerException<TestException>(remote.TestAsync);
 
             {
                 ClassWithNewCtor.InitialName = Guid.NewGuid().ToString();

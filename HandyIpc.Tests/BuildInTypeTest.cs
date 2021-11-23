@@ -36,7 +36,7 @@ namespace HandyIpcTests
 
         private static void TestCases(IBuildInType instance)
         {
-            Assert.Throws<TestException>(instance.TestVoidWithoutParams);
+            Helper.AssertInnerException<TestException>(instance.TestVoidWithoutParams);
 
             instance.TestDoNothing();
 
