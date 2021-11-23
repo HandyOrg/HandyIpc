@@ -2,12 +2,12 @@ using System;
 
 namespace HandyIpc.Core
 {
-    public sealed class Pool<TValue> : PoolBase<TValue> where TValue : IDisposable
+    public sealed class Pool<T> : PoolBase<T> where T : IDisposable
     {
         private readonly Func<T> _factory;
         private readonly Func<T, bool> _checkValue;
 
-        public Pool(Func<TValue> factory, Func<TValue, bool> checkValue)
+        public Pool(Func<T> factory, Func<T, bool> checkValue)
         {
             _factory = factory;
             _checkValue = checkValue;
