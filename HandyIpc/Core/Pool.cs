@@ -4,8 +4,8 @@ namespace HandyIpc.Core
 {
     public sealed class Pool<TValue> : PoolBase<TValue> where TValue : IDisposable
     {
-        private readonly Func<TValue> _factory;
-        private readonly Func<TValue, bool> _checkValue;
+        private readonly Func<T> _factory;
+        private readonly Func<T, bool> _checkValue;
 
         public Pool(Func<TValue> factory, Func<TValue, bool> checkValue)
         {
@@ -13,20 +13,20 @@ namespace HandyIpc.Core
             _checkValue = checkValue;
         }
 
-        public RentedValue<TValue> Rent()
+        public RentedValue<T> Rent()
         {
-            CheckDisposed("Pool");
+            CheckDisposed(nameof(Pool<T>));
 
-            TValue value = TakeOrCreateValue();
-            return new RentedValue<TValue>(value, ReturnValue);
+            T value = TakeOrCreateValue();
+            return new RentedValue<T>(value, ReturnValue);
 
             // Local method
-            void ReturnValue(TValue rentedValue) => Cache.Add(rentedValue);
+            void ReturnValue(T rentedValue) => Cache.Add(rentedValue);
         }
 
-        private TValue TakeOrCreateValue()
+        private T TakeOrCreateValue()
         {
-            TValue result;
+            T result;
             while (!Cache.TryTake(out result) || !_checkValue(result))
             {
                 Cache.Add(_factory());
