@@ -72,7 +72,6 @@ namespace HandyIpc.Core
             {
                 if (_connections.TryRemove(processId, out IConnection connection))
                 {
-                    // Send a signal to notify end this connection.
                     connection.Dispose();
                 }
             }
