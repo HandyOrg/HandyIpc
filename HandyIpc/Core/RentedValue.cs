@@ -2,13 +2,13 @@ using System;
 
 namespace HandyIpc.Core
 {
-    public readonly struct RentedValue<TValue> : IDisposable
+    public readonly struct RentedValue<T> : IDisposable
     {
-        private readonly Action<TValue> _dispose;
+        private readonly Action<T> _dispose;
 
-        public TValue Value { get; }
+        public T Value { get; }
 
-        public RentedValue(TValue value, Action<TValue> dispose)
+        public RentedValue(T value, Action<T> dispose)
         {
             _dispose = dispose;
             Value = value;
