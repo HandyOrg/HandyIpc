@@ -26,4 +26,4 @@ jobs:
     - name: InferSharp
       uses: microsoft/infersharpaction@v1.2
       with:
-        binary-path: HandyIpc/HandyIpc/HandyIpc/bin/Debug/netstandard2.0
+        binary-path: HandyIpc/bin/Debug/netstandard2.0
