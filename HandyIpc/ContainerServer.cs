@@ -82,9 +82,10 @@ namespace HandyIpc
                     }
 
                     byte[] buffer = await connection.ReadAsync(token);
+                    // #19, #22:
                     if (buffer.Length == 0)
                     {
-                        continue;
+                        break;
                     }
 
                     byte[] output = await handler(buffer);

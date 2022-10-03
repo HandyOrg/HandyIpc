@@ -25,7 +25,7 @@ namespace HandyIpc
         {
             Debug.WriteLine($"[HandyIpc] [{level}] [{DateTime.Now:HH:mm:ss.fff}] " +
                             $"{message}{Environment.NewLine}" +
-                            $"{exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
+                            $"{exception?.GetType().Name}: {exception?.Message}{Environment.NewLine}{exception?.StackTrace}");
         }
     }
 }

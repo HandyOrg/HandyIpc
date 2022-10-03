@@ -4,34 +4,50 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
-    public sealed class StreamConnection : IConnection
+    public class StreamConnection : IConnection
     {
         private readonly Stream _stream;
 
+        private bool _disposedValue;
+
         public StreamConnection(Stream stream) => _stream = stream;
 
-        public void Write(byte[] bytes)
+        public virtual void Write(byte[] bytes)
         {
             _stream.Write(bytes, 0, bytes.Length);
             _stream.Flush();
         }
 
-        public async Task WriteAsync(byte[] bytes, CancellationToken token)
+        public virtual async Task WriteAsync(byte[] bytes, CancellationToken token)
         {
             await _stream.WriteAsync(bytes, 0, bytes.Length, token);
             await _stream.FlushAsync(token);
         }
 
-        public byte[] Read()
+        public virtual byte[] Read()
         {
             return _stream.ReadAllBytes();
         }
 
-        public Task<byte[]> ReadAsync(CancellationToken token)
+        public virtual Task<byte[]> ReadAsync(CancellationToken token)
         {
             return _stream.ReadAllBytesAsync(token);
         }
 
-        public void Dispose() => _stream.Dispose();
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                _stream.Dispose();
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            System.GC.SuppressFinalize(this);
+        }
     }
 }
