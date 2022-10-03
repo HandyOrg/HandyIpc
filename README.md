@@ -8,12 +8,12 @@ This library provides a high-level RMI (remote method invocation) API. Its under
 
 ## NuGet
 
-| Package                    | Description                                                                        | NuGet                                                                                                                    |
-| -------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `HandyIpc`                 | The core library that provides the high-level APIs required for IPC communication. | [![version](https://img.shields.io/badge/version-0.5.2-orange)](https://www.nuget.org/packages/HandyIpc)                 |
-| `HandyIpc.NamedPipe`       | Provides NamedPipe-based IPC.                                                      | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.NamedPipe)       |
-| `HandyIpc.Socket`          | Provides Socket-based IPC, and only tcp protocol is currently supported.           | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.Socket)          |
-| `HandyIpc.Serializer.Json` | Provides json serialization as the protocol for IPC.                               | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.Serializer.Json) |
+| Package                    | Description                                                                        | NuGet                                                                                                                              |
+| -------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `HandyIpc`                 | The core library that provides the high-level APIs required for IPC communication. | [![version](https://img.shields.io/nuget/v/HandyIpc.svg)](https://www.nuget.org/packages/HandyIpc)                                 |
+| `HandyIpc.NamedPipe`       | Provides NamedPipe-based IPC.                                                      | [![version](https://img.shields.io/nuget/v/HandyIpc.NamedPipe.svg)](https://www.nuget.org/packages/HandyIpc.NamedPipe)             |
+| `HandyIpc.Socket`          | Provides Socket-based IPC, and only tcp protocol is currently supported.           | [![version](https://img.shields.io/nuget/v/HandyIpc.Socket.svg)](https://www.nuget.org/packages/HandyIpc.Socket)                   |
+| `HandyIpc.Serializer.Json` | Provides json serialization as the protocol for IPC.                               | [![version](https://img.shields.io/nuget/v/HandyIpc.Serializer.Json.svg)](https://www.nuget.org/packages/HandyIpc.Serializer.Json) |
 
 ## Install Packages
 

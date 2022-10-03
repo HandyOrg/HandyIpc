@@ -10,12 +10,12 @@ HandyIpc 是一个开箱即用的进程间通讯（IPC）库，对远程方法�
 
 ## NuGet
 
-| 包名                       | 描述                                                   | NuGet                                                                                                                    |
-| -------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `HandyIpc`                 | 核心库，提供 IPC 所需的 High-Level API.                | [![version](https://img.shields.io/badge/version-0.5.2-orange)](https://www.nuget.org/packages/HandyIpc)                 |
-| `HandyIpc.NamedPipe`       | 提供基于 NamedPipe 技术的 IPC 功能。                   | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.NamedPipe)       |
-| `HandyIpc.Socket`          | 提供基于 Socket 技术的 IPC 功能，当前仅支持 Tcp 协议。 | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.Socket)          |
-| `HandyIpc.Serializer.Json` | 为 IPC 通讯提供 Json 序列化的支持。                    | [![version](https://img.shields.io/badge/version-0.5.0-orange)](https://www.nuget.org/packages/HandyIpc.Serializer.Json) |
+| 包名                       | 描述                                                   | NuGet                                                                                                                              |
+| -------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `HandyIpc`                 | 核心库，提供 IPC 所需的 High-Level API.                | [![version](https://img.shields.io/nuget/v/HandyIpc.svg)](https://www.nuget.org/packages/HandyIpc)                                 |
+| `HandyIpc.NamedPipe`       | 提供基于 NamedPipe 技术的 IPC 功能。                   | [![version](https://img.shields.io/nuget/v/HandyIpc.NamedPipe.svg)](https://www.nuget.org/packages/HandyIpc.NamedPipe)             |
+| `HandyIpc.Socket`          | 提供基于 Socket 技术的 IPC 功能，当前仅支持 Tcp 协议。 | [![version](https://img.shields.io/nuget/v/HandyIpc.Socket.svg)](https://www.nuget.org/packages/HandyIpc.Socket)                   |
+| `HandyIpc.Serializer.Json` | 为 IPC 通讯提供 Json 序列化的支持。                    | [![version](https://img.shields.io/nuget/v/HandyIpc.Serializer.Json.svg)](https://www.nuget.org/packages/HandyIpc.Serializer.Json) |
 
 ## 安装
 
