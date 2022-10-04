@@ -25,3 +25,5 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: InferSharp
       uses: microsoft/infersharpaction@v1.2
+      with:
+        binary-path: HandyIpc/bin/Debug/netstandard2.0
