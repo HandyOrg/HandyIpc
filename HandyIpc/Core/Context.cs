@@ -20,6 +20,11 @@ namespace HandyIpc.Core
 
         public IConnection Connection { get; set; } = null!;
 
-        public bool ReleaseConnection { get; set; }
+        /// <summary>
+        /// Gets or sets a bool value to indicate to connection ownership has been transferred
+        /// and the service loop should end without dealing with its lifecycle.
+        /// (do NOT dispose the connection, as the connection ownership has been taken over by another object).
+        /// </summary>
+        public bool ForgetConnection { get; set; }
     }
 }

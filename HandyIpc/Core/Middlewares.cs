@@ -36,7 +36,7 @@ namespace HandyIpc.Core
             }
         }
 
-        public static Middleware GetHandleRequest(IReadOnlyDictionary<string, Middleware> map)
+        public static Middleware GetRequestHandler(IReadOnlyDictionary<string, Middleware> map)
         {
             return async (ctx, next) =>
             {
@@ -66,7 +66,7 @@ namespace HandyIpc.Core
             };
         }
 
-        public static Middleware GetHandleSubscription(IReadOnlyDictionary<string, NotifierManager> notifiers)
+        public static Middleware GetSubscriptionHandler(IReadOnlyDictionary<string, NotifierManager> notifiers)
         {
             return async (ctx, next) =>
             {
@@ -80,7 +80,7 @@ namespace HandyIpc.Core
                                 {
                                     manager.Subscribe(subscription.CallbackName, subscription.ProcessId, ctx.Connection);
                                     ctx.Output = Signals.Unit;
-                                    ctx.ReleaseConnection = true;
+                                    ctx.ForgetConnection = true;
                                 }
 
                                 if (ctx.Logger.IsEnabled(LogLevel.Debug))

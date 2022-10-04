@@ -81,7 +81,7 @@ namespace HandyIpc
         {
             Task Handler(Context context) => _middleware(context, () => Task.CompletedTask);
 
-            bool disposeConnection = true;
+            bool canDisposeConnection = true;
             try
             {
                 while (!token.IsCancellationRequested)
@@ -89,6 +89,7 @@ namespace HandyIpc
                     byte[] input = await connection.ReadAsync(token).ConfigureAwait(false);
                     if (input.Length == 0)
                     {
+                        // #19, #22:
                         // When the remote side closes the link, the read does NOT throw any exception,
                         // only returns 0 bytes data, and does NOT BLOCK, causing a high frequency dead loop.
                         // Differences in behavior:
@@ -108,9 +109,9 @@ namespace HandyIpc
                     await Handler(ctx).ConfigureAwait(false);
                     await connection.WriteAsync(ctx.Output, token).ConfigureAwait(false);
 
-                    if (ctx.ReleaseConnection)
+                    if (ctx.ForgetConnection)
                     {
-                        disposeConnection = false;
+                        canDisposeConnection = false;
                         break;
                     }
                 }
@@ -125,14 +126,14 @@ namespace HandyIpc
             }
             finally
             {
-                if (disposeConnection)
+                if (canDisposeConnection)
                 {
                     connection.Dispose();
                 }
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.Debug($"A connection is released. (hashCode: {connection.GetHashCode()}, disposed: {disposeConnection})");
+                    _logger.Debug($"A connection is released. (hashCode: {connection.GetHashCode()}, disposed: {canDisposeConnection})");
                 }
             }
         }
