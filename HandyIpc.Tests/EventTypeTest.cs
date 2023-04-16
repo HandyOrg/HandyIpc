@@ -42,6 +42,12 @@ namespace HandyIpcTests
             int count = 0;
             Task WrapAsAsync(IEventType source)
             {
+                /*
+                 * BUG: 以下代码，若是严格以 ADD-RAISE-REMOVE 为一组执行，则是正常的，但由于 RAISE 是（非阻塞）异步的（仅用 Push 方法添加事件到队列），
+                 * 故有可能造成这样的执行顺序：ADD1-RAISE1-ADD2-REMOVE1-RAISE2，其中 ADD2 由于 Dispatcher.g.cs 中的“引用计数”机制，是不会发送订阅事件的，
+                 * 故 REMOVE1 将移除 Server 端的订阅，造成 Server 没有 connection 来处理 RAISE2 的消息，故 await WrapAsAsync() 将永远等待下去。。
+                 */
+
                 TaskCompletionSource tcs = new();
                 source.Changed += OnChanged;
                 source.RaiseChanged(EventArgs.Empty);

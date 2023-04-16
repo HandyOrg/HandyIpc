@@ -6,7 +6,6 @@ namespace HandyIpc.Core
 {
     public class NotifierManager
     {
-        private readonly object _locker = new();
         private readonly ISerializer _serializer;
         private readonly ConcurrentDictionary<string, Notifier> _notifiers = new();
 
