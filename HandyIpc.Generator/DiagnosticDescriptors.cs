@@ -26,14 +26,23 @@ namespace HandyIpc.Generator
             true,
             helpLinkUri: $"{HelpLinkUri}#hi002");
 
-        public static readonly DiagnosticDescriptor EventWithoutReturn = new(
+        public static readonly DiagnosticDescriptor UseStandardEventHandler = new(
             "HI003",
-            "Events are not allowed to have return values",
-            "The event '{0}' cannot have a return value. Consider using an event handler without a return value.",
+            "Standard event declarations must be used",
+            "The event '{0}' does not use the standard event declaration. Consider using an event signature like 'void EventHandler<T>(object this, T eventArgs)'.",
             HandyIpc,
             DiagnosticSeverity.Error,
             true,
             helpLinkUri: $"{HelpLinkUri}#hi003");
+
+        public static readonly DiagnosticDescriptor ContainsNotSupportedMembers = new(
+            "HI004",
+            "This interface contains members that are not supported",
+            "This interface '{0}' contains members that are not supported. Consider removing non-method or non-event members.",
+            HandyIpc,
+            DiagnosticSeverity.Error,
+            true,
+            helpLinkUri: $"{HelpLinkUri}#hi004");
 
         public static readonly DiagnosticDescriptor MustContainsMethod = new(
             "HI100",
@@ -43,24 +52,6 @@ namespace HandyIpc.Generator
             DiagnosticSeverity.Warning,
             true,
             helpLinkUri: $"{HelpLinkUri}#hi100");
-
-        public static readonly DiagnosticDescriptor UseStandardEventHandler = new(
-            "HI101",
-            "Standard event declarations should be used",
-            "The event '{0}' does not use the standard event declaration. Consider using either System.EventHandler or System.EventHandler<T> to declare the event.",
-            HandyIpc,
-            DiagnosticSeverity.Warning,
-            true,
-            helpLinkUri: $"{HelpLinkUri}#hi101");
-
-        public static readonly DiagnosticDescriptor ContainsNotSupportedMembers = new(
-            "HI102",
-            "This interface contains members that are not supported",
-            "This interface '{0}' contains members that are not supported. Consider removing non-method or non-event members.",
-            HandyIpc,
-            DiagnosticSeverity.Warning,
-            true,
-            helpLinkUri: $"{HelpLinkUri}#hi102");
     }
 #pragma warning restore RS2008 // Enable analyzer release tracking
 }

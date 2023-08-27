@@ -1,5 +1,6 @@
 using System;
 using HandyIpc.Core;
+using HandyIpc.Logger;
 
 namespace HandyIpc
 {
@@ -11,7 +12,7 @@ namespace HandyIpc
         private Func<ISerializer> _serializerFactory = () => throw new InvalidOperationException(
             $"Must invoke the {nameof(IServerConfiguration)}.Use(Func<{nameof(ISerializer)}> factory) method " +
             "to register a factory before invoking the Build method.");
-        private Func<ILogger> _loggerFactory = () => new DebugLogger();
+        private Func<ILogger> _loggerFactory = () => new TraceLogger();
 
         public IClientConfiguration Use(Func<ISerializer> factory)
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using HandyIpc.Exceptions;
 
 namespace HandyIpc.Core
 {
@@ -39,7 +40,7 @@ namespace HandyIpc.Core
         public static T UnpackResponse<T>(byte[] bytes, ISerializer serializer)
         {
             bool hasValue = Response.TryParse(bytes, typeof(T), serializer, out object? value, out Exception? exception);
-            return hasValue ? (T)value! : throw exception!;
+            return hasValue ? (T)value! : throw new IpcException("An unexpected exception occurs during an ipc call.", exception!);
         }
 
         public static IReadOnlyDictionary<string, MethodInfo> GetGenericMethodMapping(Type interfaceType, object instance)

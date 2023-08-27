@@ -12,11 +12,9 @@ namespace HandyIpc.Core
     [Obfuscation(Exclude = true)]
     public class Request
     {
-        private const string ReqHeader = "handyipc/req";
+        private const string ReqHeader = "hi/req";
 
-        private static readonly byte[] Version = { 1 };
         private static readonly byte[] ReqHeaderBytes = Encoding.ASCII.GetBytes(ReqHeader);
-        private static readonly byte[] EmptyArray = BitConverter.GetBytes(0);
         private static readonly IReadOnlyList<Type> EmptyTypeList = Enumerable.Empty<Type>().ToList().AsReadOnly();
         private static readonly IReadOnlyList<object?> EmptyObjectList = Enumerable.Empty<object?>().ToList().AsReadOnly();
 
@@ -41,7 +39,7 @@ namespace HandyIpc.Core
         /// </summary>
         public string Name
         {
-            get => _name ??= Deserialize<string>(_nameRange);
+            get => _name ??= _serializer.Deserialize<string>(_bytes.Slice(_nameRange));
             set => _name = value;
         }
 
@@ -50,7 +48,7 @@ namespace HandyIpc.Core
         /// </summary>
         public IReadOnlyList<Type> TypeArguments
         {
-            get => _typeArguments ??= DeserializeArray<Type>(_typeArgumentsRange);
+            get => _typeArguments ??= _serializer.DeserializeArray<Type>(_bytes.Slice(_typeArgumentsRange));
             set => _typeArguments = value;
         }
 
@@ -59,7 +57,7 @@ namespace HandyIpc.Core
         /// </summary>
         public string MethodName
         {
-            get => _methodName ??= Deserialize<string>(_methodNameRange);
+            get => _methodName ??= _serializer.Deserialize<string>(_bytes.Slice(_methodNameRange));
             set => _methodName = value;
         }
 
@@ -68,7 +66,7 @@ namespace HandyIpc.Core
         /// </summary>
         public IReadOnlyList<Type> MethodTypeArguments
         {
-            get => _methodTypeArguments ??= DeserializeArray<Type>(_methodTypeArgumentsRange);
+            get => _methodTypeArguments ??= _serializer.DeserializeArray<Type>(_bytes.Slice(_methodTypeArgumentsRange));
             set => _methodTypeArguments = value;
         }
 
@@ -77,7 +75,7 @@ namespace HandyIpc.Core
         /// </summary>
         public IReadOnlyList<object?> Arguments
         {
-            get => _arguments ??= DeserializeArray<object?>(_argumentsRange, index => _argumentTypes[index]);
+            get => _arguments ??= _serializer.DeserializeArray<object?>(_bytes.Slice(_argumentsRange), _argumentTypes);
             set => _arguments = value;
         }
 
@@ -105,7 +103,6 @@ namespace HandyIpc.Core
             /*
              * < Header                    >
              * | Req Token                 |
-             * | Version                   |
              * < Layout Table              >
              * | NameLength                |
              * | TypeArgumentsLength       |
@@ -121,15 +118,14 @@ namespace HandyIpc.Core
              */
 
             byte[] nameBytes = _serializer.Serialize(Name, typeof(string));
-            byte[] typeArgumentsBytes = SerializeArray(TypeArguments);
+            byte[] typeArgumentsBytes = _serializer.SerializeArray(TypeArguments);
             byte[] methodNameBytes = _serializer.Serialize(MethodName, typeof(string));
-            byte[] methodTypeArgumentsBytes = SerializeArray(MethodTypeArguments);
-            byte[] argumentsBytes = SerializeArray(Arguments, index => _argumentTypes[index]);
+            byte[] methodTypeArgumentsBytes = _serializer.SerializeArray(MethodTypeArguments);
+            byte[] argumentsBytes = _serializer.SerializeArray(Arguments, _argumentTypes);
 
             byte[][] bytesList =
             {
                 ReqHeaderBytes,
-                Version,
                 BitConverter.GetBytes(nameBytes.Length),
                 BitConverter.GetBytes(typeArgumentsBytes.Length),
                 BitConverter.GetBytes(methodNameBytes.Length),
@@ -153,8 +149,7 @@ namespace HandyIpc.Core
                 return false;
             }
 
-            // Skip header and version bytes.
-            int offset = ReqHeaderBytes.Length + 1;
+            int offset = ReqHeaderBytes.Length;
             // Skip layout table, 5 is six field in bytes table.
             int start = offset + sizeof(int) * 5;
 
@@ -178,54 +173,6 @@ namespace HandyIpc.Core
             start += dataLength;
 
             return range;
-        }
-
-        private byte[] SerializeArray<T>(IReadOnlyList<T> array, Func<int, Type>? typeProvider = null)
-        {
-            if (array.Count == 0)
-            {
-                return EmptyArray;
-            }
-
-            typeProvider ??= (_ => typeof(T));
-
-            List<byte[]> result = new();
-            for (int i = 0; i < array.Count; i++)
-            {
-                byte[] bytes = _serializer.Serialize(array[i], typeProvider(i));
-                result.Add(BitConverter.GetBytes(bytes.Length));
-                result.Add(bytes);
-            }
-
-            return result.ConcatBytes();
-        }
-
-        private T Deserialize<T>((int start, int length) range)
-        {
-            (int start, int length) = range;
-            return (T)_serializer.Deserialize(_bytes.Slice(start, length), typeof(T))!;
-        }
-
-        private IReadOnlyList<T> DeserializeArray<T>((int start, int length) range, Func<int, Type>? typeProvider = null)
-        {
-            typeProvider ??= (_ => typeof(T));
-
-            (int start, int length) = range;
-            int end = start + length;
-            List<T> result = new();
-
-            for (int offset = start, index = 0; offset < end; index++)
-            {
-                int dataLength = BitConverter.ToInt32(_bytes, offset);
-                offset += sizeof(int);
-
-                T data = (T)_serializer.Deserialize(_bytes.Slice(offset, dataLength), typeProvider(index))!;
-                offset += dataLength;
-
-                result.Add(data);
-            }
-
-            return result;
         }
     }
 }

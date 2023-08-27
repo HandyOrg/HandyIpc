@@ -6,25 +6,26 @@ namespace HandyIpc.Core
 {
     public sealed class Sender : IDisposable
     {
-        private readonly Pool<IConnection> _connectionPool;
-        private readonly AsyncPool<IConnection> _asyncConnectionPool;
+        public Pool<IConnection> ConnectionPool { get; }
+
+        public AsyncPool<IConnection> AsyncConnectionPool { get; }
 
         internal Sender(IClient client)
         {
-            _connectionPool = new Pool<IConnection>(client.Connect, CheckConnection);
-            _asyncConnectionPool = new AsyncPool<IConnection>(client.ConnectAsync, CheckAsyncConnection);
+            ConnectionPool = new Pool<IConnection>(client.Connect, CheckConnection);
+            AsyncConnectionPool = new AsyncPool<IConnection>(client.ConnectAsync, CheckAsyncConnection);
         }
 
         public byte[] Invoke(byte[] bytes)
         {
-            using RentedValue<IConnection> invokeOwner = _connectionPool.Rent();
+            using RentedValue<IConnection> invokeOwner = ConnectionPool.Rent();
             byte[] response = invokeOwner.Value.Invoke(bytes);
             return response;
         }
 
         public async Task<byte[]> InvokeAsync(byte[] bytes)
         {
-            using RentedValue<IConnection> invokeOwner = await _asyncConnectionPool.RentAsync();
+            using RentedValue<IConnection> invokeOwner = await AsyncConnectionPool.RentAsync();
             byte[] response = await invokeOwner.Value.InvokeAsync(bytes, CancellationToken.None);
             return response;
         }
@@ -59,8 +60,8 @@ namespace HandyIpc.Core
 
         public void Dispose()
         {
-            _connectionPool.Dispose();
-            _asyncConnectionPool.Dispose();
+            ConnectionPool.Dispose();
+            AsyncConnectionPool.Dispose();
         }
     }
 }

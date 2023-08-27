@@ -7,7 +7,7 @@ namespace HandyIpc.Generator
 {
     public static class Dispatcher
     {
-        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods)
+        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods, IReadOnlyCollection<IEventSymbol> events)
         {
             var (@namespace, className, typeParameters) = @interface.GenerateNameFromInterface();
             string interfaceType = @interface.ToFullDeclaration();
@@ -26,7 +26,7 @@ namespace {@namespace}
     [global::System.Diagnostics.DebuggerNonUserCode]
     [global::System.Reflection.Obfuscation(Exclude = true)]
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    public class {nameof(Dispatcher)}{className}{typeParameters} : IMethodDispatcher
+    public class {nameof(Dispatcher)}{className}{typeParameters} : IMethodDispatcher{(events.Any() ? ", INotifiable" : null)}
 {@interface.TypeParameters.For(typeParameter => $@"
         {typeParameter.ToGenericConstraint()}
 ")}
@@ -36,6 +36,10 @@ namespace {@namespace}
         private readonly Lazy<IReadOnlyDictionary<string, MethodInfo>> _genericMethodMapping;
 " : RemoveLineIfEmpty)}
 
+{Text(events.Any() ? @"
+        public NotifierManager NotifierManager { get; set; }
+
+" : RemoveLineIfEmpty)}
         public {nameof(Dispatcher)}{className}({interfaceType} instance)
         {{
             _instance = instance;
@@ -43,6 +47,9 @@ namespace {@namespace}
             _genericMethodMapping = new Lazy<IReadOnlyDictionary<string, MethodInfo>>(
                 () => GeneratorHelper.GetGenericMethodMapping(typeof({interfaceType}), _instance));
 " : RemoveLineIfEmpty)}
+{events.For(item => $@"
+            instance.{item.Name} += (_, e) => NotifierManager.Publish(""{item.Name}"", e);
+")}
         }}
 
         public async Task Dispatch(Context ctx, Func<Task> next)
@@ -120,8 +127,6 @@ namespace {@namespace}
                 default:
                     throw new ArgumentOutOfRangeException(""No matching remote method was found."");
             }}
-
-            await next();
         }}
     }}
 }}

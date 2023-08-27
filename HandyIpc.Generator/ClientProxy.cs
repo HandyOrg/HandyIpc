@@ -7,7 +7,7 @@ namespace HandyIpc.Generator
 {
     public static class ClientProxy
     {
-        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods)
+        public static string Generate(INamedTypeSymbol @interface, IReadOnlyCollection<IMethodSymbol> methods, IReadOnlyCollection<IEventSymbol> events)
         {
             var (@namespace, className, typeParameters) = @interface.GenerateNameFromInterface();
             string interfaceType = @interface.ToFullDeclaration();
@@ -30,12 +30,54 @@ namespace {@namespace}
         private readonly Sender _sender;
         private readonly ISerializer _serializer;
         private readonly string _key;
+{Text(events.Any() ? @"
+        private readonly AwaiterManager _awaiterManager;
+" : RemoveLineIfEmpty)}
+
+{events.For(item => $@"
+        private event {item.Type.ToTypeDeclaration()} _{item.Name};
+")}
+{events.For(item =>
+            {
+                IParameterSymbol eSymbol = ((INamedTypeSymbol)item.Type).DelegateInvokeMethod!.Parameters[1];
+                string eType = eSymbol.Type.ToTypeDeclaration();
+                return $@"
+
+        public event {item.Type.ToTypeDeclaration()} {item.Name}
+        {{
+            add
+            {{
+                if (_{item.Name} == null)
+                {{
+                    _awaiterManager.Subscribe(""{item.Name}"", args =>
+                    {{
+                        var e = ({eType})_serializer.Deserialize(args, typeof({eType}));
+                        _{item.Name}?.Invoke(this, e);
+                    }});
+                }}
+
+                _{item.Name} += value;
+            }}
+            remove
+            {{
+                _{item.Name} -= value;
+                if (_{item.Name} == null)
+                {{
+                    _awaiterManager.Unsubscribe(""{item.Name}"");
+                }}
+            }}
+        }}
+";
+            })}
 
         public {nameof(ClientProxy)}{className}(Sender sender, ISerializer serializer, string key)
         {{
             _sender = sender;
             _serializer = serializer;
             _key = key;
+{Text(events.Any() ? @"
+            _awaiterManager = new AwaiterManager(key, sender, serializer);
+" : RemoveLineIfEmpty)}
         }}
 {methods.For(method =>
 {

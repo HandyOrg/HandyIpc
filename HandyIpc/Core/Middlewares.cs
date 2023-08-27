@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HandyIpc.Logger;
 
 namespace HandyIpc.Core
 {
     public delegate Task Middleware(Context context, Func<Task> next);
-
-    public delegate Task<byte[]> RequestHandler(byte[] input);
 
     public static class Middlewares
     {
@@ -37,33 +36,79 @@ namespace HandyIpc.Core
             }
         }
 
-        public static async Task RequestParser(Context ctx, Func<Task> next)
-        {
-            if (Request.TryParse(ctx.Input, ctx.Serializer, out Request request))
-            {
-                ctx.Request = request;
-                await next();
-            }
-            else
-            {
-                throw new ArgumentException("Invalid request bytes.");
-            }
-        }
-
-        public static Middleware GetInterfaceMiddleware(IReadOnlyDictionary<string, Middleware> map)
+        public static Middleware GetRequestHandler(IReadOnlyDictionary<string, Middleware> map)
         {
             return async (ctx, next) =>
             {
-                Request request = CheckRequest(ctx);
+                if (Request.TryParse(ctx.Input, ctx.Serializer, out Request request))
+                {
+                    ctx.Request = request;
+                    if (map.TryGetValue(request.Name, out Middleware middleware))
+                    {
+                        if (ctx.Logger.IsEnabled(LogLevel.Debug))
+                        {
+                            ctx.Logger.Debug("Before processing an ipc request. " +
+                                             $"(connection: {ctx.Connection.GetHashCode()}, name: {request.Name}, methodName: {request.MethodName})");
+                        }
 
-                if (map.TryGetValue(request.Name, out Middleware middleware))
-                {
-                    await middleware(ctx, next);
+                        await middleware(ctx, next);
+                        if (ctx.Logger.IsEnabled(LogLevel.Debug))
+                        {
+                            ctx.Logger.Debug("After processing an ipc request. " +
+                                             $"(connection: {ctx.Connection.GetHashCode()}, name: {request.Name}, methodName: {request.MethodName})");
+                        }
+
+                        return;
+                    }
                 }
-                else
+
+                await next();
+            };
+        }
+
+        public static Middleware GetSubscriptionHandler(IReadOnlyDictionary<string, NotifierManager> notifiers)
+        {
+            return async (ctx, next) =>
+            {
+                if (Subscription.TryParse(ctx.Input, ctx.Serializer, out Subscription subscription))
                 {
-                    throw new NotSupportedException("Unknown interface invoked.");
+                    switch (subscription.Type)
+                    {
+                        case SubscriptionType.Add:
+                            {
+                                if (notifiers.TryGetValue(subscription.Name, out NotifierManager manager))
+                                {
+                                    manager.Subscribe(subscription.CallbackName, subscription.ProcessId, ctx.Connection);
+                                    ctx.Output = Signals.Unit;
+                                    ctx.ForgetConnection = true;
+                                }
+
+                                if (ctx.Logger.IsEnabled(LogLevel.Debug))
+                                {
+                                    ctx.Logger.Debug("Add an event subscription. " +
+                                                     $"(connection: {ctx.Connection.GetHashCode()}, name: {subscription.Name}, eventName: {subscription.CallbackName}, pid: {subscription.ProcessId})");
+                                }
+                            }
+                            return;
+                        case SubscriptionType.Remove:
+                            {
+                                if (notifiers.TryGetValue(subscription.Name, out NotifierManager manager))
+                                {
+                                    manager.Unsubscribe(subscription.CallbackName, subscription.ProcessId);
+                                }
+
+                                ctx.Output = Signals.Unit;
+                                if (ctx.Logger.IsEnabled(LogLevel.Debug))
+                                {
+                                    ctx.Logger.Debug("Remove an event subscription. " +
+                                                     $"(connection: {ctx.Connection.GetHashCode()}, name: {subscription.Name}, eventName: {subscription.CallbackName}, pid: {subscription.ProcessId})");
+                                }
+                            }
+                            return;
+                    }
                 }
+
+                await next();
             };
         }
 
@@ -71,7 +116,7 @@ namespace HandyIpc.Core
         {
             return async (ctx, next) =>
             {
-                Request request = CheckRequest(ctx);
+                Request request = EnsureRequest(ctx);
 
                 if (request.TypeArguments.Any())
                 {
@@ -85,13 +130,25 @@ namespace HandyIpc.Core
             };
         }
 
-        private static Request CheckRequest(Context ctx)
+        public static Task NotFound(Context ctx, Func<Task> next)
+        {
+            string message = ctx.Request is { } request
+                ? $"Unknown interface method ({request.Name}.{request.MethodName}) invoked."
+                : "Unknown interface method invoked.";
+
+            ctx.Logger.Warning(message);
+            ctx.Output = Response.Error(new NotSupportedException(message), ctx.Serializer);
+
+            return Task.CompletedTask;
+        }
+
+        private static Request EnsureRequest(Context ctx)
         {
             Request? request = ctx.Request;
 
             if (request is null)
             {
-                throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it can be used.");
+                throw new InvalidOperationException($"The {nameof(Context.Request)} must be parsed from {nameof(Context.Input)} before it be used.");
             }
 
             return request;
@@ -112,16 +169,6 @@ namespace HandyIpc.Core
         public static Middleware Compose(params Middleware[] middlewareArray)
         {
             return middlewareArray.Compose();
-        }
-
-        public static RequestHandler ToHandler(this Middleware middleware, ISerializer serializer, ILogger logger)
-        {
-            return async input =>
-            {
-                var ctx = new Context(input, serializer, logger);
-                await middleware(ctx, () => Task.CompletedTask);
-                return ctx.Output;
-            };
         }
     }
 }

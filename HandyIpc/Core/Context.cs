@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using HandyIpc.Logger;
 
 namespace HandyIpc.Core
 {
@@ -7,23 +7,24 @@ namespace HandyIpc.Core
     {
         private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
-        public byte[] Input { get; }
+        // FIXME: Replace 'set;' with 'init;'
+        public byte[] Input { get; set; } = null!;
 
         public byte[] Output { get; set; } = EmptyBytes;
 
-        public IDictionary<object, object> Items { get; } = new Dictionary<object, object>();
-
         public Request? Request { get; set; }
 
-        public ISerializer Serializer { get; }
+        public ISerializer Serializer { get; set; } = null!;
 
-        public ILogger Logger { get; }
+        public ILogger Logger { get; set; } = null!;
 
-        public Context(byte[] input, ISerializer serializer, ILogger logger)
-        {
-            Input = input;
-            Serializer = serializer;
-            Logger = logger;
-        }
+        public IConnection Connection { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets a bool value to indicate to connection ownership has been transferred
+        /// and the service loop should end without dealing with its lifecycle.
+        /// (do NOT dispose the connection, as the connection ownership has been taken over by another object).
+        /// </summary>
+        public bool ForgetConnection { get; set; }
     }
 }

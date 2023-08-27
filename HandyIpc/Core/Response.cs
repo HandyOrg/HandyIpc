@@ -6,9 +6,8 @@ namespace HandyIpc.Core
 {
     public static class Response
     {
-        private const string ResHeader = "handyipc/res";
+        private const string ResHeader = "hi/res";
 
-        private static readonly byte[] Version = { 1 };
         private static readonly byte[] ResHeaderBytes = Encoding.ASCII.GetBytes(ResHeader);
 
         private static readonly byte[] ResponseValueFlag = { 1 };
@@ -17,7 +16,6 @@ namespace HandyIpc.Core
         public static byte[] Unit { get; } = new[]
         {
             ResHeaderBytes,
-            Version,
             ResponseValueFlag,
             BitConverter.GetBytes(Signals.Unit.Length),
             Signals.Unit,
@@ -28,7 +26,6 @@ namespace HandyIpc.Core
             List<byte[]> result = new()
             {
                 ResHeaderBytes,
-                Version,
                 ResponseValueFlag,
             };
 
@@ -49,7 +46,6 @@ namespace HandyIpc.Core
             List<byte[]> result = new()
             {
                 ResHeaderBytes,
-                Version,
                 ResponseErrorFlag,
                 BitConverter.GetBytes(typeBytes.Length),
                 typeBytes,
@@ -67,9 +63,7 @@ namespace HandyIpc.Core
                 throw new ArgumentException("The bytes is not valid response data.", nameof(bytes));
             }
 
-            // Skip the version number, because the current version is the first one
-            // and there is no need to consider compatibility issues.
-            int offset = ResHeaderBytes.Length + Version.Length;
+            int offset = ResHeaderBytes.Length;
             bool hasValue = bytes.Slice(offset, 1)[0] == ResponseValueFlag[0];
             offset++;
             if (hasValue)

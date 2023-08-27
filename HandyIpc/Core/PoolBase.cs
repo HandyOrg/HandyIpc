@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 
 namespace HandyIpc.Core
 {
-    internal abstract class PoolBase<TValue> : IDisposable where TValue : IDisposable
+    public abstract class PoolBase<T> : IDisposable where T : IDisposable
     {
-        protected readonly ConcurrentBag<TValue> Cache = new();
+        protected readonly ConcurrentBag<T> Cache = new();
 
         private bool _isDisposed;
 
@@ -23,7 +23,7 @@ namespace HandyIpc.Core
 
             if (disposing)
             {
-                while (Cache.TryTake(out TValue item))
+                while (Cache.TryTake(out T item))
                 {
                     item.Dispose();
                 }

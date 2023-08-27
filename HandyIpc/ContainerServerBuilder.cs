@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using HandyIpc.Core;
+using HandyIpc.Logger;
 
 namespace HandyIpc
 {
@@ -15,7 +17,7 @@ namespace HandyIpc
         private Func<ISerializer> _serializerFactory = () => throw new InvalidOperationException(
            $"Must invoke the {nameof(IServerConfiguration)}.Use(Func<{nameof(ISerializer)}> factory) method " +
            "to register a factory before invoking the Build method.");
-        private Func<ILogger> _loggerFactory = () => new DebugLogger();
+        private Func<ILogger> _loggerFactory = () => new TraceLogger();
 
         public IServerConfiguration Use(Func<ISerializer> factory)
         {
@@ -50,31 +52,48 @@ namespace HandyIpc
         public IContainerServer Build()
         {
             Dictionary<string, Middleware> map = new();
+            ConcurrentDictionary<string, NotifierManager> notifiers = new();
             foreach (var (key, type, factory) in _interfaceMap)
             {
-                Middleware methodDispatcher = CreateDispatcher(type, factory).Dispatch;
+                object dispatcher = CreateDispatcher(type, factory);
+                if (dispatcher is INotifiable notifiable)
+                {
+                    notifiable.NotifierManager = notifiers.GetOrAdd(key, _ => new NotifierManager(_serializerFactory()));
+                }
+
+                Middleware methodDispatcher = ((IMethodDispatcher)dispatcher).Dispatch;
                 map.Add(key, methodDispatcher);
             }
 
             foreach (var (key, type, factory) in _genericInterfaceMap)
             {
                 Middleware methodDispatcher = Middlewares.GetMethodDispatcher(
-                    genericTypes => CreateDispatcher(
-                        type.MakeGenericType(genericTypes),
-                        () => factory(genericTypes)));
+                    genericTypes =>
+                    {
+                        object dispatcher = CreateDispatcher(
+                            type.MakeGenericType(genericTypes),
+                            () => factory(genericTypes));
+                        if (dispatcher is INotifiable notifiable)
+                        {
+                            notifiable.NotifierManager = notifiers.GetOrAdd(key, _ => new NotifierManager(_serializerFactory()));
+                        }
+
+                        return (IMethodDispatcher)dispatcher;
+                    });
                 map.Add(key, methodDispatcher);
             }
 
             Middleware middleware = Middlewares.Compose(
                 Middlewares.Heartbeat,
                 Middlewares.ExceptionHandler,
-                Middlewares.RequestParser,
-                Middlewares.GetInterfaceMiddleware(map));
+                Middlewares.GetRequestHandler(map),
+                Middlewares.GetSubscriptionHandler(notifiers),
+                Middlewares.NotFound);
 
             return new ContainerServer(_serverFactory(), middleware, _serializerFactory(), _loggerFactory());
         }
 
-        private static IMethodDispatcher CreateDispatcher(Type interfaceType, Func<object> factory)
+        private static object CreateDispatcher(Type interfaceType, Func<object> factory)
         {
             object instance = factory();
 
@@ -95,9 +114,7 @@ namespace HandyIpc
             // this does not lead to naming conflicts even if the user also declares a Dispatch method
             // with the same signature in the IContract interface.
             object proxy = Activator.CreateInstance(interfaceType.GetServerProxyType(), instance);
-            var dispatcher = (IMethodDispatcher)Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
-
-            return dispatcher;
+            return Activator.CreateInstance(interfaceType.GetDispatcherType(), proxy);
         }
     }
 }

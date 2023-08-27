@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -111,7 +111,7 @@ namespace HandyIpcTests.Mock
 
         public static IEnumerable<byte[]> ByteArrays()
         {
-            return new[] { new byte[0] }
+            return new[] { Array.Empty<byte>() }
                 .Concat(Enumerable
                 .Range(0, 1000)
                 .Select(_ =>

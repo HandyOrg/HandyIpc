@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using HandyIpc.Core;
+using HandyIpc.Logger;
 
 namespace HandyIpc
 {
@@ -37,59 +38,82 @@ namespace HandyIpc
 #pragma warning restore 4014
 
             IsRunning = true;
+            _logger.Info("IPC service has been started...");
         }
 
         public void Stop()
         {
             _cancellationTokenSource?.Cancel();
             IsRunning = false;
+            _logger.Info("IPC service has been stopped.");
         }
 
         public void Dispose()
         {
             Stop();
             _server.Dispose();
+            _logger.Info("IPC service has been disposed.");
         }
 
         private async Task StartAsync(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
-                IConnection connection = await _server.WaitForConnectionAsync();
-                RequestHandler handler = _middleware.ToHandler(_serializer, _logger);
-
+                IConnection connection = await _server.WaitForConnectionAsync().ConfigureAwait(false);
                 if (token.IsCancellationRequested)
                 {
                     break;
                 }
 
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.Debug($"A new connection is established. (hashCode: {connection.GetHashCode()})");
+                }
+
                 // Do not await the request handler, and go to await next stream connection directly.
 #pragma warning disable 4014
-                HandleRequestAsync(connection, handler, token);
+                HandleRequestAsync(connection, token);
 #pragma warning restore 4014
             }
         }
 
-        private async Task HandleRequestAsync(IConnection connection, RequestHandler handler, CancellationToken token)
+        private async Task HandleRequestAsync(IConnection connection, CancellationToken token)
         {
+            Task Handler(Context context) => _middleware(context, () => Task.CompletedTask);
+
+            bool canDisposeConnection = true;
             try
             {
-                while (true)
+                while (!token.IsCancellationRequested)
                 {
-                    if (token.IsCancellationRequested)
+                    byte[] input = await connection.ReadAsync(token).ConfigureAwait(false);
+                    if (input.Length == 0)
                     {
+                        // #19, #22:
+                        // When the remote side closes the link, the read does NOT throw any exception,
+                        // only returns 0 bytes data, and does NOT BLOCK, causing a high frequency dead loop.
+                        // Differences in behavior:
+                        // - NamedPipe: After multiple non-blocking loops, an ArgumentException is thrown and the loop is terminated,
+                        // so for the most part it behaves normally.
+                        // - Socket(Tcp): Always in the unblock loop.
                         break;
                     }
 
-                    byte[] buffer = await connection.ReadAsync(token);
-                    // #19, #22:
-                    if (buffer.Length == 0)
+                    Context ctx = new()
                     {
+                        Input = input,
+                        Connection = connection,
+                        Logger = _logger,
+                        Serializer = _serializer,
+                    };
+                    await Handler(ctx).ConfigureAwait(false);
+                    await connection.WriteAsync(ctx.Output, token).ConfigureAwait(false);
+
+                    if (ctx.ForgetConnection)
+                    {
+                        canDisposeConnection = false;
                         break;
                     }
-
-                    byte[] output = await handler(buffer);
-                    await connection.WriteAsync(output, token);
                 }
             }
             catch (OperationCanceledException)
@@ -102,7 +126,15 @@ namespace HandyIpc
             }
             finally
             {
-                connection.Dispose();
+                if (canDisposeConnection)
+                {
+                    connection.Dispose();
+                }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.Debug($"A connection is released. (hashCode: {connection.GetHashCode()}, disposed: {canDisposeConnection})");
+                }
             }
         }
     }

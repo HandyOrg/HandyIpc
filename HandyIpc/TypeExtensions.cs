@@ -5,6 +5,19 @@ using System.Text;
 
 namespace HandyIpc
 {
+    public class BoastcastEvent<T>
+    {
+        public IDisposable Subscribe(Action<T> handler)
+        {
+            return null!;
+        }
+
+        public void Publish(T message)
+        {
+
+        }
+    }
+
     internal static class TypeExtensions
     {
         internal static string GetDefaultKey(this Type interfaceType)

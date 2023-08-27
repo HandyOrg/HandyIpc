@@ -18,7 +18,8 @@ namespace HandyIpcTests.Fixtures
             serverBuilder
                 .Register<IBuildInType, BuildInTypeImpl>()
                 .Register(typeof(IGenericType<,>), typeof(GenericTypeImpl<,>))
-                .Register<ITaskReturnType, TaskReturnTypeImpl>();
+                .Register<ITaskReturnType, TaskReturnTypeImpl>()
+                .Register<IEventType, EventType>();
 
             _server = serverBuilder.Build();
             _server.Start();

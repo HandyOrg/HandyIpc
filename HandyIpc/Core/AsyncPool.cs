@@ -3,15 +3,15 @@ using System.Threading.Tasks;
 
 namespace HandyIpc.Core
 {
-    internal sealed class AsyncPool<T> : PoolBase<T> where T : IDisposable
+    public sealed class AsyncPool<T> : PoolBase<T> where T : IDisposable
     {
         private readonly Func<Task<T>> _factory;
         private readonly Func<T, Task<bool>> _checkValue;
 
-        public AsyncPool(Func<Task<T>> factory, Func<T, Task<bool>>? checkValue = null)
+        public AsyncPool(Func<Task<T>> factory, Func<T, Task<bool>> checkValue)
         {
             _factory = factory;
-            _checkValue = checkValue ?? (_ => Task.FromResult(true));
+            _checkValue = checkValue;
         }
 
         public async Task<RentedValue<T>> RentAsync()
